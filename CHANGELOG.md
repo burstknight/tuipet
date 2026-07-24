@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.236 — NAPS NO LONGER FLIP THE LIGHTS ON (2026-07-24)
+
+NAPS NO LONGER FLIP THE LIGHTS ON: a pet dozing in a dark room used to wake, switch its own light on, then fall back asleep — quietly stacking lights-on care mistakes you never earned. A nap now leaves the switch where you set it; only a real morning wake lights the room.
+
 ## 0.5.235 — THE SEAFLOOR SCENES SIT TOGETHER NOW (2026-07-24)
 
 THE SEAFLOOR SCENES SIT TOGETHER NOW: the deep one used to alphabetise under "D", stranding it far from its siblings in the E scene picker. Renamed the trio Seafloor / Seafloor Deep / Seafloor Sunset so they line up in a row — same art, just findable.
