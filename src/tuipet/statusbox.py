@@ -16,6 +16,8 @@ tests/test_status_box*.py against CARD 26x16.
 """
 from __future__ import annotations
 
+import textwrap
+
 from . import backgrounds
 from . import data
 from . import egg as egg_mod
@@ -113,6 +115,23 @@ def status_line(status, deco, width=26):
             shown.append(d)
             used += add
     return f"[b]{status}[/]   " + "  ".join(shown)
+
+
+def wrap(text, max_lines, width=CARD_W):
+    """Word-wrap PLAIN text into card rows on WORD boundaries (card audit
+    2026-07-24, Joel "words are getting cut off").  The Options card used a
+    raw text[:26] / [26:52] slice, which split "auto-install" mid-glyph and
+    dropped a message's tail past 26 chars.  Caps at max_lines; an over-long
+    tail ends the last kept line with an ellipsis instead of a silent
+    amputation.  Callers wrap the result in their own markup."""
+    # break_on_hyphens=False keeps "auto-install" whole rather than snapping
+    # it at the hyphen; break_long_words still splits a lone word wider than
+    # the card so nothing can silently overrun.
+    lines = textwrap.wrap(text, width, break_on_hyphens=False) if text else []
+    if len(lines) > max_lines:
+        lines = lines[:max_lines]
+        lines[-1] = lines[-1][:width - 1].rstrip() + "…"
+    return lines
 
 
 def card(app, title, lines, subtitle=""):
@@ -527,12 +546,18 @@ def options(app):
     m = app.mode
     row = _opts._ROWS[min(m.cursor, len(_opts._ROWS) - 1)]
     desc = _opts._DESC.get(row, "")
-    card(app, "Options", [
-        f"[b]{_opts._LABEL.get(row, row.title())}[/]", "",
-        f"[dim]{desc[:26]}[/]",
-        f"[dim]{desc[26:52]}[/]", "",
-        (m.msg or "")[:26], "",
-        "[dim]ENTER toggles[/]"])
+    # word-wrap (card audit 2026-07-24): desc runs to 53 chars and the update
+    # msg to ~49; the old [:26]/[26:52]/[:26] slices cut words mid-glyph and
+    # dropped the msg's action hint.  Body budget = 14 rows (16 - title/DIV);
+    # desc<=3 + msg<=4 + 5 fixed leaves headroom.
+    lines = [f"[b]{_opts._LABEL.get(row, row.title())}[/]", ""]
+    lines += [f"[dim]{ln}[/]" for ln in wrap(desc, 3)]
+    lines.append("")
+    if m.msg:
+        lines += wrap(m.msg, 4)
+        lines.append("")
+    lines.append("[dim]ENTER toggles[/]")
+    card(app, "Options", lines)
 
 
 def bug(app):

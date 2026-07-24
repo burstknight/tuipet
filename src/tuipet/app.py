@@ -133,11 +133,11 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("TWO BADGES YOUR STATUS CARD WAS MISSING: a defiant pet now "
-                 "wears +rude, so a refused feed or battle reads as earned "
-                 "attitude, not a glitch — discipline it or crack a Textbook. "
-                 "And an injured pet wears +hurt even while it's also sick, so "
-                 "you know to reach for the bandage AND the pill.")
+    WHATS_NEW = ("NO MORE CHOPPED-OFF WORDS: the Options card used to slice "
+                 "text at a hard character count — \"auto-instal\", \"Restart "
+                 "now? ENT\" — losing the end of the line. It now wraps on "
+                 "whole words, so the update prompt and every setting's blurb "
+                 "read to the last letter.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

@@ -64,3 +64,40 @@ def test_main_egg_and_grave_cards_fit_and_read_compact_ages():
     assert "Lived    3d01h" in fake.txt
 
 
+# ---- card audit 2026-07-24: word-wrap, not char-slice --------------------
+
+def test_wrap_never_splits_a_word_and_caps_with_ellipsis():
+    """The helper the Options card now uses: word boundaries only, a lone
+    over-wide token still breaks (never overruns the card), and past the cap
+    the last line ends in an ellipsis rather than dropping the tail silently."""
+    from tuipet import statusbox as sb
+    out = sb.wrap("A flips launch auto-install", 3)
+    assert all(len(l) <= CARD_W for l in out)
+    assert "auto-install" in out                 # kept whole, not "auto-instal"
+    out = sb.wrap(" ".join(["word"] * 15), 2)      # 15 words -> 3 lines, capped
+    assert len(out) == 2 and out[-1].endswith("…")
+    assert all(len(l) <= CARD_W for l in sb.wrap("x" * 40, 3))  # lone giant token
+
+
+def test_options_card_wraps_every_desc_and_the_update_msg():
+    """Joel "words are getting cut off": the Options card sliced desc[:26] /
+    [26:52] and msg[:26] -- cutting 'auto-install' mid-glyph and dropping the
+    restart prompt's tail.  Now every option's desc and the longest update
+    message fit the card with NO word lost."""
+    import re
+    from tuipet import statusbox, optionsscreen as _opts
+
+    class _Mode:
+        def __init__(self, cursor, msg): self.cursor, self.msg = cursor, msg
+
+    class _App:
+        def __init__(self, mode): self.mode, self.stats_w = mode, _FakeStats()
+
+    longest = "Updated! Restart now?  ENTER restarts · ESC later"
+    for i, row in enumerate(_opts._ROWS):
+        app = _App(_Mode(i, longest))
+        statusbox.options(app)
+        _fits(app.stats_w, f"options[{row}]")
+        shown = re.sub(r"\[/?[^\[\]]*\]", "", app.stats_w.txt)
+        for word in re.findall(r"[A-Za-z]+", _opts._DESC.get(row, "") + " " + longest):
+            assert word in shown, f"{row}: lost the word {word!r}"
