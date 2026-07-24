@@ -54,7 +54,11 @@ def test_main_egg_and_grave_cards_fit_and_read_compact_ages():
     assert "3d01h" in fake.txt                  # compact age, not 4436m40s
     assert "◆◆◆" in fake.txt                    # the DP meter: pips on its own row
     assert "Care" in fake.txt                   # the evolution driver, no longer buried
-    assert "Power" not in fake.txt              # the ledger lives on the DigiCore now
+    # the Va/Da/Vi Power ledger + the DMX Level now ride the home card too
+    # (2026-07-24 "evaluate what we can fit"): both were live progression the
+    # main card never showed.  Level folds into the Battle row.
+    assert "Power" in fake.txt
+    assert "Lv" in fake.txt
     assert "HP " not in fake.txt                # the classic trained-HP left with it
     Stats.paint(fake, Pet.new_egg(egg_type=1))
     _fits(fake, "egg")
@@ -62,6 +66,26 @@ def test_main_egg_and_grave_cards_fit_and_read_compact_ages():
     Stats.paint(fake, dead)
     _fits(fake, "grave")
     assert "Lived    3d01h" in fake.txt
+
+
+def test_home_card_surfaces_level_and_the_attribute_powers():
+    """Home-card surfacing 2026-07-24 (Joel "evaluate what we can fit"): the
+    DMX Level and the Va/Da/Vi powers were live progression shown only on
+    DigiCore.  Level folds into the Battle row; the powers get their own row,
+    coloured by attribute.  Uncapped values (chips + wins both feed them)
+    must still fit the 26-col card."""
+    fake = _FakeStats()
+    p = _pet()
+    p.vaccine, p.data_power, p.virus = 120, 45, 88
+    Stats.paint(fake, p)
+    _fits(fake, "home/powers")
+    assert "V120" in fake.txt and "D45" in fake.txt and "Vi88" in fake.txt
+    assert "Lv" in fake.txt                      # level folded into Battle row
+    # extreme uncapped powers + a maxed record still fit the box
+    p.vaccine = p.data_power = p.virus = 9999
+    p.wins, p.battles, p.trophies, p.exp = 999, 999, 99, 999999
+    Stats.paint(fake, p)
+    _fits(fake, "home/extreme")
 
 
 # ---- card audit 2026-07-24: word-wrap, not char-slice --------------------

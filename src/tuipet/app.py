@@ -133,11 +133,11 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("NAPS NO LONGER FLIP THE LIGHTS ON: a pet dozing in a dark "
-                 "room used to wake, switch its own light on, then fall back "
-                 "asleep — quietly stacking lights-on care mistakes you never "
-                 "earned. A nap now leaves the switch where you set it; only a "
-                 "real morning wake lights the room.")
+    WHATS_NEW = ("YOUR BATTLE PROGRESS IS ON THE MAIN CARD NOW: the home Stats "
+                 "panel shows your DMX Level (folded into the Battle row) and "
+                 "the Vaccine/Data/Virus powers — green, blue, red — that feed "
+                 "battle strength and gate evolutions. Both were live all "
+                 "along, just hidden on the DigiCore page.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

@@ -187,11 +187,13 @@ def adventure_line(pet):
 
 
 def home_lines(pet):
+    from . import lines as _lines           # DMX level: exp vs canon thresholds
     T = theme
     word = pet.status_word()
     deco = care_deco(pet, word)
     age = age_compact(pet.age_seconds)
     xm = f" [b {T.ACCENT}]X[/]" if pet.x_antibody != "None" else ""
+    lvl = _lines._pet_level(pet)
     return [
         f"[b]{pet.name[:22]}[/]{xm}",
         f"[dim]{pet.stage}{(' · ' + pet.attribute) if pet.attribute else ''}[/]",
@@ -200,9 +202,11 @@ def home_lines(pet):
         f"Effort  {hearts(pet.strength)}",
         f"Energy  {bar(pet.energy_pct(), 12, T.ENERGY)}",
         DIV,
-        # (the Power ledger lives on the DigiCore DATA page, next to the
-        # corpus gates that read it; the HP fragment was the retired classic
-        # battle's trained-HP -- home-card audit 2026-07-17)
+        # (the HP fragment was the retired classic battle's trained-HP --
+        # home-card audit 2026-07-17.  The Va/Da/Vi Power ledger and the DMX
+        # Level, once DigiCore-only, now ride the two battle rows below --
+        # both were live progression the main card never showed, home-card
+        # surfacing 2026-07-24 "evaluate what we can fit".)
         f"Weight  {pet.weight}g · [{T.COIN}]{pet.bits}b[/]",
         # care mistakes decide the evolution road (every line's CM gates)
         # and 20 is lethal.  Stage-scoped: they reset on evolve.
@@ -210,7 +214,14 @@ def home_lines(pet):
          f"Care    [{T.NEG if pet.care_mistakes >= 10 else T.CARE}]"
          f"✗{pet.care_mistakes} this stage[/]"),
         f"DP      [{T.ACCENT}]{'◆' * getattr(pet, 'dp', 0)}[/][dim]{'◇' * (4 - getattr(pet, 'dp', 0))}[/]",
-        f"Battle  {pet.wins}W/{pet.battles}   [{T.COIN}]★{pet.trophies}[/]",
+        # battle progression, once DigiCore-only: wins/level/trophies on one
+        # row, the Va/Da/Vi attribute powers on the next.  Level folds in free
+        # (DMX 1-10, capped by stage); the powers colour by attribute --
+        # Vaccine green, Data blue, Virus red -- and are uncapped, so a big
+        # number is real, not a glitch (chips + wins both feed them).
+        f"Battle  {pet.wins}W/{pet.battles} [dim]Lv[/]{lvl} [{T.COIN}]★{pet.trophies}[/]",
+        f"Power   [{T.POS}]V{pet.vaccine}[/] [{T.ACCENT}]D{pet.data_power}[/] "
+        f"[{T.NEG}]Vi{pet.virus}[/]",
         adventure_line(pet),
         # the @ line is WHERE THE MON STANDS (liveness law, Joel 2026-07-21
         # "shouldnt the @ say what zone the mon is in during adventure?"):
