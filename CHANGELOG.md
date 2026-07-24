@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.232 — NO MORE CHOPPED-OFF WORDS (2026-07-24)
+
+NO MORE CHOPPED-OFF WORDS: the Options card used to slice text at a hard character count — "auto-instal", "Restart now? ENT" — losing the end of the line. It now wraps on whole words, so the update prompt and every setting's blurb read to the last letter.
+
 ## 0.5.231 — TWO BADGES YOUR STATUS CARD WAS MISSING (2026-07-24)
 
 TWO BADGES YOUR STATUS CARD WAS MISSING: a defiant pet now wears +rude, so a refused feed or battle reads as earned attitude, not a glitch — discipline it or crack a Textbook. And an injured pet wears +hurt even while it's also sick, so you know to reach for the bandage AND the pill.
