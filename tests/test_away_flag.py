@@ -42,16 +42,23 @@ def test_the_teleport_toggles_away_both_ways(monkeypatch):
     assert p.away_where == ""
 
 
-def test_the_at_line_names_the_zone_while_away(monkeypatch):
+def test_the_at_line_names_the_zone_biome_while_away(monkeypatch):
+    """@-habitat fix 2026-07-24 (Joel "does it display the correct habitat name
+    while in adventure?"): the @ line is a PLACE, so on the road it shows the
+    BIOME half of the '{Boss}'s {biome}' zone name, never the boss (the boss is
+    the Quest line's objective).  Off the road the home scene returns."""
     pan = _land(monkeypatch)
     p = pan.pet
-    card = "\n".join(statusbox.home_lines(p))
-    assert "@" + statusbox._zone_display(pan.adv.name, 16) in card
-    p.away, p.away_where = False, ""                   # home again
-    card = "\n".join(statusbox.home_lines(p))
-    assert "@" + statusbox._zone_display(pan.adv.name, 16) not in card
-    assert "@" in card                                 # ...the home scene returns
-    #      (the Quest line may still NAME the zone -- that's the frontier)
+    boss, biome = pan.adv.name.split("'s ", 1)
+
+    def at_line(pet):
+        return next(l for l in statusbox.home_lines(pet) if l.startswith("@"))
+
+    assert at_line(p).startswith("@" + biome)          # the habitat, a place
+    assert boss not in at_line(p)                       # NOT the boss name
+    p.away, p.away_where = False, ""                    # home again
+    assert not at_line(p).startswith("@" + biome)       # the adventure biome is gone
+    #      (the Quest line may still name the frontier boss -- that's the objective)
 
 
 def test_the_assistant_pauses_on_the_road(monkeypatch):

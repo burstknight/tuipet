@@ -160,11 +160,19 @@ def _frontier_name(pet, avail):
 
 
 def _where(pet):
-    """The @ line's place, <=16 cols: the run's zone while the mon is AWAY
-    on the road (pet.away_where, set by the landing teleport), the home
-    scene otherwise."""
+    """The @ line's PLACE, <=16 cols: on the road it's the current zone's
+    BIOME, the home scene otherwise -- both read as a place the pet stands.
+
+    Zone names are "{Boss}'s {biome}"; the @ line shows the biome half, NOT
+    the boss (@-habitat fix 2026-07-24, Joel "does it display the correct
+    habitat name while in adventure?").  The boss is the Quest line's
+    OBJECTIVE -- clipping the @ to it made the road read "@WarGreymon", a
+    monster's name where a place belongs, and stacked two bosses on adjacent
+    rows.  The biome (<=13 cols) is the habitat, and matches the home scene
+    the @ shows off the road."""
     if getattr(pet, "away", False):
-        return _zone_display(getattr(pet, "away_where", "") or "?", 16)
+        zone = getattr(pet, "away_where", "") or "?"
+        return zone.split("'s ", 1)[-1][:16]        # the biome half, not the boss
     return backgrounds.name(pet.bg_pick
                             or backgrounds.scene_for_egg(pet.egg_type))[:16]
 

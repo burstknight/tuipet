@@ -133,11 +133,11 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("YOUR BATTLE PROGRESS IS ON THE MAIN CARD NOW: the home Stats "
-                 "panel shows your DMX Level (folded into the Battle row) and "
-                 "the Vaccine/Data/Virus powers — green, blue, red — that feed "
-                 "battle strength and gate evolutions. Both were live all "
-                 "along, just hidden on the DigiCore page.")
+    WHATS_NEW = ("THE @ LINE NAMES THE PLACE, NOT THE BOSS: on an adventure the "
+                 "card used to read \"@WarGreymon\" — the zone's boss, where a "
+                 "location belongs. It now shows the habitat (\"@Island Day\"), "
+                 "matching how it names your home scene. The boss you're after "
+                 "still shows on the Quest line.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and
