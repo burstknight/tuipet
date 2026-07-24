@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.237 — YOUR BATTLE PROGRESS IS ON THE MAIN CARD NOW (2026-07-24)
+
+YOUR BATTLE PROGRESS IS ON THE MAIN CARD NOW: the home Stats panel shows your DMX Level (folded into the Battle row) and the Vaccine/Data/Virus powers — green, blue, red — that feed battle strength and gate evolutions. Both were live all along, just hidden on the DigiCore page.
+
 ## 0.5.236 — NAPS NO LONGER FLIP THE LIGHTS ON (2026-07-24)
 
 NAPS NO LONGER FLIP THE LIGHTS ON: a pet dozing in a dark room used to wake, switch its own light on, then fall back asleep — quietly stacking lights-on care mistakes you never earned. A nap now leaves the switch where you set it; only a real morning wake lights the room.
