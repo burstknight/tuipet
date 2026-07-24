@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.238 — THE @ LINE NAMES THE PLACE, NOT THE BOSS (2026-07-24)
+
+THE @ LINE NAMES THE PLACE, NOT THE BOSS: on an adventure the card used to read "@WarGreymon" — the zone's boss, where a location belongs. It now shows the habitat ("@Island Day"), matching how it names your home scene. The boss you're after still shows on the Quest line.
+
 ## 0.5.237 — YOUR BATTLE PROGRESS IS ON THE MAIN CARD NOW (2026-07-24)
 
 YOUR BATTLE PROGRESS IS ON THE MAIN CARD NOW: the home Stats panel shows your DMX Level (folded into the Battle row) and the Vaccine/Data/Virus powers — green, blue, red — that feed battle strength and gate evolutions. Both were live all along, just hidden on the DigiCore page.
