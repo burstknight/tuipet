@@ -97,6 +97,34 @@ def test_a_drained_doze_holds_in_the_dark_until_half_the_tank(monkeypatch):
     assert woke_at >= p.max_energy // 2    # ...but only once half the tank is back
 
 
+def test_a_nap_wake_leaves_the_room_dark(monkeypatch):
+    """Nap-lights bug 2026-07-24 (Joel: "napping with lights out will wake up,
+    turn lights on, then fall back asleep -- disastrous for care mistakes").
+    _wake lit the room on EVERY rise, so a doze that ended in the dark flipped
+    its own switch on; a still-tired pet re-sleeping under it then racked a
+    lights-on care mistake it never earned.  A NAP wake must leave the switch
+    where the player set it -- OFF stays OFF."""
+    monkeypatch.setattr("tuipet.petbody.random.randrange", lambda n: n // 2)
+    p = _dozer()
+    for _ in range(1000):
+        p._tick_asleep(1.0)
+        if not p.asleep:
+            break
+    assert not p.asleep                    # the doze ended (it woke)
+    assert p.lights is False               # ...but did NOT switch the light on
+
+
+def test_a_morning_wake_still_lights_the_room():
+    """The other half of the fix: setLights(true) is a MORNING behaviour and
+    stays -- a full (non-nap) sleep still wakes into a lit room."""
+    p = _pet(energy=5, max_energy=10)
+    p.lights = False
+    p.asleep, p.nap = True, False          # a full sleep, NOT a nap
+    p._wake()
+    assert p.asleep is False
+    assert p.lights is True                # morning wake lit the room
+
+
 def test_a_lit_room_never_holds_the_doze(monkeypatch):
     monkeypatch.setattr("tuipet.petbody.random.randrange", lambda n: n // 2)
     p = _dozer()

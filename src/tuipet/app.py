@@ -133,11 +133,11 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE SEAFLOOR SCENES SIT TOGETHER NOW: the deep one used to "
-                 "alphabetise under \"D\", stranding it far from its siblings "
-                 "in the E scene picker. Renamed the trio Seafloor / Seafloor "
-                 "Deep / Seafloor Sunset so they line up in a row — same art, "
-                 "just findable.")
+    WHATS_NEW = ("NAPS NO LONGER FLIP THE LIGHTS ON: a pet dozing in a dark "
+                 "room used to wake, switch its own light on, then fall back "
+                 "asleep — quietly stacking lights-on care mistakes you never "
+                 "earned. A nap now leaves the switch where you set it; only a "
+                 "real morning wake lights the room.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

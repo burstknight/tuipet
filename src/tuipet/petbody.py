@@ -756,8 +756,16 @@ class BodyMixin:
         self.nap = False
         self.awake_lapse = 0.0
         self.sleep_limit = DAY_MINUTES - self.awake_limit
-        if not self.lights:
-            self.lights = True                      # wake: setLights(true)
+        # a MORNING wake lights the room (canon setLights(true)); a NAP wake
+        # must NOT.  A daytime doze the player dimmed would otherwise flip its
+        # own light on as the doze ends, and a still-tired pet that re-sleeps
+        # then racks a lights-on care mistake it never earned -- the exact
+        # wake -> lights-on -> re-sleep churn the recovery doze set out to kill
+        # (nap-lights bug 2026-07-24, Joel: "napping with lights out will wake
+        # up, turn lights on, then fall back asleep -- disastrous for care
+        # mistakes").  The player owns the switch during a nap, not the pet.
+        if not self.lights and not was_nap:
+            self.lights = True                      # morning wake: setLights(true)
         wake_anim = "wake"
         r = random.randrange(MORNING_MOOD_CHANCE)
         m = self.current_mood()
