@@ -133,11 +133,11 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("EVERY CARD READS TO THE LAST WORD: after the Options fix, "
-                 "the same chopping lurked on four more cards — the Scenes "
-                 "blurb, a toy's full effect in the Shop, the DigiCore note, "
-                 "and a battle's result line all got sliced mid-word. They now "
-                 "wrap on whole words, so nothing trails off into nothing.")
+    WHATS_NEW = ("TIDIER STATUS WORD: your pet could never actually read "
+                 "\"happy\" or \"unhappy\" — the mood meter left the game a "
+                 "while back, so those two labels were dead code that only a "
+                 "very old save could trip. Pruned them; a well-kept pet simply "
+                 "reads \"ok\".")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

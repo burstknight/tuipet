@@ -306,6 +306,18 @@ def test_injury_wears_a_badge_even_when_sick_owns_the_word():
     assert "hurt" not in " ".join(statusbox.care_deco(p))  # so the badge steps aside
 
 
+def test_the_vestigial_mood_words_are_gone():
+    """Mood left with the mood system (BASIC VPET 2026-07-16): _set_mood is a
+    no-op, so mood never moves off its init and the happy/unhappy status words
+    could only fire for a legacy save frozen at a pre-slim extreme.  Pruned
+    2026-07-24 (Joel "prune the vestigial happy/unhappy branches") -- the words
+    never return again, not even when mood is forced to an old extreme."""
+    p = _pet()
+    for m in (-999, -50, -1, 0, 100, 150, 999):
+        p.mood = m
+        assert p.status_word() not in ("happy", "unhappy"), m
+
+
 # ---- C9: meat's refusal gates show BEFORE the pick --------------------------
 
 class _CardW:

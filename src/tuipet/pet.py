@@ -1079,7 +1079,7 @@ class Pet(CareMixin, DnaMixin, BattleMixin, BodyMixin):
             return "starving"
         if self.poop >= 3:
             return "needs cleaning"
-        # an empty tank OUTRANKS the mood words (Joel 2026-07-23: "0 energy,
+        # an empty tank OUTRANKS the softer tells (Joel 2026-07-23: "0 energy,
         # status is ok instead of sleepy") -- same tier the HUD nag uses
         if self.energy <= 0:
             return "exhausted"
@@ -1087,8 +1087,10 @@ class Pet(CareMixin, DnaMixin, BattleMixin, BodyMixin):
         # left with the day/night system -- BASIC VPET 2026-07-17)
         if self._in_sleep_window() and not self.asleep and self.energy < self.max_energy // 2:
             return "sleepy"
-        if self.mood <= MIN_UNHAPPY_MOOD:
-            return "unhappy"
-        if self.mood >= MIN_HAPPY_MOOD:
-            return "happy"
+        # (the happy/unhappy words left with the MOOD system -- BASIC VPET
+        # 2026-07-16: _set_mood is a no-op, so mood never moves off its init
+        # value and MIN_UNHAPPY_MOOD (-1) / MIN_HAPPY_MOOD (150) were both
+        # unreachable -- the branches could only fire for a legacy save frozen
+        # at a pre-slim extreme.  Pruned 2026-07-24, Joel "prune the vestigial
+        # happy/unhappy branches"; a well-kept pet just reads "ok".)
         return "ok"
