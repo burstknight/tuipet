@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.233 — EVERY CARD READS TO THE LAST WORD (2026-07-24)
+
+EVERY CARD READS TO THE LAST WORD: after the Options fix, the same chopping lurked on four more cards — the Scenes blurb, a toy's full effect in the Shop, the DigiCore note, and a battle's result line all got sliced mid-word. They now wrap on whole words, so nothing trails off into nothing.
+
 ## 0.5.232 — NO MORE CHOPPED-OFF WORDS (2026-07-24)
 
 NO MORE CHOPPED-OFF WORDS: the Options card used to slice text at a hard character count — "auto-instal", "Restart now? ENT" — losing the end of the line. It now wraps on whole words, so the update prompt and every setting's blurb read to the last letter.
