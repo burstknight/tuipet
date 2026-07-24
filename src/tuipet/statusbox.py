@@ -327,11 +327,15 @@ def scenes(app):
     name = m._name(row)
     state = "picked" if row == app.pet.bg_pick else \
         ("the default" if not row and not app.pet.bg_pick else "a preview")
-    card(app, "Scenes", [f"[dim]{m.cursor + 1} of {len(m.rows)}[/]", "",
-                         "On the wall", f"  [b]{name[:24]}[/]",
-                         f"  [dim]{state}[/]", "",
-                         (m.msg or "")[:26],
-                         "[dim]↑↓ browse  ENTER hang[/]"])
+    # word-wrap the picker message (card audit 2026-07-24): "pick a scene —
+    # it hangs behind the mon" (38) and "Back to the egg's own scene." (28)
+    # were sliced at [:26], losing the tail.
+    sc_lines = [f"[dim]{m.cursor + 1} of {len(m.rows)}[/]", "",
+                "On the wall", f"  [b]{name[:24]}[/]",
+                f"  [dim]{state}[/]", ""]
+    sc_lines += wrap(m.msg or "", 2)
+    sc_lines.append("[dim]↑↓ browse  ENTER hang[/]")
+    card(app, "Scenes", sc_lines)
 
 
 def feed(app):
@@ -411,21 +415,24 @@ def shop(app):
                  "[dim]ENTER buys, then wears[/]"]
     else:
         have = p.inventory.get(e["key"], 0)
+        # word-wrap the effect blurb (card audit 2026-07-24): an effect_line
+        # runs to 51 chars ("ride! weight -2 · energy -1 — shred the living
+        # room") and a crest's answer list past 18 -- both were sliced flat.
         if str(e["key"]).startswith("egg_of_"):
             # the crest egg's LIVE answer (the same evolution.check the
             # item runs; shop polish 2026-07-17)
             names = shop_mod.crest_answer(p, e["key"])
-            eff = (f"[{T.POS}]answers: {' / '.join(names)[:18]}[/]" if names
-                   else "[dim]nothing answers it yet[/]")
+            eff = ([f"[{T.POS}]{ln}[/]" for ln in wrap("answers: " + " / ".join(names), 2)]
+                   if names else ["[dim]nothing answers it yet[/]"])
         else:
-            eff = f"[dim]{shop_mod.effect_line(e)[:26]}[/]"
+            eff = [f"[dim]{ln}[/]" for ln in wrap(shop_mod.effect_line(e), 3)]
         if m.mode == "shop":
             short = e["price"] - p.bits
             price = (f"Price   [{T.NEG}]{e['price']}b · short {short}[/]"
                      if short > 0 else f"Price   {e['price']}b")
         else:
             price = f"Sells   {shop_mod.resell_price(e)}b"
-        lines = [f"[b]{e['name'][:24]}[/]", eff, "",
+        lines = [f"[b]{e['name'][:24]}[/]", *eff, "",
                  price,
                  f"Owned   x{have}",
                  f"Bits    [b]{p.bits}b[/]", "",
@@ -462,14 +469,14 @@ def digicore(app):
     """DIGICORE: which data page is up, and whose core it is."""
     p, m = app.pet, app.mode
     page = m.pages[min(m.i, len(m.pages) - 1)][0]
-    card(app, "DigiCore", [
+    dc_lines = [
         f"[b]{p.name[:16]}[/]",
         f"[dim]{p.stage} · {p.attribute}[/]", "",
         f"Page   [b]{page[:18]}[/]",
-        f"[dim]{m.i + 1} of {len(m.pages)}[/]", "",
-        (m.note or "")[:26],
-        "[dim]←→ pages  SPACE core[/]"],
-        subtitle=gen_subtitle(p))
+        f"[dim]{m.i + 1} of {len(m.pages)}[/]", ""]
+    dc_lines += wrap(m.note or "", 2)          # note carries mode-change lines
+    dc_lines.append("[dim]←→ pages  SPACE core[/]")
+    card(app, "DigiCore", dc_lines, subtitle=gen_subtitle(p))
 
 
 def raid(app):
@@ -752,11 +759,14 @@ def battle(app):
         lines += [res, f"[dim]{(b.reward if b else '') or ''}"[:30] + "[/]",
                   "", "[dim]SPACE  continue[/]"]
     elif getattr(m, "phase", "") == "ready":
-        lines += [f"[dim]{(m.hud_note or '')[:26]}[/]", "",
-                  "[dim]SPACE  lock the bar[/]"]
+        # readiness_line is <=26, but the result-anim note ("a draw — counts
+        # as a loss · record 12W/30", ~40) also rides hud_note -- wrap so it
+        # is not sliced (card audit 2026-07-24).
+        lines += [f"[dim]{ln}[/]" for ln in wrap(m.hud_note or "", 2)]
+        lines += ["", "[dim]SPACE  lock the bar[/]"]
     else:
-        lines += [f"[dim]{(m.hud_note or '')[:24]}[/]", "",
-                  "[dim]SPACE skip · ESC end it[/]"]
+        lines += [f"[dim]{ln}[/]" for ln in wrap(m.hud_note or "", 2)]
+        lines += ["", "[dim]SPACE skip · ESC end it[/]"]
     app.stats_w.update("\n".join(lines))
 
 

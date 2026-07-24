@@ -133,11 +133,11 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("NO MORE CHOPPED-OFF WORDS: the Options card used to slice "
-                 "text at a hard character count — \"auto-instal\", \"Restart "
-                 "now? ENT\" — losing the end of the line. It now wraps on "
-                 "whole words, so the update prompt and every setting's blurb "
-                 "read to the last letter.")
+    WHATS_NEW = ("EVERY CARD READS TO THE LAST WORD: after the Options fix, "
+                 "the same chopping lurked on four more cards — the Scenes "
+                 "blurb, a toy's full effect in the Shop, the DigiCore note, "
+                 "and a battle's result line all got sliced mid-word. They now "
+                 "wrap on whole words, so nothing trails off into nothing.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

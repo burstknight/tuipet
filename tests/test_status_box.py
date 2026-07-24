@@ -101,3 +101,70 @@ def test_options_card_wraps_every_desc_and_the_update_msg():
         shown = re.sub(r"\[/?[^\[\]]*\]", "", app.stats_w.txt)
         for word in re.findall(r"[A-Za-z]+", _opts._DESC.get(row, "") + " " + longest):
             assert word in shown, f"{row}: lost the word {word!r}"
+
+
+# ---- card audit 2026-07-24 sweep: the OTHER cards that char-sliced msgs ----
+
+class _RenderApp:
+    def __init__(self, mode, pet):
+        self.mode, self.pet, self.stats_w = mode, pet, _FakeStats()
+
+
+def _no_words_lost(fake, tag, *sources):
+    shown = re.sub(r"\[/?[^\[\]]*\]", "", fake.txt)
+    for src in sources:
+        for word in re.findall(r"[A-Za-z0-9]+", src):
+            assert word in shown, f"{tag}: lost {word!r}"
+
+
+def test_scenes_card_wraps_its_picker_message():
+    from tuipet import statusbox
+    class _M:
+        rows, cursor = [0, 1], 1
+        msg = "pick a scene — it hangs behind the mon"    # 38 chars
+        def _name(self, r): return "Digimon Sovereign Throne"
+    p = _pet(); p.bg_pick = 0
+    app = _RenderApp(_M(), p)
+    statusbox.scenes(app)
+    _fits(app.stats_w, "scenes")
+    _no_words_lost(app.stats_w, "scenes", _M.msg)
+
+
+def test_shop_card_wraps_the_longest_effect_line():
+    from tuipet import statusbox, shop
+    # skateboard carries the 51-char effect_line
+    eff = shop.effect_line({"key": "skateboard"})
+    assert len(eff) > 26                                   # the audit premise
+    class _M:
+        mode, cursor = "shop", 0
+        def _rows(self):
+            return [{"key": "skateboard", "name": "Skateboard", "price": 800}]
+    p = _pet(); p.bits = 50
+    app = _RenderApp(_M(), p)
+    statusbox.shop(app)
+    _fits(app.stats_w, "shop")
+    _no_words_lost(app.stats_w, "shop", eff)
+
+
+def test_digicore_card_wraps_its_note():
+    from tuipet import statusbox
+    class _M:
+        pages, i = [("EvolutionState",), ("DATA",)], 0
+        note = "It rests now — press N for a new egg."      # 37 chars
+    app = _RenderApp(_M(), _pet())
+    statusbox.digicore(app)
+    _fits(app.stats_w, "digicore")
+    _no_words_lost(app.stats_w, "digicore", _M.note)
+
+
+def test_battle_card_wraps_the_result_note():
+    from tuipet import statusbox
+    class _M:
+        battle, enemy, raid = None, {"name": "MetalGreymon"}, False
+        hud_php, hud_fhp = 3, 4
+        locked, done_anim, won, phase = "mega", False, False, "fighting"
+        hud_note = "a draw — counts as a loss · record 12W/30"   # ~40 chars
+    app = _RenderApp(_M(), _pet())
+    statusbox.battle(app)
+    _fits(app.stats_w, "battle")
+    _no_words_lost(app.stats_w, "battle", _M.hud_note)
