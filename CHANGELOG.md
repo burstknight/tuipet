@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.234 — TIDIER STATUS WORD (2026-07-24)
+
+TIDIER STATUS WORD: your pet could never actually read "happy" or "unhappy" — the mood meter left the game a while back, so those two labels were dead code that only a very old save could trip. Pruned them; a well-kept pet simply reads "ok".
+
 ## 0.5.233 — EVERY CARD READS TO THE LAST WORD (2026-07-24)
 
 EVERY CARD READS TO THE LAST WORD: after the Options fix, the same chopping lurked on four more cards — the Scenes blurb, a toy's full effect in the Shop, the DigiCore note, and a battle's result line all got sliced mid-word. They now wrap on whole words, so nothing trails off into nothing.
