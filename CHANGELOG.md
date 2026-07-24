@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.235 — THE SEAFLOOR SCENES SIT TOGETHER NOW (2026-07-24)
+
+THE SEAFLOOR SCENES SIT TOGETHER NOW: the deep one used to alphabetise under "D", stranding it far from its siblings in the E scene picker. Renamed the trio Seafloor / Seafloor Deep / Seafloor Sunset so they line up in a row — same art, just findable.
+
 ## 0.5.234 — TIDIER STATUS WORD (2026-07-24)
 
 TIDIER STATUS WORD: your pet could never actually read "happy" or "unhappy" — the mood meter left the game a while back, so those two labels were dead code that only a very old save could trip. Pruned them; a well-kept pet simply reads "ok".
