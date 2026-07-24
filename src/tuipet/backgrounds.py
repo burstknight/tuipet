@@ -32,8 +32,8 @@ DEFAULT = "greenhills"          # the DM20 background rip; also the fallback
 #     "Sandy Seafloor" and grouped with the seafloors, but it has ZERO
 #     structural correlation with them.  It is its own shore.
 #   * the real seafloor is ONE undersea scene at three lightings:
-#     underwater=Seafloor (day), seafloor=Deep Seafloor, sunsetshore=Sunset
-#     Seafloor.  (The old catalog counted the beach as the third seafloor and
+#     underwater=Seafloor (day), seafloor=Seafloor Deep, sunsetshore=Seafloor
+#     Sunset.  (The old catalog counted the beach as the third seafloor and
 #     left the actual sunset seafloor named like a "shore" -- backwards.)
 #   * tealhollow is a SEPARATE teal-underwater V, not the green/golden path
 #     recolour (corr 0.40, not 1.00) -- kept apart from the tree-path pair.
@@ -60,9 +60,15 @@ NAMES = {
     # water -- the beach (a shore), the seafloor trio (one undersea scene,
     # day + deep + sunset), and the separate teal-underwater V
     "cove":         "Beach",
+    # the seafloor trio names its LIGHTING second ("Seafloor Deep/Sunset")
+    # like every other multi-lit scene here (City Sunset, Island Night) so
+    # the picker's A-Z-by-name sort keeps all three adjacent -- the old
+    # "Deep Seafloor"/"Sunset Seafloor" alphabetised under D and S, orphaning
+    # the deep one 17 rows from its siblings (picker grouping 2026-07-24,
+    # Joel "why is the deep sea background not with the other sea backgrounds").
     "underwater":   "Seafloor",
-    "seafloor":     "Deep Seafloor",
-    "sunsetshore":  "Sunset Seafloor",
+    "seafloor":     "Seafloor Deep",
+    "sunsetshore":  "Seafloor Sunset",
     "tealhollow":   "Teal Hollow",
     # fire & jungle
     "volcano":      "Volcano",

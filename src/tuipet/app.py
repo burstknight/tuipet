@@ -133,11 +133,11 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("TIDIER STATUS WORD: your pet could never actually read "
-                 "\"happy\" or \"unhappy\" — the mood meter left the game a "
-                 "while back, so those two labels were dead code that only a "
-                 "very old save could trip. Pruned them; a well-kept pet simply "
-                 "reads \"ok\".")
+    WHATS_NEW = ("THE SEAFLOOR SCENES SIT TOGETHER NOW: the deep one used to "
+                 "alphabetise under \"D\", stranding it far from its siblings "
+                 "in the E scene picker. Renamed the trio Seafloor / Seafloor "
+                 "Deep / Seafloor Sunset so they line up in a row — same art, "
+                 "just findable.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

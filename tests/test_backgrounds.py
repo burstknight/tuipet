@@ -46,7 +46,7 @@ def test_every_sheet_is_wired_or_allowlisted():
         "boulevard", "boulevardusk", "citysunset", "fileisland",
         "islandnight", "jungle", "seafloor",
         # sunsetshore: SEABED art (the warm band is sunlight through the
-        # water), named Sunset Seafloor -- pick-only
+        # water), named Seafloor Sunset -- pick-only
         "sunsetshore",
         # Frozen Peak (Tundra) lost its egg defaults when the four Sky lines
         # moved to Mountains -- Sky is warm & windy, not icy (scene audit
