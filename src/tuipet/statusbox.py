@@ -22,6 +22,7 @@ from . import egg as egg_mod
 from . import persistence
 from . import theme
 from .arena import bar, hearts
+from .petbase import DISOBEY_BELOW
 
 CARD_W = 26   # the card interior: #stats width 30 - round border 2 - padding 2
 #               (run-off sweep 2026-07-23: wider lines WRAP inside the box and
@@ -59,10 +60,25 @@ def care_deco(pet, word=None):
     deco = []
     if pet.asleep and word != "asleep": deco.append("[blue]Zzz[/]")
     if pet.sick and word != "sick": deco.append(f"[{T.NEG}]+sick[/]")
-    # (the +tired/+hurt/+med/+bnd/+vit badges left with the fatigue/injury
-    # and medicine-item systems; BASIC VPET 2026-07-16)
+    # +hurt RESTORED (badge audit 2026-07-24, Joel "see if we are missing any
+    # other badges"): injury came back with canon restoration but its badge
+    # did not.  status_word ranks sick/asleep/elderly ABOVE injured, so a
+    # sick+injured pet showed only "sick" -- the player pilled it and never
+    # learned it also needed a BANDAGE (a different cure that coexists with
+    # sickness by design).  Mirrors +sick: shown unless injured IS the word.
+    # (the +tired badge stays gone -- is_fatigued() is hardwired False; the
+    # +med/+bnd/+vit item badges stay gone with the medicine-ITEM system.)
+    if pet.is_injured() and word != "injured": deco.append(f"[{T.NEG}]+hurt[/]")
     if pet.is_frail(): deco.append(f"[{T.NEG}]+frail![/]")
     if pet.poop: deco.append(f"[{T.COIN}]~poop x{pet.poop}[/]")
+    # +rude (badge audit 2026-07-24): manners drives feed/train/battle
+    # refusals below DISOBEY_BELOW, but the gauge lives only on DigiCore --
+    # a pet "turns its nose up!" with no on-card reason.  This is the ONLY
+    # signal that a refusal is EARNED disobedience, not a bug.  Below the
+    # ailments/needs in priority: a hungry, defiant pet shows the hunger
+    # first.  Discipline (praise/scold/p) or a Textbook lifts it back.
+    if getattr(pet, "obedience", DISOBEY_BELOW) < DISOBEY_BELOW:
+        deco.append(f"[{T.CARE}]+rude[/]")
     # (the ✦care-effect badge left with the Futon's careEffect runtime;
     # strict-DSprite items 2026-07-17)
     # the standing buffs, visible at HOME (QOL 2026-07-23): satiety and

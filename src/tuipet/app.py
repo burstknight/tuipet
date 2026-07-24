@@ -133,11 +133,11 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE MUSIC PLAYER PLAYS MUSIC: using it now runs the "
-                 "musical note show — your pet bopping to the tune — "
-                 "instead of the splashy recreation animation it borrowed "
-                 "before. A small thing, but a waking song should sound "
-                 "like one.")
+    WHATS_NEW = ("TWO BADGES YOUR STATUS CARD WAS MISSING: a defiant pet now "
+                 "wears +rude, so a refused feed or battle reads as earned "
+                 "attitude, not a glitch — discipline it or crack a Textbook. "
+                 "And an injured pet wears +hurt even while it's also sick, so "
+                 "you know to reach for the bandage AND the pill.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

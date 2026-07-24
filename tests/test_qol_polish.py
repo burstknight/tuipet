@@ -269,6 +269,43 @@ def test_the_hired_assistant_wears_a_home_badge():
     assert "helper" not in " ".join(statusbox.care_deco(p))
 
 
+# ---- badge audit 2026-07-24: the two states that gate behaviour unshown -----
+
+def test_low_manners_wears_the_rude_badge():
+    """Manners drives feed/train/battle refusals below DISOBEY_BELOW, but the
+    gauge lives only on DigiCore -- a refusal read as a bug, not personality.
+    The +rude badge is the on-card tell that disobedience is EARNED.  Boundary
+    matches manners_refusal exactly: refusals need obedience STRICTLY below the
+    threshold, so the badge does too (at the line, a pet never refuses)."""
+    from tuipet import statusbox
+    from tuipet.petbase import DISOBEY_BELOW, MAX_OBEDIENCE
+    p = _pet()
+    p.obedience = DISOBEY_BELOW                 # at the line: never refuses
+    assert "rude" not in " ".join(statusbox.care_deco(p))
+    p.obedience = DISOBEY_BELOW - 1            # below it: refusals possible
+    assert "rude" in " ".join(statusbox.care_deco(p))
+    p.obedience = MAX_OBEDIENCE                 # well-raised: silent
+    assert "rude" not in " ".join(statusbox.care_deco(p))
+
+
+def test_injury_wears_a_badge_even_when_sick_owns_the_word():
+    """Injury came back with canon restoration but its +hurt badge did not.
+    status_word ranks sick ABOVE injured, so a sick AND injured pet showed only
+    'sick' -- and injury takes a BANDAGE, a different cure than the pill.  The
+    badge surfaces the second ailment, suppressing only when 'injured' already
+    IS the word (no redundancy, mirroring +sick)."""
+    from tuipet import statusbox
+    p = _pet()
+    assert "hurt" not in " ".join(statusbox.care_deco(p))
+    p.injured = True
+    p.sick = True                              # sick outranks injured in the word
+    assert p.status_word() == "sick"
+    assert "hurt" in " ".join(statusbox.care_deco(p))      # ...but +hurt still shows
+    p.sick = False                             # now 'injured' owns the word
+    assert p.status_word() == "injured"
+    assert "hurt" not in " ".join(statusbox.care_deco(p))  # so the badge steps aside
+
+
 # ---- C9: meat's refusal gates show BEFORE the pick --------------------------
 
 class _CardW:
