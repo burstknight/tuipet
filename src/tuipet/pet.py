@@ -628,8 +628,17 @@ class Pet(CareMixin, DnaMixin, BattleMixin, BodyMixin):
 
     @property
     def _poop_interval(self):
+        """The species' own bowel cadence, with its RANGE compressed (Joel
+        2026-07-25, option b -- see POOP_SPREAD_CAP).  The canon ratio
+        `poop_limit / poop_lapse` is kept as the ordering, but read as a
+        RATE relative to the modal species and then squeezed into
+        1x..POOP_SPREAD_CAP, so no pet poops 64 times a game-day."""
         r = self._phys()
-        return POOP_INTERVAL_BASE * (r.get("poop_limit", 64) / max(1, r.get("poop_lapse", 1))) / REF_POOP_RATIO
+        ratio = r.get("poop_limit", 64) / max(1, r.get("poop_lapse", 1))
+        raw = REF_POOP_RATIO / max(1e-9, ratio)          # x faster than modal
+        rate = 1.0 + (raw - 1.0) * (POOP_SPREAD_CAP - 1.0) \
+            / (POOP_SPREAD_RAW - 1.0)                    # noqa: F405
+        return POOP_INTERVAL_BASE / max(1.0, rate)
 
     @property
     def _strength_interval(self):

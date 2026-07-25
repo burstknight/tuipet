@@ -507,6 +507,7 @@ DEPRESSED_ENTH_CHANGE = -1              # DepressedEnthusiasmChange
 TO_DEPRESSED_ROLL_NEG = 10              # negativeMoodDepressedChance (mood <= -250)
 TO_DEPRESSED_ROLL_NORM = 1              # normalMoodDepressedChance
 POOP_MAX_PILES = 4                      # classic Digimon V-Pet max poops (DVPet's _filth[] is 6; Joel set 4 to match the real toy)
+POOP_SIZE_FITTING_MAX = 3               # biggest filth art that fits its 8-col slot (7x7 / 8x7 / 8x8); size 4 is 10 wide -- see _do_poop
 
 # DVPet calorie buffer (config.csv, PhysicalState.calorieChange / setCalories): a
 # -CalorieLimit..+CalorieLimit "fullness within the current hunger heart".  Each lapse
@@ -678,6 +679,30 @@ REF_POOP_RATIO = 64           # modal PoopLimit / PoopLapseInc
 # day the way the belly did.
 POOP_INTERVAL_BASE = DAY_MINUTES / 4          # 360: four piles a game-day
 STRENGTH_DECAY_BASE = DAY_MINUTES / 3         # 480: the gauge empties in ~1.3 days
+
+# ⭐ THE SPECIES SPREAD IS COMPRESSED (Joel 2026-07-25, option b: "keep the
+# multiplier but compress its range" -- his report, "is th mon supposed to
+# be pooping during sleep?").  The line above tunes the MODAL species, and
+# the retune that set it verified "four piles a game-day" against exactly
+# that species -- but the interval is `BASE * (poop_limit/poop_lapse) /
+# REF_POOP_RATIO`, and the roster's lapse runs 1 / 2 / 8 / 16:
+#
+#     lapse  1 -> 1358 species ->  4 piles/game-day   (the number we tuned)
+#     lapse  2 ->    7 species ->  8
+#     lapse  8 ->  116 species -> 32
+#     lapse 16 ->  116 species -> 64      <- a pile every 22 game-minutes
+#
+# So 232 species (14.5%) were left pooping 32-64 times a day.  That also
+# defeated the SLEEP rule: canon holds the gauge at night and lets only a
+# DESPERATE 2x gauge go, which for the modal pet is 12 game-hours (it never
+# fires in a 10-hour night, measured) -- but at a 22-minute interval the
+# threshold falls inside the night and a sleeper goes repeatedly.
+#
+# The canon multiplier is KEPT, because it is species character; its RANGE
+# is compressed so the fastest species poops at most twice as often as the
+# slowest, instead of sixteen times.  Ordering is preserved throughout.
+POOP_SPREAD_RAW = 16          # the roster's real fastest-vs-modal rate ratio
+POOP_SPREAD_CAP = 2           # ...compressed to this: at most ~8 piles a day
 
 # DVPet discipline (config.csv, PhysicalState.praise / scold / checkPraiseScoldWindow).
 # The pet flags a praise window after a good deed and a scold window after a bad one;

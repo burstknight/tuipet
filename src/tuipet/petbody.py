@@ -746,7 +746,19 @@ class BodyMixin:
         self._set_weight(max(base, self.weight - wdec))
         size = self._poop_size()
         if backlog:
-            size = min(4, size + 1)
+            # ⭐ THE BACKLOG PILE STOPS AT THE BIGGEST ART THAT FITS (Joel
+            # 2026-07-25: "fix ... size 4 too").  The filth slots are built
+            # to Joel's layout law -- "4 poops == 16x16, and the mon NEVER
+            # walks over them" -- and the arenafx table says so outright:
+            # the extracted sizes 1-3 (7x7 / 8x7 / 8x8) "fit the slot
+            # natively", size 4 is 10 wide against an 8-wide slot.  It was
+            # reached ONLY here, and the renderer's safety then squashed it
+            # with fit_w, which distorts a real rip into a shape no device
+            # ever drew.  Widening the slot would break the 16x16 law, and
+            # rescaling ripped art is off the table -- so the upgrade stops
+            # at 3.  The size-4 rip stays in the data, unused, exactly as
+            # arenafx already assumed it was.
+            size = min(POOP_SIZE_FITTING_MAX, size + 1)   # noqa: F405
             self._set_weight(max(base, self.weight - math.ceil(wdec / 2)))
         self._add_filth(size)                    # capped; a full room upgrades a smaller pile
 

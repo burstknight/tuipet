@@ -237,7 +237,17 @@ def _effect_overlay(pet, frame_i, cols, px_h, tick=0):
     deco = _holiday_decor()
     if deco:
         pts += _blit(deco, grid.X0, grid.TOP)
-    if pet.poop:                                          # sized piles in the slot grid
+    # sized piles in the slot grid -- BUT NOT IN THE DARK (Joel 2026-07-25:
+    # "is the poop supposed to be visible during lights off?").  It was:
+    # the lights-off branch blanks the PET rows and let the overlay through,
+    # so the piles (flies and all) sat lit on a field that is meant to be
+    # DVPet's fully-opaque lightsOff -- the same cover that makes a
+    # dark-room fx "show NOTHING".  The sick skull already reads the switch
+    # this way (`_sick_mark_up`: sick AND `pet.lights`), and the Zzz below
+    # is deliberately the ONE mark that survives the blackout.  The piles
+    # do not vanish, they are unlit: flip the lights and they are all still
+    # there, waiting to be cleaned.
+    if pet.poop and pet.lights:
         pts += _filth_pts(pet, tick, px_h=px_h)
     if pet.num == -1:
         return pts
