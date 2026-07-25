@@ -133,16 +133,16 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("MESSES AND MUSCLES KEEP UP WITH THE BELLY: after "
-                 "yesterday's hunger fix your pet still only pooped every "
-                 "TWO in-game days and took eight to run its effort gauge "
-                 "down, so cleaning and training were formalities. Both "
-                 "now run on the same clock as feeding — about four "
-                 "messes and three drills a day. Fixing that exposed one "
-                 "more thing: every poop shed weight with no floor, so a "
-                 "perfectly-fed pet was quietly wasting away to the "
-                 "skinniest it could be, and fighting at the worst "
-                 "possible odds. It sits at its proper weight now.")
+    WHATS_NEW = ("YOUR PET NO LONGER SLEEPS THROUGH ITS OWN RAID: the "
+                 "raid board was the one fight door in the game that "
+                 "didn't check whether your pet was asleep, so a volley "
+                 "could be thrown by a pet that never woke up for it. "
+                 "Now it wakes first, like the battle key, both cups, "
+                 "training and adventure always have — press again to "
+                 "fight. (A stranger's lobby invite still never touches "
+                 "a sleeping pet; that one's deliberate.) Waking your "
+                 "pet has never been a care mistake, and still isn't — "
+                 "but it does change who it grows into.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

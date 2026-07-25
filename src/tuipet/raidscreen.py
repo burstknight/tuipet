@@ -208,6 +208,21 @@ class RaidPanel(menu.SubHost):
                 self.msg = "No attempts left today."
                 self.sfx = "error"
                 return None
+            # THE SLEEPER ANSWERS FIRST (sleep audit 2026-07-25, S1).  The
+            # gate below took the BODY half of the house rule and left the
+            # SLEEP half behind: measured, a sleeping pet threw a full raid
+            # volley with `asleep=True, disturb=0` -- the only fight door in
+            # the game that neither woke it nor refused.  A volley is a
+            # player POKE, so it costs what every sibling poke costs: the
+            # home key (can_battle), both cups (can_enter), training,
+            # adventure and the care menu all wake the sleeper, bill the
+            # disturb and refuse THIS press.  (The lobby is the deliberate
+            # opposite -- it refuses without touching the pet, because a
+            # STRANGER's invite is not the player's finger.)
+            if self.pet.asleep:
+                self.msg = self.pet._disturbed()
+                self.sfx = "error"
+                return None
             # THE DEVICE'S GATE (battle audit ruling 2026-07-25, Joel: "as
             # close to bandai vpet as much as possible"): a volley is a
             # fight you CHOOSE, so the body answers first -- exactly as the
