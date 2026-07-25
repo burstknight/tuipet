@@ -920,7 +920,11 @@ class BodyMixin:
         if getattr(self, "away", False):
             return                                   # no home idles on the road
         m = self.current_mood()
-        if m in ("Unhappy", "Depressed"):
+        # ("Depressed" was never a current_mood() word -- the derived tiers are
+        # Happy/Neutral/Unhappy only, and the sticky depressed STATE never
+        # feeds the word -- so the old two-word check carried a dead arm
+        # (audit 2026-07-25))
+        if m == "Unhappy":
             # THE SULK COMES FIRST, UNGATED (pose audit 2026-07-25, Joel:
             # "ive yet to see an angry pose to this day on anything. see a
             # lot of happy poses").  It carried three gates a fuming pet
@@ -933,9 +937,9 @@ class BodyMixin:
             # 0/day, starving-but-trained 0/day.  A pet that feels bad
             # SHOWS it; the gates below stay on the JOY family, which is
             # what they were written for.
-            # (it wears the depressed gloom-cloud emote -- the discouraged
-            # show, Joel 2026-07-23; "angry" is the same pose pair but
-            # stays the disturb grumble, emote-free)
+            # (it wears the SMOKE emote -- `unhappy`, the discouraged show,
+            # Joel 2026-07-23/25; "angry" is the same pose pair but stays
+            # the disturb grumble, emote-free)
             self._set_anim("tantrum", 2.0)
             return
         # the personality idles: rested + spirited gates for the JOY family
