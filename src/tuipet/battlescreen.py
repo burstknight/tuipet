@@ -199,7 +199,7 @@ def _full(frame):
 
 class BattlePanel:
     def __init__(self, pet, enemy=None, wild=False, scene=None, rounds=None,
-                 raid=False):
+                 raid=False, skip_intro=False):
         from .battle import ROUNDS_LOCAL
         self.pet = pet
         self.raid = raid              # a RaidBout replay: boss bar holds, dealt counts
@@ -243,6 +243,17 @@ class BattlePanel:
         from . import battle as battle_mod
         self._pick = enemy if enemy is not None else battle_mod.pick_enemy(pet)
         self.foe_attr = self._pick.get("attribute", "Free")
+        # skip_intro (cup double-intro fix 2026-07-24): the tournament already
+        # walked both fighters in and held "FIGHT!" -- replaying the banner +
+        # foe reveal here was a redundant third "here they are" beat.  Start on
+        # the timing bar instead: _render_ready draws only the bar (no mon
+        # placements), so nothing depends on the reveal having run, and the
+        # fighters reappear for the strike anim after the lock.
+        if skip_intro:
+            self.phase = "ready"
+            self.timeline = []
+            self._ready_frame = 0
+            self.sfx = None                # the cup owns the entrance sting
 
     @property
     def enemy(self):

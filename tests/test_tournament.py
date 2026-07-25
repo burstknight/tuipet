@@ -365,7 +365,9 @@ def test_mid_bracket_contracts():
     assert pan3.sub is not None
     for _ in range(3):
         pan3.anim()
-    pan3.key("escape")                          # skip the intro -> the timing bar
+    # skip_intro (double-intro fix 2026-07-24): the walk-in WAS the entrance,
+    # so the fight opens STRAIGHT on the timing bar -- no battle banner/reveal
+    # left to skip through (a single ESC now backs out).
     assert pan3.sub.phase == "ready"
     pan3.key("escape")                          # back out before the bell
     # H6 (gameplay audit 2026-07-19, supersedes the 2026-07-06 pin): ESC at
@@ -379,8 +381,7 @@ def test_mid_bracket_contracts():
     for _ in range(INTRO_OPP_T + INTRO_PET_T + INTRO_HOLD_T + 1):
         pan3.anim()                             # the re-entry replays the intro
     assert pan3.sub is not None
-    pan3.key("escape")                          # intro -> the timing bar
-    assert pan3.sub.phase == "ready"
+    assert pan3.sub.phase == "ready"            # straight to the bar again
     pan3.key("escape")                          # back out a second time
     assert pan3.sub is None and not pan3.tourney.over
     assert pan3.key("escape")[0] == "done"      # the tree ESC: the REAL forfeit

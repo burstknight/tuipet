@@ -246,3 +246,20 @@ def test_the_board_crowns_the_cups_you_hold():
     tid = next(t for t in sched if t >= 0)
     p.trophies_won = {tid: "day 1"}
     assert "♛" in pan.text().plain                          # the crown on the board
+
+
+def test_the_parade_sweep_clears_both_screen_edges():
+    """Parade fix 2026-07-24 (Joel "just appears to the right, and disappears
+    when it hits the left"): the advancing winner enters from OFF-SCREEN right
+    (x >= X1) and exits past OFF-SCREEN left (x + w <= X0), the window clipping
+    the partial sprite -- not the old roam_bounds sweep (X1-w -> X0) that popped
+    it in at the right INTERIOR edge and vanished it at the left.  Guards the
+    endpoints against a regression back to the interior bounds."""
+    from tuipet import grid
+    from tuipet.tournamentscreen import NPC_T
+    for w in (12, 16, 20):                         # a few sprite widths
+        span = grid.X0 - w - grid.X1
+        x_first = round(grid.X1 + span * (0 / max(1, NPC_T - 1)))
+        x_last = round(grid.X1 + span * ((NPC_T - 1) / max(1, NPC_T - 1)))
+        assert x_first >= grid.X1                   # starts fully off the RIGHT
+        assert x_last + w <= grid.X0                # ends fully off the LEFT

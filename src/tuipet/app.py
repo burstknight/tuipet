@@ -133,11 +133,11 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE ROAD KEYS NOW SPELL THEMSELVES OUT: the adventure strip "
-                 "cycles its hints — the bare SPACE/T/ESC set, then one "
-                 "labelled key at a time (SPACE walk · T warp · ESC home) — so "
-                 "you learn what each does without crowding the packed line. "
-                 "T (warp) only shows when you're carrying a transport.")
+    WHATS_NEW = ("CUP FIGHTS OPEN CLEAN NOW: the match no longer stands both "
+                 "mons in the ring, then walks them BACK in, then flashes a "
+                 "third banner — it's one entrance: the walk-in, straight into "
+                 "the fight. And the advancing-field parade actually strides "
+                 "on- and off-screen instead of blinking in and out at the edges.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

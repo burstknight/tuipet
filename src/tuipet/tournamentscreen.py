@@ -73,7 +73,11 @@ class TournamentPanel(menu.SubHost):
             self._intro["t"] += 1
             if self._intro["t"] >= INTRO_OPP_T + INTRO_PET_T + INTRO_HOLD_T:
                 self._intro = None             # the bell: the fight opens itself
-                self.sub = BattlePanel(self.pet, self.tourney.current_opponent())
+                # skip_intro: the walk-in WAS the entrance -- the fight opens
+                # straight on the timing bar, no redundant banner/reveal
+                # (cup double-intro fix 2026-07-24).
+                self.sub = BattlePanel(self.pet, self.tourney.current_opponent(),
+                                       skip_intro=True)
             return
 
     def strip(self):
@@ -294,11 +298,18 @@ class TournamentPanel(menu.SubHost):
         wi = data.ROLES["walk"][(t // 3) % 2]
         rows = grid.prep((fr[wi] if wi < len(fr) else None) or fr[0],
                          ph=FIGHT_ROWS * 2)
-        lo, hi = grid.roam_bounds(grid.width(rows))
-        x = round(hi + (lo - hi) * (t / max(1, NPC_T - 1)))
+        # walk the winner clean ACROSS: in from off-screen right (X1) and out
+        # past off-screen left (X0-w), the window clipping the partial sprite
+        # at each edge -- the old roam_bounds sweep (X1-w -> X0) popped it in at
+        # the right interior edge and vanished it at the left, never walking
+        # off (parade fix 2026-07-24, Joel "just appears to the right, and
+        # disappears when it hits the left").  Mirrors the intro's own walk-in.
+        w = grid.width(rows)
+        x = round(grid.X1 + (grid.X0 - w - grid.X1) * (t / max(1, NPC_T - 1)))
         bgimg = self.pet.background(file="tourneyBack")
         scene = render_scene([(rows, x, False)], COLS, FIGHT_ROWS,
-                             menu.scene_ink(bgimg), LCD_BG, bgimg=bgimg)
+                             menu.scene_ink(bgimg), LCD_BG, bgimg=bgimg,
+                             clip=grid.WINDOW)
         out = menu.bar(self.tourney.name, "ADVANCING")
         out.append_text(scene)
         nm = (self.tourney.results[i]
@@ -456,11 +467,12 @@ class TournamentPanel(menu.SubHost):
             out.append_text(menu.note(t.last, tick=self.frame_i))
             out.append_text(menu.footer("ESC leave"))
             return out
+        # the DECISION page holds the EMPTY arena (double-intro fix 2026-07-24,
+        # Joel "shows both mons, then another where both enter"): the fighters
+        # aren't pre-placed here, so the SPACE walk-in is their real first
+        # entrance instead of a re-entrance after they were already standing.
         opp = t.current_opponent()
-        pet_rows = self._frames(self.pet.num)
-        opp_rows = self._frames(opp["num"])
-        scene = render_scene(grid.faceoff(pet_rows, opp_rows, left_mirror=True, right_mirror=False, ph=FIGHT_ROWS * 2),
-                             COLS, FIGHT_ROWS, on, LCD_BG, bgimg=bgimg)
+        scene = render_scene([], COLS, FIGHT_ROWS, on, LCD_BG, bgimg=bgimg)
         out = menu.bar(t.name, "%s %d/3" % (t.round_name, t.round + 1))
         out.append_text(scene)
         out.append("\nvs %s[%s]   your ★%d\n" % (opp["name"], opp["attribute"][:2], self.pet.trophies), style=INK)
