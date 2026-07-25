@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.262 — THE EGG AUDIT (2026-07-25)
+
+THE EGG AUDIT: re-rolling an unhatched egg no longer counts as a whole generation — it used to pump your generation number (and everything gen-gated) without a single life lived, grade the EGG's 'care' over your departed partner's real record, and destroy the etched Digimemory with the discarded shell. A re-roll now keeps the generation and carries the full inheritance to the new egg. Also: town vendors no longer sell the five lineage eggs (descendant/X-Antibody/devotion eggs) — those hatch only for the generation that earns them, exactly as their unlock stories say.
+
 ## 0.5.261 — SOME MONS WERE POOPING 64 TIMES A DAY (2026-07-25)
 
 SOME MONS WERE POOPING 64 TIMES A DAY: yesterday's retune set the pace on the average species, but a seventh of the roster runs on a much faster bowel clock and ended up dropping a pile every 22 minutes — including all night, which is why your sleeping mon kept soiling its bed. Species still differ, but the fastest now tops out at twice the slowest instead of sixteen times. Two more from the same report: filth no longer glows through a dark room (it's still there when you flip the lights), and the biggest pile stops at the largest sprite that actually fits its slot, so no more squashed art.
