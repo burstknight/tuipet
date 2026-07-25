@@ -268,9 +268,15 @@ class BattlePanel:
             from .battle import RaidBout
             self.battle = RaidBout(self.pet, self._pick)
         else:
-            self.battle = Battle(self.pet, self._pick, rounds=self._rounds,
-                                 source="pvp" if self.arena and not self.wild
-                                 and self._pick.get("pvp") else "battle")
+            # (the `source="pvp" if ... self._pick.get("pvp")` selector was
+            # CUT 2026-07-25 on Joel's order, battle audit §5: nothing has
+            # ever set a `pvp` key on an enemy dict, so the test could not
+            # be true.  A lobby duel never reaches this line at all -- the
+            # lobby builds a BattlePanel as a presentation-only REPLAY
+            # (phase "anim", its own timeline, keys intercepted upstream)
+            # and files the bout itself with record_battle(online=True).
+            # Every fight that DOES lock this bar is a local one.)
+            self.battle = Battle(self.pet, self._pick, rounds=self._rounds)
         self.hud_php, self.hud_fhp = self.battle.pet_hp, self.battle.enemy_hp
         self._next_round()
 

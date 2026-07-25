@@ -159,10 +159,19 @@ road and keeps the ambush carve-out that the energy grammar depends on.
   keeps its 1:1).  The DigiCore row was renamed **Drills → Training** the
   same hour: a row named for one of its two sources is a row that lies
   about the other (the liveness law).
-- **`BattlePanel`'s `source="pvp"` branch is dormant**: no enemy dict ever
-  carries a `pvp` key, because the lobby drives its panel as a
-  presentation-only replay and records the bout itself.  Harmless, and
-  removals need a named order.
+- ~~**`BattlePanel`'s `source="pvp"` branch is dormant**~~ → **CUT
+  v0.5.248** on Joel's named order.  Nothing has ever set a `pvp` key on an
+  enemy dict, so the test could not be true; a lobby duel never reaches
+  that line at all (the lobby builds the panel as a presentation-only
+  REPLAY and files its own bout with `record_battle(online=True)`).  Every
+  fight born at the timing bar is local, and a pin now says so.
+
+  **Kept on purpose:** `Battle`'s own `source` parameter and
+  `record_battle`'s, because they carry a live guarantee rather than dead
+  wiring — `test_pvp_megas_are_not_farmable` uses them to prove two
+  colluding tamers cannot trade Mega "wins" into the KO6 counter.  What was
+  dead was the panel GUESSING at a duel from a dict key; the engine's
+  ability to be told is real.
 - ~~**The pre-fight readiness line builds its own foe**~~ → FIXED
   v0.5.246: it reads `enemy["side"]` first, exactly as `Battle` does, so
   the card and the fight can never describe two different creatures (a cup
@@ -179,3 +188,6 @@ road and keeps the ambush carve-out that the energy grammar depends on.
   pins; suite 1989 → 2001.
 - **v0.5.247** — a bout trains on BOTH clocks (§5's first item, flipped by
   Joel), and the DigiCore row renamed to Training.  Suite 2001 → 2003.
+- **v0.5.248** — the panel's dead PvP selector cut (§5's second item).
+  Suite 2003 → 2004.  **§5 is now empty: every item the audit named is
+  ruled, flipped or cut.**

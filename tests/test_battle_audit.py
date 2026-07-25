@@ -394,3 +394,27 @@ def test_the_drill_still_feeds_both_at_its_own_rate():
     p = _pet()
     p.train_result(True)
     assert p.total_trainings == 1 and p.stage_trainings == 1
+
+
+def test_the_panel_never_builds_a_PVP_fight():
+    """CUT 2026-07-25 (Joel: "cut the pvp branch").  The panel used to try
+    to detect a duel from a `pvp` key on the enemy dict -- a key nothing
+    has ever set.  A lobby duel does not reach the panel's fight path at
+    all: the lobby builds the panel as a presentation-only REPLAY and files
+    its own bout.  So every fight born at this bar is LOCAL, and the engine
+    records it as one."""
+    import inspect
+    from tuipet import battlescreen
+    src = inspect.getsource(battlescreen.BattlePanel._start_fight)
+    body = "\n".join(ln for ln in src.splitlines()
+                     if not ln.lstrip().startswith("#"))
+    assert "pvp" not in body, "the dead PvP selector is back"
+    pan = BattlePanel(_pet(), dict(ENEMY))
+    for _ in range(400):
+        pan.anim()
+        if pan.phase == "ready":
+            for _ in range(LOCK_ARM_T + 1):
+                pan.anim()
+            pan.key("space")
+            break
+    assert pan.battle.source == "battle"
