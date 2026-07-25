@@ -157,7 +157,11 @@ def test_every_town_keeps_one_standing_guest_good():
         e = shop.entry(k)
         assert e["category"] != "Adventure"          # the gate holds
         assert local == shop.CATALOG[k][2]           # flat catalog price
-        assert shop._town_rows(tid)[-1][1] == k      # stable across calls
+        # stable across calls (this read `[-1]` until the item sweep
+        # 2026-07-24 appended the gated ROAD SHELF after the guest row --
+        # the guest's IDENTITY is what must not move, not its index)
+        assert [k2 for s2, k2, _o2, _p2 in shop._town_rows(tid)
+                if str(s2).startswith("guest:")] == [k]
         guests[tid] = k
     # the collision-free deal (item diversity audit 2026-07-23): the old
     # per-town crc32 pick served 8 items to 2-3 towns each and made towns

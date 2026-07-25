@@ -133,11 +133,17 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("CUP FIGHTS OPEN CLEAN NOW: the match no longer stands both "
-                 "mons in the ring, then walks them BACK in, then flashes a "
-                 "third banner — it's one entrance: the walk-in, straight into "
-                 "the fight. And the advancing-field parade actually strides "
-                 "on- and off-screen instead of blinking in and out at the edges.")
+    WHATS_NEW = ("THE ITEM SWEEP, AUDITED END TO END: every good walked from "
+                 "the shelf to the belly. A felled raid boss now names your "
+                 "prizes properly (\"Energy Drink\", not \"energy_drink\"). "
+                 "Town counters finally honour the map-clear gate the home "
+                 "shop always did — and they carry the whole road shelf, so "
+                 "Life Recovery is buyable somewhere at last. The GROW CAPSULE "
+                 "was quietly worth a whole stage (and could drop an elder "
+                 "into the frailty window); it now does the +120min it says. "
+                 "The home daily deal is rationed like a town's, so it can't "
+                 "be flipped for endless bits. And a Caffeine Pill that would "
+                 "do nothing is refused instead of spent.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

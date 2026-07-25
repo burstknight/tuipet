@@ -160,6 +160,12 @@ class Pet(CareMixin, DnaMixin, BattleMixin, BodyMixin):
     _ac_pay: float = 0.0            # the assistant's hourly retainer accumulator
     _dp_t: float = 0.0              # sleep DP-refill accumulator
     _exercise_day: int = -1         # daily exercise counter's day stamp
+    # the FIFTH that escaped it (item sweep 2026-07-24): the bedtime grace
+    # clock -- a disturb's postpone AND the whole effect of a 300b Caffeine
+    # Pill, which for a line pet (every hatch) rides this and nothing else.
+    # Held as a bare instance attribute, it evaporated on the next load, so
+    # the pill you bought was refunded to the void by a quit.
+    _bed_postpone_t: float = 0.0    # bedtime grace: disturb postpone / caffeine
     free_style: bool = False        # _isFree: Battle Style toggle (Free vs Orders)
     gift: str = ""                  # pending gift-call present (consumable key; "" = none)
     # the DSprite item timers (BASIC VPET 2026-07-16, cloned from v0.4.x):

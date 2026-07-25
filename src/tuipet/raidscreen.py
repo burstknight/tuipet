@@ -14,7 +14,7 @@ board archives and pays on claim — and a felled boss is a Mega down: the
 claim counts KO6 and the raids egg-unlock channel.
 """
 from __future__ import annotations
-from . import data, grid, persistence
+from . import data, grid, persistence, shop
 from .battlescreen import BattlePanel
 from .render import render_scene
 
@@ -134,9 +134,15 @@ class RaidPanel(menu.SubHost):
             self.pet.mega_kills += 1
             persistence.mega_kills_add(1)
             persistence.raid_add()
-            cat = data.load_vitems()
-            names = ", ".join(cat.get(k, {}).get("name", k) for k in got) \
-                if got else ""
+            # the prize names come from shop.entry -- THE resolver for a
+            # catalog key (item sweep 2026-07-24).  This read vitems.json,
+            # which since the TUIPET catalog (2026-07-18) holds only the
+            # Digimentals plus the RETIRED consumable rows: the reward line
+            # for the game's biggest moment printed "Energy.D" (a name that
+            # left the shelf) and raw keys -- "Rank 1: 12000b + Energy.D,
+            # vitamin, dna_crystal".
+            names = ", ".join((shop.entry(k) or {}).get("name", k)
+                              for k in got) if got else ""
             self.msg = f"{reward.get('boss', 'The boss')} fell! " \
                        f"Rank {reward.get('rank', '?')}: {bits}b" \
                        + (f" + {names}" if names else "")

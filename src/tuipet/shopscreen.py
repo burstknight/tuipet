@@ -71,7 +71,7 @@ _HONOR_PLATE = ["╭" + "─" * (menu.IC_W - 2) + "╮",
 # where you left off, per session: the HOME shop/bag reopen on the last
 # (tab, cursor) instead of Food/row 0 every restock run (QOL 2026-07-23).
 # Session-only by design -- a fresh launch starts fresh.
-_LAST_POS = {}
+_LAST_POS: dict[str, tuple[int, int]] = {}
 
 
 class ShopPanel:
@@ -98,6 +98,10 @@ class ShopPanel:
         self._retarget = False          # the stack under the cursor just
         #                                 emptied: eat ONE act-press so a
         #                                 mash can't hit the neighbor
+        self._deal_guard = None         # the row whose DEAL ration just ran
+        #                                 out under the cursor: the same
+        #                                 one-press guard, so a mashed ENTER
+        #                                 can't pay full price by accident
         self.frame_i = 0
         self.sfx = None
         self.msg = ""                   # transient footer flash (last verdict)
@@ -216,8 +220,8 @@ class ShopPanel:
                     [e for e in shop.town_stock(self.town, pet=self.pet)
                      if e["category"] in cats], name, cats)
             return self._grouped(
-                [e for e in shop.home_stock() if e["category"] in cats],
-                name, cats)
+                [e for e in shop.home_stock(pet=self.pet)
+                 if e["category"] in cats], name, cats)
         out = []
         for k, n in self.pet.inventory.items():
             e = shop.entry(k)
@@ -290,6 +294,14 @@ class ShopPanel:
         self.sfx = "error" if refused else "confirm"   # a kept item is a NO
         return None
 
+    def _arm_deal_guard(self, key):
+        """A deal purchase just landed: if that was the LAST cut-price copy,
+        arm the one-press guard (the bag's `_retarget` grammar) so the next
+        ENTER on the same row can't quietly pay full price."""
+        if any(r.get("key") == key and r.get("deal") for r in self._rows()):
+            return                        # copies left: the deal still stands
+        self._deal_guard = key
+
     def _remember_pos(self):
         """Session memory: the HOME shop/bag reopen where you left off."""
         if self.town is None and not self.bag_only:
@@ -345,15 +357,32 @@ class ShopPanel:
             if self._is_header(e):        # a sub-header is a label, not a buy
                 return None
             if self.mode == "shop":
+                if (self._deal_guard is not None
+                        and self._deal_guard == e.get("key")
+                        and not e.get("deal")):
+                    # the bargain went with the last press, but the row
+                    # still sells at FULL price -- say which before a
+                    # mash spends four times the bits it meant to
+                    self._deal_guard = None
+                    self._flash("deal's gone — ENTER again for %db"
+                                % e["price"])
+                    self.sfx = "cancel"
+                    return None
                 if e.get("title_id") is not None:
                     msg, self.sfx = self._buy_title(e)
                     self._flash(msg)
                 elif e.get("egg_idx") is not None:
                     msg, self.sfx = shop.town_egg_buy(self.pet, e["egg_idx"])
                     self._flash(msg)
-                elif self.town is not None:
+                elif self.town is not None or e.get("deal"):
+                    # a DEAL row is rationed wherever it stands: the town
+                    # counter always was, and the home deal joined it
+                    # (item sweep 2026-07-24) -- one buy path for both,
+                    # so the ledger is written exactly once
                     msg, self.sfx = shop.town_buy(self.pet, e)
                     self._flash(msg)
+                    if e.get("deal") and self.sfx == "confirm":
+                        self._arm_deal_guard(e["key"])
                 else:
                     msg, self.sfx = shop.buy(self.pet, e)
                     self._flash(msg)
@@ -442,10 +471,14 @@ class ShopPanel:
             held = self.pet.inventory.get(key, 0)
             short = sel["price"] - self.pet.bits
             price = "%db" % sel["price"]
-            if self.town is not None and sel.get("left", 1) <= 0:
+            if sel.get("left", 1) <= 0:
                 price += " · sold out today"
             elif sel.get("deal"):
                 price += " · DEAL! (was %db)" % sel.get("base_price", 0)
+            elif sel.get("deal_spent"):
+                # the home deal's ration went; the shelf stays open at
+                # full price, and the card says which it is
+                price += " · deal gone today"
             elif held:
                 price += " · hold x%d" % held
             elif short > 0:

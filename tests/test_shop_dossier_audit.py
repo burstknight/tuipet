@@ -89,7 +89,9 @@ def test_growth_shelf_matches_its_blurbs():
     p = _pet()
     s0 = p.stage_seconds
     _use(p, "grow_capsule")
-    assert p.stage_seconds - s0 == 7200.0                     # "+120min", real
+    # "+120min" in the clock the growth gate actually reads -- GAME-minutes
+    # (item sweep 2026-07-24; 7200 was the whole stage and then some)
+    assert p.stage_seconds - s0 == 120.0
     p = _pet()
     _use(p, "anti_evo_chip")
     assert p.evo_blocked

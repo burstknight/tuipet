@@ -323,18 +323,24 @@ def test_legacy_bags_migrate_one_to_one():
 
 def test_timed_items_deliver_the_hours_on_the_label():
     """The words won (Joel 2026-07-19, round 17): steak = 12 REAL hours of
-    satiety, potty = 24 REAL hours of auto-clean, grow capsule = 120 REAL
-    minutes of growth.  The old tick-denominated values delivered 1/60th
-    while the labels promised hours -- the eat card's own countdown
-    contradicted the steak message live."""
+    satiety, potty = 24 REAL hours of auto-clean.  The old tick-denominated
+    values delivered 1/60th while the labels promised hours -- the eat
+    card's own countdown contradicted the steak message live.  Both of
+    those ride `world_seconds`, a wall clock, and both STAND as ruled.
+
+    ⚠ THE CAPSULE LEFT THIS TEST (item sweep 2026-07-24).  Its label is a
+    growth number, and the growth clock is not a wall clock: stages run
+    180/360/1440/2160/2880 GAME-minutes, so the 7200 that pass read as
+    "120 real minutes" was 2.5x the longest stage -- one 500b bottle
+    filled any stage's growth gate outright AND vaulted past
+    LATE_STAGE_WINDOW into the Pen20 frailty death.  No reading of
+    "+120min" describes that, so the ruling's own goal (the label tells
+    the truth) is what moved the number.  Pinned in test_items_sweep."""
     p = _pet()
     p.add_item("steak"); p.use_item("steak")
     assert p.full_until - p.world_seconds == 12 * 3600.0
     p.add_item("port_potty"); p.use_item("port_potty")
     assert p.auto_clean_until - p.world_seconds == 24 * 3600.0
-    s0 = p.stage_seconds
-    p.add_item("grow_capsule"); p.use_item("grow_capsule")
-    assert p.stage_seconds - s0 == 7200.0
 
 
 def test_short_icons_anchor_to_the_baseline_not_the_ceiling():

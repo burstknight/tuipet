@@ -169,7 +169,12 @@ _TOUCHES = {
     "vitamin": ("strength", "vitamin_lapse"),
     "miracle_drink": ("care_mistakes", "energy"),
     "sleeping_pill": ("asleep", "lights", "nap"),
-    "caffeine_pill": ("sleep_lapse",),     # or the _bed_postpone_t grace channel
+    # BOTH channels, because it really does use both (item sweep
+    # 2026-07-24: a line pet -- every hatch -- pushes bedtime through the
+    # grace clock, and only a pressure pet moves sleep_lapse.  Declaring
+    # one and moving the other is exactly the drift `touches` exists to
+    # catch, and the behavioural pin now catches it.)
+    "caffeine_pill": ("sleep_lapse", "_bed_postpone_t"),
     "music_player": ("asleep", "lights", "nap", "awake_lapse"),
     "textbook": ("obedience",),
     "port_potty": ("poop", "poop_sizes", "auto_clean_until"),
@@ -287,7 +292,7 @@ def adventure_open(key, prog=None):
 # authored by data id, but the bag/use system speaks CATALOG keys (the same
 # "the bag could neither show nor use" trap the i:32 heal fixed) -- so found
 # loot maps back through this to a real, usable entry.
-_BY_ICON = {}
+_BY_ICON: dict[str, str] = {}
 for _k, _v in CATALOG.items():
     _BY_ICON.setdefault(_v.icon, _k)
 
@@ -760,13 +765,48 @@ def _guest_deal():
 def _town_rows(town_id):
     """The full town shelf: authored base + regional specialty + the
     standing guest good (gameplay polish #24; re-dealt collision-free in
-    the item diversity audit 2026-07-23)."""
+    the item diversity audit 2026-07-23) + THE ROAD SHELF.
+
+    The road shelf (item sweep 2026-07-24): a town counter carries every
+    Adventure item, not just the two the authored overrides happen to
+    name.  `shopConsumable.csv` stocks i:29/i:30 (the two transports) in
+    all 26 towns and has no row for i:27, so Life Recovery -- the road
+    tool you most need WHILE ON THE ROAD -- was the one buyable good no
+    counter in the world sold.  The guest slot could never fix it: its
+    pool excludes Adventure precisely because the map-clear gate has to
+    hold, and a guest row is ungated.
+
+    These rows are the shelf's IDENTITY, gate or no gate.  What a tamer
+    may actually buy today is `_open_rows`."""
     rows = _base_rows(town_id)
     gk = _guest_deal().get(town_id)
     if gk:
         rows.append((f"guest:{town_id}", gk, _econ_stub(gk),
                      CATALOG[gk].price))
+    have = {k for _sid, k, _o, _p in rows}
+    for k, v in CATALOG.items():
+        if v.category == "Adventure" and k not in have:
+            rows.append((f"road:{town_id}:{k}", k, _econ_stub(k), v.price))
     return rows
+
+
+def _open_rows(town_id, prog=None):
+    """The town shelf a tamer can actually SHOP today: `_town_rows` minus
+    anything whose earned-access gate is still shut.
+
+    THE GATE HELD IN EXACTLY ONE SHOP (item sweep 2026-07-24).  The road
+    shelf unlocks by CLEARING MAPS -- `catalog()` has honoured that since
+    v0.5.114, so the home shop hides a locked transport.  Town counters
+    never asked: town 0 sits on map 1's FIRST leg, and it sold Town
+    Transport and Disaster Transport to a tamer who had cleared nothing.
+    An earned-access rule that any starting town sells around is not a
+    rule.  (Read fresh each call rather than cached: `_guest_deal`'s
+    lru_cache reads `_base_rows`, which stays progress-free, so no cache
+    can freeze a tamer's progress into a town's shelf.)"""
+    if prog is None:
+        from . import persistence
+        prog = persistence.get_progress()
+    return [r for r in _town_rows(town_id) if adventure_open(r[1], prog)]
 
 
 def _deal_index(seed, count, today=None):
@@ -801,11 +841,15 @@ def _deal_index(seed, count, today=None):
 _DEAL_LOOKBACK = 32          # days walked to stabilise the dedup chain
 
 
-def town_deal_sid(town_id, today=None):
+def town_deal_sid(town_id, today=None, prog=None):
     """The town's ONE rotating daily deal: seeded on (town, day) -- stable
     all day, different tomorrow, different next town, and never the same as
-    yesterday (dedup 2026-07-24)."""
-    rows = _town_rows(town_id)
+    yesterday (dedup 2026-07-24).
+
+    Dealt over the OPEN rows only: a deal on a row the tamer can't see is
+    no deal at all (the v0.5.164 lesson -- the deal rolled onto the
+    invisible Adventure shelf about half of all days)."""
+    rows = _open_rows(town_id, prog)
     if not rows:
         return None
     return rows[_deal_index(town_id, len(rows), today)][0]
@@ -832,18 +876,45 @@ def home_deal_key(today=None):
     return pool[i] if i is not None else None
 
 
-def home_stock(today=None):
-    """The home shelf as ready entries, with the day's deal marked and
-    discounted.  Same entry shape as catalog(), plus `deal`/`base_price`
-    on the one bargain row -- so the shelf renders the ▾ + cut price with
-    no extra UI, exactly like a town counter."""
+HOME_SHOP_ID = "home"        # the deal ledger's pseudo-town (see home_stock)
+
+
+def home_stock(today=None, pet=None):
+    """The home shelf as ready entries, with the day's deal marked,
+    discounted and STOCK-LIMITED.  Same entry shape as catalog(), plus
+    `deal`/`base_price`/`left` on the one bargain row -- so the shelf
+    renders the ▾, the cut price and the sold-out note with no extra UI,
+    exactly like a town counter.
+
+    THE DEAL IS RATIONED (item sweep 2026-07-24).  Every price in the
+    town economy was built so a flip lands at-or-below water, and the
+    ones that don't are bounded by TOWN_DAILY_CAP -- "the daily cap is
+    what makes the demand resale a treat instead of a printer".  The home
+    deal (v0.5.225) arrived after that and skipped the bound: it sells at
+    HALF catalog while any town that doesn't stock the good pays
+    TOWN_DEMAND 70%, so buy-here-sell-there cleared +20% of catalog PER
+    UNIT with nothing to buy but bits -- +1,600b a copy on Omni Chip G
+    day, unbounded.  The deal now carries the same tier ration a town
+    row does: rare and legendary go one a day, commons three.  The rest
+    of the home shelf stays deliberately unlimited -- home is the
+    reliable counter, and at full price it is always a loss to flip.
+
+    A SPENT RATION IS NOT A SHUT DOOR: once the day's cut-price copies are
+    gone the row goes back to FULL price and stays buyable without limit,
+    because home is the shelf that is always open.  Only the discount runs
+    out."""
     deal = home_deal_key(today)
+    taken = _town_taken(pet, today) if pet is not None else {}
     out = []
     for e in catalog():
         if e["key"] == deal:
             base = e["price"]
-            e = dict(e, deal=True, base_price=base,
-                     price=max(1, base // HOME_DEAL_FACTOR))
+            left = max(0, tier_stock(e["key"])
+                       - int(taken.get(f"{HOME_SHOP_ID}:{e['key']}", 0)))
+            e = (dict(e, deal=True, base_price=base, left=left,
+                      town_id=HOME_SHOP_ID,
+                      price=max(1, base // HOME_DEAL_FACTOR)) if left > 0
+                 else dict(e, deal_spent=True))
         out.append(e)
     return out
 
@@ -870,12 +941,13 @@ def town_stock(town_id, today=None, pet=None):
     minus the day's take (the anti-pump: town prices are DVPet's own,
     far under the catalog -- the daily cap is what makes the demand
     resale a treat instead of a printer)."""
-    from . import adventure
-    deal = town_deal_sid(town_id, today)
+    from . import adventure, persistence
+    prog = persistence.get_progress()
+    deal = town_deal_sid(town_id, today, prog)
     fest = bool(adventure.active_holiday(today))
     taken = _town_taken(pet, today) if pet is not None else {}
     out = []
-    for sid, k, o, local in _town_rows(town_id):
+    for sid, k, o, local in _open_rows(town_id, prog):
         e = entry(k)
         if not e:
             continue

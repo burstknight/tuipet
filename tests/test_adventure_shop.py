@@ -129,13 +129,66 @@ def test_the_unlocked_road_shelf_renders_on_the_items_tab(monkeypatch):
     assert "Items" in txt
 
 
-def test_the_town_counter_sells_its_authored_transports():
+def test_the_town_counter_sells_its_authored_transports(monkeypatch):
+    """SUPERSEDED-IN-PLACE (item sweep 2026-07-24): this used to pass with
+    NO progress patched, which is exactly the leak it now guards against --
+    town 0 sits on map 1's first leg and sold both warps to a tamer who had
+    cleared nothing.  The counter still carries them; it carries them once
+    they are EARNED."""
+    from tuipet import persistence
     from tuipet.shopscreen import ShopPanel
+    monkeypatch.setattr(persistence, "get_progress", lambda: {"maps": {0, 1}})
     pan = ShopPanel(_pet(), town_id=0)         # authored SID1/SID2 = the warps
     pan.tab = pan._tabs().index("Items")
     keys = {e["key"] for e in pan._rows() if not e.get("header")}
     assert {"town_transport", "disaster_transport"} <= keys
     pan.text()                                 # render walk
+
+
+def test_a_town_counter_honours_the_map_clear_gate(monkeypatch):
+    """THE GATE HELD IN EXACTLY ONE SHOP.  `catalog()` has hidden a locked
+    road item since v0.5.114, but no town shelf ever asked -- so the
+    earned-access rule could be walked around at the first town on the
+    road."""
+    from tuipet import persistence, shop as shop_mod
+    monkeypatch.setattr(persistence, "get_progress", lambda: {"maps": set()})
+    locked = {e["key"] for e in shop_mod.town_stock(0)}
+    assert not ({"town_transport", "disaster_transport", "life_recovery"}
+                & locked)
+    monkeypatch.setattr(persistence, "get_progress", lambda: {"maps": {0}})
+    one = {e["key"] for e in shop_mod.town_stock(0)}
+    assert {"town_transport", "disaster_transport"} <= one   # 1 map: the warps
+    assert "life_recovery" not in one                        # still needs 2
+    monkeypatch.setattr(persistence, "get_progress", lambda: {"maps": {0, 1}})
+    assert "life_recovery" in {e["key"] for e in shop_mod.town_stock(0)}
+
+
+def test_the_daily_deal_never_lands_on_a_locked_row(monkeypatch):
+    """The v0.5.164 lesson, re-pinned: a deal the tamer cannot see is no
+    deal.  The road rows exist on every shelf now, so the deal must be
+    dealt over the OPEN ones."""
+    from tuipet import persistence, shop as shop_mod
+    monkeypatch.setattr(persistence, "get_progress", lambda: {"maps": set()})
+    for tid in sorted(shop_mod._town_maps()):
+        sid = shop_mod.town_deal_sid(tid)
+        shown = {e["key"] for e in shop_mod.town_stock(tid) if e["deal"]}
+        on_shelf = {k for s, k, _o, _p in shop_mod._open_rows(tid) if s == sid}
+        assert on_shelf, f"town {tid} deals a row it does not show"
+        assert on_shelf <= shown or not shown
+
+
+def test_every_town_carries_the_whole_road_shelf_once_earned(monkeypatch):
+    """Life Recovery was the ONE buyable good no shop in the world sold:
+    `shopConsumable.csv` authors i:29/i:30 and has no row for i:27, and the
+    guest slot can never fill the gap (its pool excludes Adventure so the
+    gate holds).  The road shelf is the road's own tools -- a counter ON
+    the road carries all three."""
+    from tuipet import persistence, shop as shop_mod
+    monkeypatch.setattr(persistence, "get_progress", lambda: {"maps": {0, 1}})
+    road = {k for k, v in shop_mod.CATALOG.items() if v.category == "Adventure"}
+    for tid in sorted(shop_mod._town_maps()):
+        keys = {e["key"] for e in shop_mod.town_stock(tid)}
+        assert road <= keys, f"town {tid} is missing {sorted(road - keys)}"
 
 
 def test_a_held_road_item_shows_in_the_bag():

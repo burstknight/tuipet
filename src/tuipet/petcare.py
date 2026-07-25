@@ -567,15 +567,26 @@ class CareMixin:
         clock the pet ACTUALLY sleeps by.  Line pets (every hatch) read the
         wall-clock window, not sleep_lapse -- the old pressure-only nudge
         made this a paid no-op for them (gameplay audit 2026-07-19); their
-        push rides the same grace channel a disturb uses."""
+        push rides the same grace channel a disturb uses.
+
+        THE NO-OP DOSE IS REFUSED (item sweep 2026-07-24).  Both branches
+        could spend a 300b pill and move nothing -- a second pill while the
+        grace already holds that push, or a pressure pet whose sleep_lapse
+        is still 0 (nowhere near bedtime) -- while saying "Wide awake for a
+        while yet."  Every care sibling refuses at full instead ("Energy is
+        already full", "already a model pupil"); this was the outlier."""
         if self.asleep:
             return _Refused("Too late - it's already down.")
         if self._in_sleep_window() is not None:
             bt = lines_mod.bedtime_minutes(self)
             night = (self.WAKE_MINUTE - bt) % DAY_MINUTES
-            self._bed_postpone_t = max(getattr(self, "_bed_postpone_t", 0.0),
-                                       night * 0.25)
+            push = night * 0.25
+            if getattr(self, "_bed_postpone_t", 0.0) >= push:
+                return _Refused("Bedtime's already pushed back.")  # noqa: F405
+            self._bed_postpone_t = push
         else:
+            if self.sleep_lapse <= 0:
+                return _Refused("It's nowhere near bedtime.")      # noqa: F405
             self.sleep_lapse = max(0.0, self.sleep_lapse - self.sleep_limit * 0.25)
         return "Wide awake for a while yet."
 
@@ -772,10 +783,20 @@ class CareMixin:
         return "Rise and shine!"
 
     def _time_gear(self):
-        # +120 REAL minutes (Joel 2026-07-19, "tune them up to match the
-        # words"): the old +120 ticks was 2 real minutes -- a 500b bottle
-        # of nearly nothing.  7200 ticks is the 2 hours the label sells.
-        self.stage_seconds += 7200.0
+        """The Grow Capsule: +120 GAME-minutes on the growth clock, the
+        number its own label sells ("growth +120min").
+
+        ⚠ THE UNIT LAW (item sweep 2026-07-24).  The 2026-07-19 pass read
+        "+120min" as 120 REAL minutes and set 7200 -- but dt is
+        game-minutes 1:1, so 7200 was 7200 GAME-minutes against stage
+        clocks of 180/360/1440/2160/2880.  One 500b capsule filled ANY
+        stage's growth gate outright (2.5x the longest stage), and it
+        also vaulted stage_seconds past LATE_STAGE_WINDOW (2880), arming
+        the Pen20 frailty death an Ultimate/Mega meets at 5 care
+        mistakes -- a killer the shelf sold as a nudge.  Same 60x family
+        as the vitamin guard (P0a).  The label was right; the number
+        wasn't."""
+        self.stage_seconds += 120.0
         return "Time lurches forward."
 
     def _anti_evo(self):
