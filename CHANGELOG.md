@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.247 — FIGHTING MAKES YOU SHARPER FOR LIFE NOW (2026-07-25)
+
+FIGHTING MAKES YOU SHARPER FOR LIFE NOW: a bout has always paid +2 training, but only onto this stage's counter — the LIFETIME total, which is the bigger of the two terms deciding whether your pet lands a hit, sat still no matter how much it fought. Every battle now feeds both, so a fighter's whole career counts, not just its current form. The DigiCore row that tracks it is called Training now, because drills are no longer the only thing that fills it.
+
 ## 0.5.246 — A HURT PET NO LONGER GETS MARCHED INTO A BOSS (2026-07-25)
 
 A HURT PET NO LONGER GETS MARCHED INTO A BOSS: the device's own battle check — too hurt, too sick, too hungry, too drained, clean up first — now answers wherever YOU choose the fight, which means the road's boss gate and raid volleys too, not just the home key and the cups. Your pet stands at the gate wearing the reason, and ESC home or a town warp always get it out. A wayside ambush is the one exception: you can't decline a pounce.
