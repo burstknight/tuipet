@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./tools/deploy.sh *)",
+      "Bash(/home/joeltco/projects/tuipet/tools/deploy.sh *)"
+    ]
+  }
+}
