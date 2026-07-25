@@ -170,6 +170,33 @@ its first drift — the Caffeine Pill declared `sleep_lapse` and, for every
 line pet in the game, moves `_bed_postpone_t` instead.  Both are declared
 now.
 
+### The last gap closed — the shelf's NUMBERS (v0.5.243)
+
+Joel: "no need for a refactor?"  The structure needed none — P1-P6 landed
+the named record, the one grouping, the single show/name/buy sources, and
+the sweep proved they hold.  Of the old scoping board's candidates, P-A /
+P-D / P-F are closed, P-E is closed in shipped code (`FOOD_KEYS` has zero
+live consumers left; it survives only in two tests), and P-B (the dispatch
+dict rebuilt per call) is cosmetic at one keypress per use.
+
+**P-C was the one that was still open**, and it needed a pin, not a
+rewrite.  `touches` proves WHICH meter moves; the dossier prose promises
+HOW FAR, and only 10 of the 29 numeric claims were checked anywhere — so
+`_snack(weight=-1)` edited to `-2` left the Vegetable's card lying with the
+whole suite green.
+
+`test_the_shelf_text_promises_the_number_the_handler_delivers` now READS
+the claim out of the shelf text and measures it against the handler, all
+29 at once.  Two properties matter:
+
+* an unmeasured number FAILS rather than passing vacuously -- a new item
+  cannot bring an unchecked claim onto the shelf;
+* mutation-tested both ways before shipping: `weight=-1` → `-2` fails the
+  Vegetable, and a fabricated "· vim +3" on the Tuna fails the guard.
+
+No drift existed — every one of the 29 was already honest.  The pin is
+what keeps it that way.
+
 ## 4. LOOKED AT, LEFT ALONE (deliberate, not oversights)
 
 - **Poison Mushroom is a zone signature.**  The TOWN rule bans it from

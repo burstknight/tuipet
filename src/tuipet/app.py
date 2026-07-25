@@ -133,15 +133,15 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE GROW CAPSULE IS WORTH ITS PRICE: it now takes a "
-                 "QUARTER of your pet's current stage off the growth clock "
-                 "— 6 minutes of a Rookie's wait, more of an Ultimate's — "
-                 "instead of a flat couple of minutes that meant nothing at "
-                 "the big stages. It hurries the wait but never ends it: the "
-                 "push always stops just short of the evolution itself, so a "
-                 "pocketful can't skip a stage (or shove an elder into the "
-                 "frail window). A final form, with no growth left to hurry, "
-                 "politely refuses.")
+    WHATS_NEW = ("EVERY NUMBER ON A SHOP CARD IS NOW CHECKED AGAINST THE "
+                 "PET: when a card says \"hunger +1 · weight -1\", something "
+                 "measures it. All 29 of the shop's numeric promises — every "
+                 "food, toy, chip, the satiety hours, the DNA bank — are read "
+                 "off the card and tested against what the item actually does "
+                 "to your pet, and a good can no longer reach the shelf "
+                 "carrying a number nothing checks. Nothing changed in how "
+                 "the items behave: they were all telling the truth. Now they "
+                 "have to keep telling it.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

@@ -274,6 +274,95 @@ def test_declared_touches_match_what_the_handler_actually_moves(key):
     assert not extra, f"{key} moves undeclared {sorted(extra)}"
 
 
+# ---- the last gap: the shelf's NUMBERS, not just its stats ----------------
+#
+# `touches` proves WHICH meter an item moves.  The dossier prose promises HOW
+# FAR ("hunger +1 · weight -1"), and that half was hand-maintained with only
+# 10 of the 29 numeric claims spot-checked anywhere -- so `_snack(weight=-1)`
+# edited to -2 left the Vegetable's card lying with the whole suite green.
+# This reads the claim out of the shelf text and measures it.
+#
+# The METER MAP is the only hand-written part, and it is guarded: any digit
+# in an effect string that no rule below claims FAILS the test rather than
+# passing vacuously, so a new item cannot bring an unchecked number with it.
+_METERS = {
+    "hunger": "hunger",
+    "energy": "energy",
+    "weight": "weight",
+    "training": "stage_trainings",
+    "obedience": "obedience",
+    "vaccine power": "vaccine",
+    "data power": "data_power",
+    "virus power": "virus",
+}
+_HOURS = {"satiety": "full_until", "auto-clean": "auto_clean_until"}
+
+
+def _claims(effect):
+    """(field -> delta, leftovers) read out of a shelf blurb."""
+    import re
+    want, rest = {}, effect
+    for phrase, field in _METERS.items():                    # "weight -1"
+        for m in re.finditer(rf"{phrase}\s*([+-]\d+)", rest, re.I):
+            want[field] = want.get(field, 0) + int(m.group(1))
+        rest = re.sub(rf"{phrase}\s*[+-]\d+", "", rest, flags=re.I)
+    for m in re.finditer(r"all three powers\s*([+-]\d+)", rest, re.I):
+        for f in ("vaccine", "data_power", "virus"):         # the Omni chip
+            want[f] = want.get(f, 0) + int(m.group(1))
+    rest = re.sub(r"all three powers\s*[+-]\d+", "", rest, flags=re.I)
+    for word, field in _HOURS.items():                       # "12h satiety"
+        for m in re.finditer(rf"(\d+)h[^·]*{word}|{word}[^·]*?(\d+)h",
+                             rest, re.I):
+            want[field] = int(m.group(1) or m.group(2)) * 3600
+        rest = re.sub(rf"(\d+)h[^·]*{word}|{word}[^·]*?(\d+)h", "", rest,
+                      flags=re.I)
+    m = re.search(r"([+-]\d+)\s*own-Field DNA", rest, re.I)  # the DNA Crystal
+    if m:
+        want["dna_owned"] = int(m.group(1))
+        rest = re.sub(r"[+-]\d+\s*own-Field DNA", "", rest, flags=re.I)
+    return want, rest
+
+
+_NUMERIC = sorted(k for k, v in shop.CATALOG.items()
+                  if any(c.isdigit() for c in v.effect))
+
+
+@pytest.mark.parametrize("key", _NUMERIC)
+def test_the_shelf_text_promises_the_number_the_handler_delivers(key):
+    v = shop.CATALOG[key]
+    want, leftovers = _claims(v.effect)
+    assert not any(c.isdigit() for c in leftovers), (
+        f"{key}: the blurb claims {leftovers.strip()!r} and no rule in "
+        f"_METERS/_HOURS measures it -- teach this test the claim, don't "
+        f"let an unchecked number onto the shelf")
+    assert want, key
+
+    p = _pet()
+    p.hunger, p.energy = 1, 0
+    # AT the species base: _set_weight clamps to base +- round(base * 0.75),
+    # so an inflated start silently eats a gain against the ceiling (that
+    # cost this test five false failures before the fixture was right)
+    p.weight = p._base_weight()
+    p.care_mistakes, p.poop, p.poop_sizes = 3, 2, [1, 1]
+    p.obedience, p.strength = 50, 0
+    p.dna_owned = {}
+    before = {f: (dict(getattr(p, f)) if f == "dna_owned" else getattr(p, f))
+              for f in want}
+    p.add_item(key)
+    out = p.use_item(key)
+    assert not isinstance(out, _Refused), f"{key} refused: {out}"
+    for field, delta in want.items():
+        if field == "dna_owned":
+            got = p.dna_owned.get(p.field, 0) - before[field].get(p.field, 0)
+        elif field in _HOURS.values():
+            got = getattr(p, field) - p.world_seconds     # a wall-clock stamp
+        else:
+            got = getattr(p, field) - before[field]
+        assert got == delta, (
+            f"{key}: the shelf says {field} {delta:+}, the handler moved it "
+            f"{got:+} — the card and the belly disagree")
+
+
 def test_every_item_is_consumed_exactly_once_on_a_landing_use():
     """The other half of the refusal law: a use that LANDS spends one, a
     use that refuses spends none (consume-on-refusal burned Rev.Floppies
