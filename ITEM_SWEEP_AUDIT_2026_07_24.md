@@ -175,9 +175,12 @@ now.
 Joel: "no need for a refactor?"  The structure needed none — P1-P6 landed
 the named record, the one grouping, the single show/name/buy sources, and
 the sweep proved they hold.  Of the old scoping board's candidates, P-A /
-P-D / P-F are closed, P-E is closed in shipped code (`FOOD_KEYS` has zero
-live consumers left; it survives only in two tests), and P-B (the dispatch
-dict rebuilt per call) is cosmetic at one keypress per use.
+P-D / P-F are closed, **P-E is now closed outright** — `FOOD_KEYS` had zero
+live consumers and was CUT on Joel's named order 2026-07-25, so
+`item_is_eaten` is the single answer to "is this eaten" (the category set
+said no to all six food-sheet consumables, which is precisely the
+disagreement P-E named); a pin fails if the rival set ever returns.  P-B
+(the dispatch dict rebuilt per call) is cosmetic at one keypress per use.
 
 **P-C was the one that was still open**, and it needed a pin, not a
 rewrite.  `touches` proves WHICH meter moves; the dossier prose promises

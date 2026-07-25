@@ -217,8 +217,12 @@ def test_every_food_sheet_item_is_eaten():
     for k in ("vitamin", "energy_drink", "slim_drink", "sleeping_pill",
               "caffeine_pill", "anti_evo_chip"):
         assert shop.item_is_eaten(k), k
-    for k in shop.FOOD_KEYS:
-        assert shop.item_is_eaten(k), k
+    # every actual FOOD still eats (read off the record, not off a second
+    # derived set -- FOOD_KEYS was cut 2026-07-25 as the rival answer to
+    # this very question)
+    for k, v in shop.CATALOG.items():
+        if v.category == "Food":
+            assert shop.item_is_eaten(k), k
 
 
 def test_an_item_is_never_both_eaten_and_scripted():

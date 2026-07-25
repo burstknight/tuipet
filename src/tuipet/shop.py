@@ -306,9 +306,14 @@ EFFECTS = {k: v.effect for k, v in CATALOG.items()}
 ICON_KEYS = {k: v.icon for k, v in CATALOG.items()}
 FLAVORS = {k: v.flavor for k, v in CATALOG.items()}   # the dossier taglines
 
-# foods ride the EAT fx on their DVPet strip; toys ride their canon itemfx
-# script (the AnimationType painters shipped since the DVPet era)
-FOOD_KEYS = frozenset(k for k, v in CATALOG.items() if v.category == "Food")
+# (FOOD_KEYS -- the Food-category set -- CUT 2026-07-25 on Joel's order.
+# It was the SECOND answer to "is this eaten", and the item-show audit
+# 2026-07-23 already settled that question on the SHEET: item_is_eaten
+# reads the `f:` prefix, which is why the six food-sheet consumables --
+# both drinks, both pills, the vitamin, the anti-evo chip -- eat like the
+# pill instead of flashing text.  The category set said NO to all six, so
+# the two never agreed; it had no live consumer left by the item sweep.
+# Do not reintroduce a second is-it-eaten test.)
 # Items whose use has its OWN door and must never be hijacked by a
 # generic item show: the memory chip's inherit flow, the two road
 # transports and the road's Life Recovery (all spent on the march), and

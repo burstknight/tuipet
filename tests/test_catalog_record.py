@@ -110,8 +110,10 @@ def test_derived_views_agree_with_the_record():
         assert shop.EFFECTS[key] == v.effect, key
         assert shop.ICON_KEYS[key] == v.icon, key
         assert shop.FLAVORS[key] == v.flavor, key
-    assert shop.FOOD_KEYS == frozenset(
-        k for k, v in shop.CATALOG.items() if v.category == "Food")
+    # (the FOOD_KEYS leg went with the view itself, cut 2026-07-25: the
+    # SHEET answers "is this eaten", and a category set that disagreed with
+    # it for all six food-sheet consumables is exactly what P-E named.)
+    assert not hasattr(shop, "FOOD_KEYS"), "the rival is-it-eaten set is back"
 
 
 @pytest.mark.parametrize("key", sorted(shop.CATALOG))

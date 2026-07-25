@@ -274,10 +274,12 @@ class ShopPanel:
             # the bag CLOSES and the item is EATEN on the LCD through its
             # own DVPet strip -- the eat fx the feed menu rides (TUIPET
             # catalog 2026-07-18; the _after_shop route was waiting for
-            # this).  Gated on the SHEET now, not FOOD_KEYS (item-show
-            # audit 2026-07-23): the food-sheet CONSUMABLES -- both
-            # drinks, both pills, the vitamin, the anti-evo chip -- are
-            # eaten too, and used to flash bare text over ripped art.
+            # this).  Gated on the SHEET (item-show audit 2026-07-23), not
+            # on the Food CATEGORY as it once was: the food-sheet
+            # CONSUMABLES -- both drinks, both pills, the vitamin, the
+            # anti-evo chip -- are eaten too, and used to flash bare text
+            # over ripped art.  (That rival category set, shop.FOOD_KEYS,
+            # was cut 2026-07-25; item_is_eaten is the one answer.)
             return ("done", ("eat", shop.ICON_KEYS.get(key, "f:0"), out))
         if not refused and (_sc := shop.item_script(key)):
             # the item's SHOW: its CANON itemfx script on the main LCD
