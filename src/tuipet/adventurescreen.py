@@ -471,7 +471,11 @@ class AdventurePanel(menu.SubHost):
         the gate is a stop you choose to walk into, so it asks.  Refused,
         the pet STANDS at the gate -- ESC home and a town warp both still
         work, so this can never strand a run."""
-        if (cond := self.pet.battle_condition()) is not None:
+        # check_energy=False: the road's energy law is its own (D3, the
+        # adventure energy audit) -- a march ARRIVES drained by design, so
+        # asking the home door's energy clause here shut the gate on every
+        # honest run.  The body states still hold; see battle_condition.
+        if (cond := self.pet.battle_condition(check_energy=False)) is not None:
             self.travelling = False
             self._at_gate = True
             self._fighting_enemy = boss

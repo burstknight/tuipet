@@ -133,14 +133,15 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("ONE WAY TO SAY \"ONLINE\": the fight code had two "
-                 "different ways to mark a duel as an online one, and only "
-                 "ever used a single one of them — the other was a spare "
-                 "spelling waiting to disagree with the first. The spare "
-                 "is gone. The rule it guarded is untouched and still "
-                 "tested: a duel never feeds your Mega-kill count, your "
-                 "record or your evolution gates, no matter who you fight "
-                 "or how often.")
+    WHATS_NEW = ("THE ROAD'S BOSS IS REACHABLE AGAIN — SORRY: yesterday's "
+                 "\"a hurt pet can't be marched into a boss\" fix brought "
+                 "the HOME battle rules with it, including \"too drained "
+                 "to fight\" — and a march is SUPPOSED to arrive drained. "
+                 "The gate was refusing every honest run. Out on the road "
+                 "an empty tank is a penalty you fight through, never a "
+                 "locked door; that was the rule before and it is the rule "
+                 "again. Hurt, sick, starving or filthy still stops you at "
+                 "the gate, because those are the device's own.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

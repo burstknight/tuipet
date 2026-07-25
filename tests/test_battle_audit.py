@@ -428,3 +428,48 @@ def test_the_panel_never_builds_a_PVP_fight():
             break
         b.play_round()
     assert p.battles == before + 1            # it recorded as local
+
+
+# ---- the road's OWN energy law (adventure audit 2026-07-25) ---------------
+#
+# The v0.5.246 ruling handed the road the HOME door's condition gate whole,
+# energy clause included -- and a march arrives drained BY DESIGN (40 legs
+# = 10 energy, ~8 wilds = 5 each).  Measured after the fact: 86 of 86
+# simulated arrivals were under BATTLE_MIN_ENERGY, so the gate boss became
+# unreachable in an honest run.  The road's energy law (D3, 2026-07-23) is
+# the older ruling and the right one: a spend floors at 0, fighting on
+# empty is allowed and billed through the hit formula, only a KNOCK pushes
+# past empty.  The BODY states still hold -- those are the device's.
+
+def test_a_drained_pet_may_still_face_the_road_boss():
+    p = _pet(energy=0)
+    assert p.battle_condition() == "Too drained to fight."      # at HOME, no
+    assert p.battle_condition(check_energy=False) is None       # on the ROAD, yes
+    pan = _road(p)
+    pan._start_boss(pan.adv.boss)
+    assert pan.sub is not None and pan._gate_refusal is None
+
+
+@pytest.mark.parametrize("field,word", CONDITIONS)
+def test_the_road_carve_out_is_ENERGY_ONLY(field, word):
+    """Every other state the device refuses for still refuses on the road."""
+    p = _pet(**({field: 0} if field == "hunger"
+                else {field: 3 if field == "poop" else True}))
+    assert word in (p.battle_condition(check_energy=False) or "")
+
+
+def test_the_home_doors_keep_the_energy_clause():
+    """The carve-out is the road's alone: the house key, the cup and the
+    raid all still refuse a drained pet, because a pet at home has a bed,
+    a shop and a full larder within reach."""
+    from tuipet import tournament
+    p = _pet(energy=0)
+    assert "Too drained" in (p.can_battle() or "")
+    assert "Too drained" in (tournament.can_enter(p) or p.battle_condition() or "")
+    import json
+    from tuipet.raidscreen import RaidPanel
+    boss_num = json.load(open("server/raid_pool.json"))[0]["num"]
+    p.world_seconds = 600.0
+    pan = RaidPanel(p, None, client=_GateClient(boss_num))
+    pan.key("space")
+    assert pan.sub is None and "Too drained" in (pan.msg or "")

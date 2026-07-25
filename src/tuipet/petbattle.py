@@ -224,16 +224,30 @@ class BattleMixin:
             return f"{self.name} refuses to fight!"
         return None
 
-    def battle_condition(self):
+    def battle_condition(self, check_energy=True):
         """The PURE condition half of can_battle -- no disturb, no anim, no
         refusal roll.  ONE source for every recorded bout: the cup and the
         invite-accept side used to skip these entirely, so a pet too
         starved/sick/drained to SEND a challenge could still grind three
         recorded cup battles per cup and auto-accept incoming invites
-        (gameplay audit 2026-07-19)."""
+        (gameplay audit 2026-07-19).
+
+        ⚠ `check_energy=False` IS FOR THE ROAD, AND ONLY THE ROAD
+        (adventure audit 2026-07-25).  The ENERGY clause is a HOME door's
+        rule: it keeps a drained pet from picking new fights while it has
+        a bed, a shop and a full larder within reach.  The road has its
+        OWN energy law, ruled 2026-07-23 (adventure energy audit, D3): a
+        spend floors at 0, fighting on empty is allowed and billed through
+        the hit formula's condition term, and only a hazard KNOCK pushes
+        past empty to plant the feet.  Handing the road the home clause
+        made the two laws contradict -- and measurably so: a 40-leg march
+        costs 10 energy and ~8 wilds cost 5 each, so **86 of 86 simulated
+        arrivals reached the gate under the threshold** and the boss
+        became unreachable.  The BODY states (starving / sick / hurt /
+        filthy) still hold everywhere, because those are the device's."""
         if self.hunger <= 0:
             return "Too hungry to fight."
-        if self.energy < BATTLE_MIN_ENERGY:
+        if check_energy and self.energy < BATTLE_MIN_ENERGY:
             return "Too drained to fight."
         if self.sick:
             return "Too sick to fight."
