@@ -188,11 +188,20 @@ class BattleMixin:
                 return " HP +1!"                     # State.HealthInc
         return ""
 
-    def train_result(self, success):
+    def train_result(self, success, grade=None):
         """One clone drill (0.5 rules): energy -2 (floored at 0), the
         counters that feed the LINES TR gates, and a clean strike sheds a
-        little weight.  The verdict pose mirrors the old drills' cheer/sad
-        tell so the after-train fx keep working."""
+        little weight.
+
+        THREE GRADES, THREE TELLS (Joel 2026-07-25: "mon is showing happy
+        pose after a normal training hit? wheres the frustration poses
+        at???").  The bar grades mega/normal/miss but the verdict pose read
+        one BOOLEAN, so a shoulder hit celebrated exactly like a perfect
+        strike -- same cheer tableau, same cheer fx, only the sentence
+        differed.  The ladder now lands where the shot did: a PERFECT
+        strike cheers, a SOLID one sulks (the pet wanted the wall to
+        break), a whiff slumps.  `grade` is optional so the sim-side
+        callers that only care about the counters keep passing a bool."""
         self._calm_discipline_call()                 # a drill placates the call
         self.exercise_today += 1
         self.stage_trainings += 1                    # LINES_SPEC TR gate: every attempt counts
@@ -211,7 +220,10 @@ class BattleMixin:
             self._set_weight(max(self._base_weight(), self.weight - 2))
         if success:
             self._open_praise()      # a clean strike is a proud moment (discipline B)
-        self._set_anim("happy" if success else "sad", 1.8)
+        # mega -> Cheering / normal -> the frustrated sulk (tantrum wears the
+        # gloom-cloud emote) / miss -> the dejected slump
+        g = grade or ("mega" if success else "miss")
+        self._set_anim({"mega": "happy", "normal": "tantrum"}.get(g, "sad"), 1.8)
         return True
 
     def can_battle(self):

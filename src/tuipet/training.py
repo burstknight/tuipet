@@ -34,6 +34,9 @@ from .theme import LCD_ON, LCD_BG, INK, INK_B, DIM, SEL, POS, NEG  # noqa: F401 
 COLS, ROWS = 40, 12
 BAR_MAX = 24
 IDLE, TURN, ATTACK, CHEER_A, CHEER_B, WEARY = 0, 1, 6, 5, 7, 9
+# the SULK pair (Jeering's deserved 4/6, the same beats _fxk_jeer bounces):
+# the middle grade's tell -- the shot landed, the wall didn't break
+SULK_A, SULK_B = 4, 6
 VERDICT_T = 14
 
 # the 0.5 target wall (Wall_1 standing / Wall_2 crumbled), ported verbatim
@@ -102,7 +105,7 @@ class TrainingPanel:
         self.grade = g
         self.success = g != "miss"
         self.pet.saved_hit_type = g
-        self.pet.train_result(self.success)
+        self.pet.train_result(self.success, g)   # the GRADE picks the verdict pose
         self.result = {"mega": "A PERFECT strike!",
                        "normal": "A solid hit.",
                        "miss": "Whiffed it..."}[g]
@@ -181,7 +184,13 @@ class TrainingPanel:
         elif m == "fire_out":
             pose = ATTACK
         elif m == "break":
-            pose = CHEER_A if (self.frame_i // 3) % 2 else CHEER_B
+            # only a PERFECT strike celebrates here: a solid hit leaves
+            # Wall_1 standing, so the pet sulks at its own shot instead of
+            # cheering a wall that never fell (Joel 2026-07-25)
+            if self.grade == "mega":
+                pose = CHEER_A if (self.frame_i // 3) % 2 else CHEER_B
+            else:
+                pose = SULK_A if (self.frame_i // 3) % 2 else SULK_B
         elif m == "miss":
             pose = WEARY
         else:

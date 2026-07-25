@@ -141,11 +141,11 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("The raid board warns you up front: if your pet is too "
-                 "drained, hungry, sick, hurt — or asleep — the board says "
-                 "so the moment it opens, instead of waiting for you to "
-                 "press SPACE and get refused. The check is read-only: "
-                 "peeking at the board never wakes a sleeper.")
+    WHATS_NEW = ("Training now shows what you actually hit. A PERFECT "
+                 "strike cheers; a solid shoulder hit SULKS — the wall "
+                 "held, and your mon knows it; a whiff slumps. The drill "
+                 "graded three ways all along but only had two faces, so "
+                 "a mediocre shot celebrated like a perfect one.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

@@ -94,6 +94,36 @@ def test_care_actions_guard_against_retrigger():
     assert not missing, f"care actions missing the fx re-trigger guard: {missing}"
 
 
+def test_the_drills_three_verdicts_route_to_three_fx():
+    """Joel 2026-07-25 ("mon is showing happy pose after a normal training
+    hit? wheres the frustration poses at???"): _after_train dispatched on a
+    two-way anim, so the middle grade took the full cheer.  Each verdict
+    pose now routes to its own show -- Cheering / the deserved 4/6 jeer /
+    the 10/9 slump."""
+    from tuipet import appactions
+    from tuipet.pet import Pet
+
+    class _App:
+        def __init__(self, anim):
+            self.pet = Pet(num=100, stage="Champion")
+            self.pet.anim = anim
+            self.screen_w = _FakeScreen()
+            self.flashed = None
+        flash = lambda self, m: setattr(self, "flashed", m)
+        repaint = lambda self: None
+    _App._after_train = appactions.ActionsMixin._after_train
+
+    shows = {}
+    for anim in ("happy", "tantrum", "sad", "refuse"):
+        a = _App(anim)
+        a._after_train("")
+        shows[anim] = (a.screen_w.fx["kind"], a.screen_w.fx.get("good", True))
+    assert shows["happy"] == ("cheer", True)      # a PERFECT strike celebrates
+    assert shows["tantrum"] == ("jeer", True)     # a solid hit grumbles
+    assert shows["sad"] == ("jeer", False)        # a whiff slumps
+    assert shows["refuse"][0] == "spit"           # the refusal head-shake, unchanged
+
+
 def test_gift_fx_chains_into_cheer():
     # ClockTic.giftEnd: the gifting amble always ends in State.Cheering
     s = _FakeScreen()

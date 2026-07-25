@@ -213,13 +213,18 @@ class ActionsMixin:
         if msg:
             self.flash(msg)
         # DVPet onExerciseFinish: success -> setPraise(true) -> the cheer(true) fx;
-        # anything less -> State.Jeering -> jeer(true, _angry).  apply_training left
-        # the verdict in pet.anim (happy/sad; the sim is paused while the drill is
-        # open, so it's still fresh here).
+        # anything less -> State.Jeering -> jeer(true, _angry).  train_result left
+        # the verdict in pet.anim (the sim is paused while the drill is open, so
+        # it's still fresh here).  THREE GRADES, THREE TELLS (Joel 2026-07-25):
+        # a PERFECT strike cheers, a SOLID hit grumbles the deserved 4/6 jeer,
+        # a whiff takes the deeper 10/9 slump -- the boolean used to cheer the
+        # middle grade like a perfect one.
         if self.pet.anim == "happy":
             self.screen_w.start_fx("cheer")
-        elif self.pet.anim == "sad":
+        elif self.pet.anim == "tantrum":
             self.screen_w.start_fx("jeer")
+        elif self.pet.anim == "sad":
+            self.screen_w.start_fx("jeer", good=False)
         elif self.pet.anim == "refuse":
             # canon canExercise: _refused -> State.Refusing -- the head-shake plays
             # back on the LCD after onPreTrain dumps the menu (spit == refuse(); no icon)

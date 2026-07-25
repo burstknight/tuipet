@@ -113,6 +113,52 @@ def test_the_energy_gate_is_the_one_hard_gate():
     assert p.can_train() is None
 
 
+def test_three_grades_wear_three_verdict_poses():
+    """Joel 2026-07-25: "mon is showing happy pose after a normal training
+    hit? wheres the frustration poses at???"  The bar grades mega/normal/miss
+    but the verdict read one BOOLEAN, so a shoulder hit celebrated exactly
+    like a perfect strike -- the same cheer tableau AND the same cheer fx,
+    with only the sentence to tell them apart.  Each grade wears its own
+    tell now: Cheering / the frustrated sulk / the dejected slump."""
+    poses = {}
+    for pos, want in ((None, "mega"), ("shoulder", "normal"), ("wide", "miss")):
+        pan = _panel()
+        _lock_at(pan, {"mega": (pan.mega_lo + pan.mega_hi) // 2,
+                       "normal": pan.mega_lo - 3,
+                       "miss": 0 if pan.mega_lo - 5 > 0 else 24}[want])
+        assert pan.grade == want
+        poses[want] = pan.pet.anim
+    assert poses == {"mega": "happy", "normal": "tantrum", "miss": "sad"}
+    # ...and the drill's own aftermath tableau does not cheer a wall that
+    # never fell: only a MEGA break plays the cheer pair
+    pan = _panel()
+    _lock_at(pan, pan.mega_lo - 3)                 # a solid hit
+    breaks = [f for f in pan.timeline if f.get("m") == "break"]
+    assert breaks                                  # a hit still breaks through
+    seen = set()
+    for i, fr in enumerate(pan.timeline):
+        if fr.get("m") != "break":
+            continue
+        pan.i, pan.frame_i = i, i
+        for beat in range(6):                      # both halves of the toggle
+            pan.frame_i = beat * 3
+            pan.text()                             # renders (no clip, no crash)
+            seen.add(training.SULK_A if (pan.frame_i // 3) % 2 else training.SULK_B)
+    assert seen == {training.SULK_A, training.SULK_B}
+    assert training.CHEER_A not in seen and training.CHEER_B not in seen
+
+
+def test_the_bool_callers_still_read_pass_fail():
+    """train_result's grade is OPTIONAL: the sim-side callers that only care
+    about the counters (lines/care/discipline pins) keep passing a bool, and
+    a bare True is still the proud strike."""
+    p = _pet()
+    p.train_result(True)
+    assert p.anim == "happy"
+    p.train_result(False)
+    assert p.anim == "sad"
+
+
 # ---- the show ---------------------------------------------------------------------
 
 def test_the_drill_plays_through_and_closes_itself():
