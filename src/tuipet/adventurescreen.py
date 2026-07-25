@@ -42,6 +42,10 @@ COLS, ROWS = 40, 12           # the ONE locked LCD arena, like every other scree
 # rule serialises canon's three-abreast).
 PULSE_T = 54
 PULSE_ON = ((5, 10), (15, 20), (25, 30), (35, 54))
+HINT_BEAT = 20                # the road strip's key hint holds ~2s per step
+#                               (10Hz clock): the bare SET, then one labelled
+#                               key, so the packed 40-col line never has to fit
+#                               "SPACE walk · T warp · ESC home" at once.
 PARADE_T = 40                 # ticks for one boss to march across (edge to
 #                               edge since audit A10: ~48px at ~1.2px/tick)
 
@@ -713,10 +717,25 @@ class AdventurePanel(menu.SubHost):
             if self._heal_t > 0 or self._note_t > 0:
                 # the road-item verdict (audit A3/A12): second wind / bare dash
                 return f"[b]⚡ {self._note}[/] {hearts}" if self._note else ""
-            thint = " T" if self.adv.held_transports() else ""
+            # the key hint CYCLES (Joel 2026-07-24 "anchor + rotate labels,
+            # ~2s"): the bare key SET is the anchor, and between each one
+            # labelled key rotates in -- so the full labels reach the player
+            # without ever needing "SPACE walk · T warp · ESC home" on the
+            # one packed 40-col line.  T (warp) only joins when a transport
+            # is held.
+            held = self.adv.held_transports()
+            anchor = "SPACE" + (" T" if held else "") + " ESC"
+            steps = ([("SPACE", "walk")]
+                     + ([("T", "warp")] if held else [])
+                     + [("ESC", "home")])
+            cyc = []
+            for k, lbl in steps:
+                cyc.append(f"[dim]· {anchor}[/]")               # the full set
+                cyc.append(f"[dim]· [/][b]{k}[/][dim] {lbl}[/]")  # one, labelled
+            hint = cyc[(self.frame_i // HINT_BEAT) % len(cyc)]
             chain = f" [b]×{self.adv.streak}[/]" if self.adv.streak >= 2 else ""
             return (f"[dim]{self.adv.ribbon()}[/] ⚡{self.pet.energy} {hearts}"
-                    f"{chain}  [dim]· SPACE{thint} ESC[/]")
+                    f"{chain}  {hint}")
         return menu.hints(("ESC", "home"))
 
     # -- render ---------------------------------------------------------------

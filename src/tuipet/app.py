@@ -133,11 +133,11 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE @ LINE NAMES THE PLACE, NOT THE BOSS: on an adventure the "
-                 "card used to read \"@WarGreymon\" — the zone's boss, where a "
-                 "location belongs. It now shows the habitat (\"@Island Day\"), "
-                 "matching how it names your home scene. The boss you're after "
-                 "still shows on the Quest line.")
+    WHATS_NEW = ("THE ROAD KEYS NOW SPELL THEMSELVES OUT: the adventure strip "
+                 "cycles its hints — the bare SPACE/T/ESC set, then one "
+                 "labelled key at a time (SPACE walk · T warp · ESC home) — so "
+                 "you learn what each does without crowding the packed line. "
+                 "T (warp) only shows when you're carrying a transport.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

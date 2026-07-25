@@ -76,3 +76,33 @@ def test_the_assistant_pauses_on_the_road(monkeypatch):
     p.away = False                                     # home: the helper resumes
     p._tick_auto_care(float(60 * 60))
     assert p.bits < bits0 or p.hunger > 0              # it billed or it served
+
+
+def test_the_road_key_hint_cycles_anchor_then_labels(monkeypatch):
+    """Hint cycle 2026-07-24 (Joel "anchor + rotate labels, ~2s"): the packed
+    40-col road line can't fit "SPACE walk . T warp . ESC home" at once, so the
+    hint holds the bare key SET (anchor), then rotates one labelled key in
+    between, on a ~2s (HINT_BEAT) beat.  T (warp) only joins when a transport is
+    held.  Every step stays within the strip box."""
+    import re
+    from tuipet.adventurescreen import HINT_BEAT
+    pan = _land(monkeypatch)
+    p = pan.pet
+    p.inventory = {"town_transport": 1}                # holding a warp -> T shows
+    p.energy = 5                                        # modest, so no edge overflow
+    seen = set()
+    for step in range(6):                              # one full anchor+labels loop
+        pan.frame_i = step * HINT_BEAT
+        line = pan.strip()
+        assert line.count("[") == line.count("]")      # markup balanced
+        assert len(re.sub(r"\[/?[^\[\]]*\]", "", line)) <= 40
+        seen.add(re.sub(r"\[/?[^\[\]]*\]", "", line).split("· ", 1)[-1].strip())
+    assert "SPACE T ESC" in seen                        # the anchor (full set)
+    assert "SPACE walk" in seen and "T warp" in seen and "ESC home" in seen
+    # no transport held -> T drops from BOTH the anchor and the rotation
+    p.inventory = {}
+    hints = set()
+    for step in range(4):
+        pan.frame_i = step * HINT_BEAT
+        hints.add(re.sub(r"\[/?[^\[\]]*\]", "", pan.strip()).split("· ", 1)[-1].strip())
+    assert "SPACE ESC" in hints and "T warp" not in hints
