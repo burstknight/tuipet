@@ -466,6 +466,13 @@ LARGE_POOP_WAIT_MOOD = -2               # LargePoopWaitMoodChange (a desperate g
 # constants below were all converted with REAL minutes (cadence audit
 # 2026-07-14; the same error already cost us TEMP_RATE and WEATHER_CHECK_SEC).
 FILTH_MOOD_DEC_MIN = 5.0                # FilthMoodDecMin 5 game-min (was 300.0 = 5 game HOURS)
+# THE STARVATION CLOCK, on the body's own scale (care audit 2026-07-25).
+# 12 GAME-hours with an empty belly, awake -- the number its comment always
+# claimed.  It was written `12 * 3600`, a real-seconds shape against a
+# counter that accumulates dt in GAME-MINUTES, which asked for thirty game
+# days of unbroken starvation and so could never fire.  Same rescale the
+# filth-sickness bound took, one line below.
+STARVE_DEATH_MIN = 12 * 60              # 720 game-minutes = 12 game-hours
 FILTH_SICK_BOUND = 200                  # FilthSickChanceBound 12000 real-min -> /60 game scale
 FILTH_SICK_CHANCE = 1                   # FilthSickChance (x piles, per game-min)
 FILTH_WORSE_CHANCE = 20                 # FilthWorseSickChance (x piles, already sick)

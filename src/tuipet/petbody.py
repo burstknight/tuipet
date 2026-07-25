@@ -582,7 +582,19 @@ class BodyMixin:
             return True
         if self.hunger == 0 and not self.asleep:              # awake-only, like hungerCall()
             self._starve_t = getattr(self, "_starve_t", 0.0) + dt
-            if self._starve_t >= 12 * 3600:                   # empty hunger 12h -> death
+            # ⭐ THE UNIT LAW, FOURTH INSTANCE (care audit 2026-07-25) --
+            # and the warning for it is twelve lines below this one.
+            # `_starve_t` accumulates dt, which is GAME-MINUTES, so the old
+            # `12 * 3600` asked for 43,200 of them: THIRTY GAME-DAYS of
+            # unbroken starvation.  Measured, the clock reached 2,940 after
+            # three game-days while the 20-mistake ladder was already at 13
+            # -- so the starvation death could never fire, on a field round
+            # 41 deliberately PERSISTED so quit-cycling couldn't dodge it.
+            # 12 game-hours is the comment's own number on the body's own
+            # clock, the same rescale FILTH_SICK_BOUND took ("12000
+            # real-min -> /60 game scale"): hunger decays on this clock, so
+            # what starving costs is counted on it too.
+            if self._starve_t >= STARVE_DEATH_MIN:            # noqa: F405
                 self._die("starvation"); return True
         elif self.hunger > 0:
             self._starve_t = 0.0
