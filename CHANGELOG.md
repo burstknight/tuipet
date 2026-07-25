@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.239 — THE ROAD KEYS NOW SPELL THEMSELVES OUT (2026-07-24)
+
+THE ROAD KEYS NOW SPELL THEMSELVES OUT: the adventure strip cycles its hints — the bare SPACE/T/ESC set, then one labelled key at a time (SPACE walk · T warp · ESC home) — so you learn what each does without crowding the packed line. T (warp) only shows when you're carrying a transport.
+
 ## 0.5.238 — THE @ LINE NAMES THE PLACE, NOT THE BOSS (2026-07-24)
 
 THE @ LINE NAMES THE PLACE, NOT THE BOSS: on an adventure the card used to read "@WarGreymon" — the zone's boss, where a location belongs. It now shows the habitat ("@Island Day"), matching how it names your home scene. The boss you're after still shows on the Quest line.
