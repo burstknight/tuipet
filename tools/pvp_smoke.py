@@ -142,12 +142,30 @@ async def run(uri):
     print("B result:", b.panel.status)
     print(f"records: A {a.pet.wins}W/{a.pet.battles}  "
           f"B {b.pet.wins}W/{b.pet.battles}")
+
+    # ---- THE L17 CONTRACT (updated 2026-07-25, lobby audit) --------------
+    # This block asserted `battles == 2` -- the pre-L17 rule, when an online
+    # bout fed the local record.  L17 shipped 2026-07-20 (v0.5.103): ONLINE
+    # PvP IS PROGRESSION-NEUTRAL.  record_battle(online=True) bills the BODY
+    # and returns before battles/wins/exp/KO6/battle_log, because a colluding
+    # pair could farm every one of those channels.  So the old assertion
+    # became impossible the day that ruled, and this smoke -- the ONE check
+    # that covers the live path end to end -- has failed by construction
+    # ever since, on a tool whose own docstring says to run it after ANY
+    # lobby/net/server change.  A safety net that always fails is not a net.
     battles = (a.pet.battles - 10) + (b.pet.battles - 10)
     wins = (a.pet.wins - 6) + (b.pet.wins - 6)
     paid = (a.pet.bits > 0) + (b.pet.bits > 0)
-    assert battles == 2, f"both pets must record the bout (got {battles})"
-    assert wins in (0, 1), f"at most one winner (got {wins})"
+    spent = (a.pet.energy < a.pet.max_energy) + (b.pet.energy < b.pet.max_energy)
+    assert battles == 0, \
+        f"L17: an online bout must not touch the local record (got {battles})"
+    assert wins == 0, f"L17: online wins stay server-side (got {wins})"
+    assert spent == 2, \
+        f"an online bout still bills the BODY -- energy (got {spent}/2)"
     assert paid == 2, "both purses must land (winner's prize + consolation)"
+    outcomes = {a.panel.status, b.panel.status}
+    assert any("WIN" in o.upper() for o in outcomes), \
+        f"exactly one side must read as the winner (got {outcomes})"
 
     # ---- clean exit ------------------------------------------------------
     for x in bots:

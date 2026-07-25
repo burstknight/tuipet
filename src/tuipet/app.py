@@ -133,16 +133,16 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE CUP HAD FOUR ROWS HANGING OFF THE SCREEN: every page "
-                 "of a tournament — the faceoff, the walk-in, the "
-                 "advancing field, the podium — was drawing a full-height "
-                 "arena AND captions under it, four rows more than the "
-                 "screen holds. Everything below the fold was invisible: "
-                 "who you were about to fight, who just advanced, even "
-                 "\"SPACE fight\". The arena is pure picture now, the "
-                 "announcements moved to the line under it, your opponent "
-                 "is on the status card, and the fighters stop jumping a "
-                 "row when the bell rings.")
+    WHATS_NEW = ("THE ONLINE SAFETY NET WAS BROKEN, NOT THE LOBBY: the "
+                 "two-bot live test that flies a real duel on the real "
+                 "server before each release has been failing on purpose "
+                 "since July 20 — it still demanded that an online duel "
+                 "add to your local record, which is exactly what the "
+                 "anti-cheat rules stopped it doing. It now checks the "
+                 "right things and flies clean. The lobby itself came "
+                 "through a full audit unchanged: forged invites, blocked "
+                 "players, mid-typing invites and mid-fight disconnects "
+                 "all still land where they should.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and
