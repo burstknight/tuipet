@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.240 — CUP FIGHTS OPEN CLEAN NOW (2026-07-24)
+
+CUP FIGHTS OPEN CLEAN NOW: the match no longer stands both mons in the ring, then walks them BACK in, then flashes a third banner — it's one entrance: the walk-in, straight into the fight. And the advancing-field parade actually strides on- and off-screen instead of blinking in and out at the edges.
+
 ## 0.5.239 — THE ROAD KEYS NOW SPELL THEMSELVES OUT (2026-07-24)
 
 THE ROAD KEYS NOW SPELL THEMSELVES OUT: the adventure strip cycles its hints — the bare SPACE/T/ESC set, then one labelled key at a time (SPACE walk · T warp · ESC home) — so you learn what each does without crowding the packed line. T (warp) only shows when you're carrying a transport.
