@@ -133,16 +133,16 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("YOUR PET NO LONGER SLEEPS THROUGH ITS OWN RAID: the "
-                 "raid board was the one fight door in the game that "
-                 "didn't check whether your pet was asleep, so a volley "
-                 "could be thrown by a pet that never woke up for it. "
-                 "Now it wakes first, like the battle key, both cups, "
-                 "training and adventure always have — press again to "
-                 "fight. (A stranger's lobby invite still never touches "
-                 "a sleeping pet; that one's deliberate.) Waking your "
-                 "pet has never been a care mistake, and still isn't — "
-                 "but it does change who it grows into.")
+    WHATS_NEW = ("THE SHOP STOPS CHANGING ITS MIND: the line teasing "
+                 "which sealed relic wakes next could pick a different "
+                 "answer every time you launched the game — same pet, "
+                 "same progress, different hint. It now names the "
+                 "closest goal and keeps naming it. Behind that, a full "
+                 "audit of the shops: 26 town counters, the deals, the "
+                 "egg bands, the ledger and every panel were driven and "
+                 "measured, and they all held — including the trade "
+                 "game, where every profitable run between towns is "
+                 "still rationed to a few units a day.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

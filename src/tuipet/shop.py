@@ -571,7 +571,18 @@ def wave_status(prog=None):
     def ratio(g):
         sig, need = g
         return min(1.0, int(prog.get(sig, 0)) / need)
-    sig, need = max(set(sealed), key=ratio)
+    # DETERMINISTIC TIE-BREAK (shops audit 2026-07-25).  `max(set(...))`
+    # walked a SET, so when two sealed waves tied on ratio the winner fell
+    # out of string-hash iteration order -- which Python randomises PER
+    # PROCESS.  Measured: the same save printed "wins 0/25 wake Light &
+    # Kindness" or "generation 0/5 wakes Destiny" depending on the launch,
+    # and 7% of sampled progress states tie (any player at gen 5+ with no
+    # armor evo and no wins sits in one).  A shop's character is supposed
+    # to be STABLE -- the same law that keeps a town's guest good crc32-
+    # ordered and its deal fixed for the day.  Ties now break toward the
+    # NEAREST goal in absolute terms (smallest `need`), which is also the
+    # more useful tease: "your 1st armor evo" over "wins 0/25".
+    sig, need = max(sorted(set(sealed)), key=lambda g: (ratio(g), -g[1]))
     have = min(int(prog.get(sig, 0)), need)
     tease = _WAVE_TEASE.get((sig, need), "more relics stir out there")
     return len(sealed), tease.format(have=have, need=need)
