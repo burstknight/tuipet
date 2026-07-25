@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.248 — ONE LESS GHOST IN THE FIGHT CODE (2026-07-25)
+
+ONE LESS GHOST IN THE FIGHT CODE: the battle screen used to check every fight for a marker meaning "this is an online duel" — a marker nothing in the game has ever set, because a lobby duel is replayed by a different path entirely. The check is gone, so every fight that starts at the timing bar is simply what it always was: yours, and local. Nothing you can see changed; there is one less way for it to go wrong.
+
 ## 0.5.247 — FIGHTING MAKES YOU SHARPER FOR LIFE NOW (2026-07-25)
 
 FIGHTING MAKES YOU SHARPER FOR LIFE NOW: a bout has always paid +2 training, but only onto this stage's counter — the LIFETIME total, which is the bigger of the two terms deciding whether your pet lands a hit, sat still no matter how much it fought. Every battle now feeds both, so a fighter's whole career counts, not just its current form. The DigiCore row that tracks it is called Training now, because drills are no longer the only thing that fills it.
