@@ -520,18 +520,28 @@ class Pet(CareMixin, DnaMixin, BattleMixin, BodyMixin):
 
     def needs_care(self):
         """The PHYSICAL half of the care call -- what the '!' rail icon shows:
-        an awake, hatched pet that is starving, effort-empty, sick, filthy or
-        exhausted, or a SLEEPER with the lights burning (canon lightsCall, the
-        one call that fires asleep).  The discipline family (praise/scold/
-        tantrum) is NOT here -- it wears the teach bulb instead, so the two
-        icons carry separate meanings (Joel 2026-07-11: '!' and the bulb
-        always showed as a pair, never separate)."""
+        an awake, hatched pet that is starving, effort-empty, sick, HURT,
+        filthy or exhausted, or a SLEEPER with the lights burning (canon
+        lightsCall, the one call that fires asleep).  The discipline family
+        (praise/scold/tantrum) is NOT here -- it wears the teach bulb
+        instead, so the two icons carry separate meanings (Joel 2026-07-11:
+        '!' and the bulb always showed as a pair, never separate).
+
+        INJURY BELONGS HERE (training audit 2026-07-25).  The canon
+        restoration said the wound "rides the same care-alarm cascade as
+        sickness" and wired it into `_alarm_urgency` -- but that function
+        only decides HOW LOUD an already-triggered alarm rings, and the
+        trigger is this predicate, which never learned the second ailment.
+        So a pet that was ONLY hurt rang nothing, raised no '!', and never
+        reached the HUD line written to name its cure: the alert existed
+        and could not fire.  Injury is a live, lethal-adjacent state with a
+        free cure one key away; it calls for you like sickness does."""
         if self.dead or self.stage == "Egg":
             return False
         if self.asleep:
             return bool(self.lights)             # lightsCall: it wants the dark
         return (self.hunger == 0 or self.strength == 0 or self.sick
-                or self.poop >= 3 or self.energy <= 0)
+                or self.injured or self.poop >= 3 or self.energy <= 0)
 
     def needs_attention(self):
         """The FULL alarm predicate (HUD beep/nag + mood-lapse gate): physical

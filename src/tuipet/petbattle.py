@@ -117,6 +117,16 @@ class BattleMixin:
         if self.sick:
             self._set_anim("refuse", 1.0)
             return "Too sick to train."
+        if self.injured:
+            # THE SECOND AILMENT GATES THE DRILL TOO (training audit
+            # 2026-07-25).  Injury was restored 2026-07-23 and wired into
+            # `battle_condition` -- a wounded pet cannot FIGHT -- but this
+            # door predates it and only ever learned about sickness, so a
+            # hurt pet was refused every bout and then sent to do timed
+            # strike drills instead.  One ailment, one grammar; the cure is
+            # free on the F menu, so this costs a tamer nothing but a key.
+            self._set_anim("refuse", 1.0)
+            return "Too hurt to train."
         if self.poop:
             self._set_anim("refuse", 1.0)
             return "Clean up first!"

@@ -133,16 +133,15 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE ONLINE SAFETY NET WAS BROKEN, NOT THE LOBBY: the "
-                 "two-bot live test that flies a real duel on the real "
-                 "server before each release has been failing on purpose "
-                 "since July 20 — it still demanded that an online duel "
-                 "add to your local record, which is exactly what the "
-                 "anti-cheat rules stopped it doing. It now checks the "
-                 "right things and flies clean. The lobby itself came "
-                 "through a full audit unchanged: forged invites, blocked "
-                 "players, mid-typing invites and mid-fight disconnects "
-                 "all still land where they should.")
+    WHATS_NEW = ("A HURT PET NOW ASKS TO BE PATCHED UP: an injury stopped "
+                 "your pet fighting anywhere — but it could still be sent "
+                 "to do timed strike drills, it raised no alarm and no "
+                 "\u2757 on the rail, and the one line that would have "
+                 "told you pointed at the bag for a Bandage that moved to "
+                 "the free care menu two days earlier. So a wound could sit "
+                 "there unnoticed and unfixed. Now it calls for you like "
+                 "sickness does, the drill refuses too, and the alert names "
+                 "the key that actually cures it: F.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and
@@ -1355,7 +1354,13 @@ class TuiPetApp(ActionsMixin, App):
         # canon meat/pill picker), NOT a bag item; the v0.5.169 hint sent a
         # panicked player to the bag (Joel caught it 2026-07-22)
         elif p.sick:          msg = f"{name} is sick! ([b]F[/] — feed it the pill)"
-        elif p.is_injured():  msg = f"{name} is hurt! ([b]I[/] — a Bandage from the bag)"
+        # ...and the BANDAGE is that same menu's third row, free and
+        # infinite, since the items refactor took it off the shelf
+        # (R3, 2026-07-23).  This line still sent a panicked tamer to the
+        # BAG for an item that no longer exists there -- the identical bug
+        # v0.5.178 fixed for the pill, on the very next line, two days
+        # before the cure moved (training audit 2026-07-25).
+        elif p.is_injured():  msg = f"{name} is hurt! ([b]F[/] — patch it up)"
         elif p.hunger == 0:   msg = f"{name} is hungry! ([b]F[/])"
         elif p.strength == 0: msg = f"{name}'s effort gauge is empty — train it! ([b]T[/])"
         elif p.poop >= 3:     msg = f"{name} needs cleaning! ([b]C[/])"
