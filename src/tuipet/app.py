@@ -133,13 +133,14 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("ONE ANSWER TO \"IS THIS EATEN\": under the hood the shop "
-                 "kept two lists of what your pet swallows, and they "
-                 "disagreed about six goods — both drinks, both pills, the "
-                 "vitamin and the anti-evo chip, which DO get eaten on the "
-                 "LCD through their own artwork. The losing list is gone. "
-                 "Nothing you can see changed today; there is simply one "
-                 "less way for a good to eat wrong tomorrow.")
+    WHATS_NEW = ("MASHING NO LONGER FREEZES A FIGHT: tapping SPACE to hurry "
+                 "a battle was snapping the animation BACK to the start of "
+                 "the punch — every tap — so a fast tapper could sit in "
+                 "round one forever while the bars refused to move. Now a "
+                 "hurry key only ever hurries: mash away and the fight "
+                 "finishes faster than ever, with exactly the same result. "
+                 "One fix, every fight — home bouts, road ambushes, boss "
+                 "gates, both cups, raid volleys and online duels.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

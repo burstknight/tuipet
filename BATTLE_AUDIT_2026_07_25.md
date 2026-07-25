@@ -1,0 +1,149 @@
+# BATTLE AUDIT — every door into one engine (2026-07-25)
+
+Joel: "we gotta do a full blown battle audit. we did a bunch of changes
+recently and we gotta make sure its hooked up correctly."
+
+The recent run touched combat from six directions: the home battle key
+(v0.5.198), the Pen20 lock rework (199-204), injury (205), the rolling win
+gate (212), the one-card rule (179), death-is-final (180) and the cup's
+single entrance (240).  Scope of this audit: every SOURCE of a fight,
+walked from its gate through the engine to the ledger and the card.
+
+**Verdict: the wiring is right — one real bug, one ruling for Joel.**  The
+bug is not in the maths; it is in the keys, and it is the kind a phone
+player hits every single fight.
+
+---
+
+## 1. THE MATRIX (measured, not read)
+
+| door | gate | energy | weight | battles / log | wins·exp·KO6 | purse | card |
+|------|------|--------|--------|---------------|--------------|-------|------|
+| home **m** | `can_battle` | −5 | −4, floors at base | ✔ | ✔ | none | battle |
+| road wild | *(none — see §3)* | −5 | ✔ | ✔ | ✔ | bounty | battle |
+| road boss | *(none — see §3)* | −5 | ✔ | ✔ | ✔ | bounty | battle |
+| cup bout | `can_enter` + `battle_condition` | −5 | ✔ | ✔ | ✔ | trophy purse | battle |
+| town cup | `can_enter` + `battle_condition` | −5 | ✔ | ✔ | ✔ | purse | battle |
+| raid volley | attempts only | — | — | **nothing** | — | server | battle (pool) |
+| lobby PvP | `can_battle` / `battle_condition` | −5 | ✔ | **nothing** | **nothing** | server | battle |
+
+Everything in that table was produced by running the real engine and
+diffing the pet, not by reading intentions.  The two "nothing" rows are
+the L17 ruling (online is progression-neutral) and the raid's report-not-
+a-bout rule, both holding exactly as written.
+
+## 2. F1 — THE HURRY KEY RAN THE FIGHT BACKWARD  ✅ FIXED
+
+`BattlePanel.key`'s skip branch jumps the playhead to `first`, the START
+of the closing impact run, so you still SEE the hit you hurried to.  It
+never checked whether the playhead was already past that point — so a
+press made mid-run **snapped it back**, and a press every frame snapped it
+back every frame.
+
+Measured on one bout (same seed, same fight):
+
+| input | frames to finish | rewinds | outcome |
+|-------|------------------|---------|---------|
+| no presses | 647 | 0 | round 6 |
+| press every 10 frames | 162 | 0 | round 6 |
+| press every 3 frames | 83 | 0 | round 6 |
+| **press every frame** | **never (4000+)** | **3953** | **stuck in round 1** |
+
+The faster you pressed, the slower it went; mash it and the fight simply
+stops — the bars freeze mid-round with the pet standing there.  **Joel
+plays on a phone**, where tap-tap-tap is the normal way to hurry a beat,
+and the QOL round that built this branch was itself about making skip
+presses land (v0.5.187).
+
+Fix: `self.i = max(self.i, first)` — a hurry key may only ever hurry.
+After it, mashing is the FASTEST way to finish (62 frames) and the outcome
+is unchanged, because the rounds are precomputed at the lock.
+
+This is one code path serving every door, so the fix lands on the home
+bout, both road fights, both cups, the raid volley and the PvP replay at
+once.
+
+## 3. THE ONE RULING — the road never asks the condition gate
+
+`battle_condition` is THE source, and it answers for five states.  Which
+doors ask it, measured:
+
+| state | home **m** | cup / town cup | lobby | **road wild + boss** | raid |
+|-------|-----------|----------------|-------|----------------------|------|
+| injured | "Too hurt to fight." | ✔ | ✔ | **fights anyway** | fights anyway |
+| sick | "Too sick to fight." | ✔ | ✔ | **fights anyway** | fights anyway |
+| starving | "Too hungry to fight." | ✔ | ✔ | **fights anyway** | fights anyway |
+| drained | "Too drained to fight." | ✔ | ✔ | **fights anyway** | fights anyway |
+| filthy | "Clean up first!" | ✔ | ✔ | **fights anyway** | fights anyway |
+
+For an AMBUSH this is deliberate and right — you cannot decline a pounce,
+and the energy grammar has the same carve-out.  The open questions are the
+CHOSEN fights that share the carve-out by accident:
+
+- a road **BOSS** is walked into on purpose, at a gate, with a prompt;
+- a **raid volley** is chosen from a menu;
+
+...and both let an injured pet fight while the shelf, the alarm and the
+home key all say "Too hurt to fight."  That was P5 on the REAL VPET board
+("'too hurt to fight' isn't literally true"), still unruled, and it is
+wider than injury.
+
+**Options, no work done until Joel rules:**
+
+- **(a) leave it** — the road is the road; only chosen HOME fights gate.
+  Then the injury alert's wording should soften ("too hurt for the ring").
+- **(b) gate the road BOSS and the raid** (chosen fights), leave ambushes
+  ungated — the most consistent with how the town cup already behaves.
+- **(c) gate everything on the road**, ambushes included — simplest to
+  explain, but it turns a wandering injured pet into a stranded one.
+
+My read: **(b)**.  It matches the existing town-cup behaviour on the same
+road and keeps the ambush carve-out that the energy grammar depends on.
+
+## 4. VERIFIED CLEAN (with the evidence, so nobody re-audits it)
+
+- **The lock reaches the fight and is pure upside.**  `saved_hit_type` is
+  written at the lock and read by `Side.of_pet` for the fight built one
+  line later; mega = +0.10 aim and −0.10 on the foe's roll (0.633 vs
+  0.400 measured), and **normal and miss score identically** — a shank
+  costs nothing, as the Pen20 shake ruling says.
+- **The drill and the bout share ONE grading rule.**  Both call
+  `strikefx.grade_lock` with `battlescreen.mega_window`, and both build the
+  latency-grace history the same way, line for line.
+- **The bar arms before it accepts a lock** (LOCK_ARM_T): the very first
+  press after the bar appears is swallowed, including on the cup's
+  `skip_intro` path, which starts ON the bar.
+- **Death is final within a round** — a foe dropped to 0 by your volley
+  never returns fire; NPC bracket matches coin-flip initiative so list
+  order grants no edge.
+- **The weight bill floors at the species base** — 30 bouts in a row leave
+  a pet exactly at base.
+- **The cup ramp reaches the fight**: QF a fresh wild, SF (250, 2500, 40,
+  25), Final (500, 5000, 80, 55), attached through `e["side"]`, which
+  `Battle` prefers over a species Side.
+- **One card, every door** — `painter_for` walks `mode.sub`, so a fight
+  hosted inside the cup, the road or the raid paints the same battle card;
+  the raid shows the community POOL and a 10/10 tank from its first frame.
+- **The outcome does not depend on input speed** (precomputed at the lock)
+  — now pinned, because that is what made F1 a freeze instead of a cheat.
+
+## 5. LOOKED AT, LEFT ALONE (named, not touched)
+
+- **A bout feeds `stage_trainings` (+2) but never `total_trainings`.**  The
+  drill feeds both.  The DigiCore labels the lifetime counter DRILLS, so a
+  bout not counting reads as deliberate — but it means fighting never
+  moves the biggest training term in the hit formula (+0.2 max).  A change
+  here is a balance ruling, not a wiring fix.
+- **`BattlePanel`'s `source="pvp"` branch is dormant**: no enemy dict ever
+  carries a `pvp` key, because the lobby drives its panel as a
+  presentation-only replay and records the bout itself.  Harmless, and
+  removals need a named order.
+- **The pre-fight readiness line builds its own foe** (`Side.wild(num)`)
+  instead of the fight's actual Side.  Today the two agree on everything
+  `readiness_line` reads (stage rank), so it is latent, not live.
+
+## 6. SHIPPED
+
+v0.5.245 — F1 plus `tests/test_battle_audit.py` (22 pins: the hurry key,
+the five-door ledger matrix, the gate, the lock, the card).  Suite
+1967 → 1989 green.

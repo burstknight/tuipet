@@ -400,7 +400,15 @@ class BattlePanel:
                     first = last
                     while first > 0 and self.timeline[first - 1]["m"] == self.timeline[last]["m"]:
                         first -= 1
-                    self.i = first
+                    # ⚠ NEVER BACKWARD (battle audit 2026-07-25).  `first` is
+                    # the START of the closing impact run, so a press made
+                    # after the playhead had already entered that run SNAPPED
+                    # IT BACK -- and a mashed key (a phone tap-tap-tap) reset
+                    # it every frame, so the round replayed forever and the
+                    # fight sat frozen: 4000 frames of pressing every frame
+                    # never left round 1, where sparse presses finish in ~80.
+                    # A hurry key may only ever hurry.
+                    self.i = max(self.i, first)
             return None
         if k in ("space", "enter", "escape"):
             return ("done", self.battle)
