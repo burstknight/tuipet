@@ -555,14 +555,29 @@ class Adventure:
         return {"town_transport": "town", "disaster_transport": "danger",
                 "life_recovery": "life"}.get(key)
 
+    def _town_ahead(self):
+        """Is there a town waypoint at or ahead of this leg?  (A warp only
+        ever runs FORWARD -- the road does not double back.)"""
+        return any(b >= self.loc for _a, b, _t in self.zone.get("town_legs", ()))
+
     def held_transports(self):
         """The run-usable road-item keys the pet is carrying, in bag order.
         Life Recovery only lists when a life is actually missing -- a
-        full-hearts entry would be a dead menu row."""
+        full-hearts entry would be a dead menu row.
+
+        The Town Transport follows the same rule past the last town
+        (adventure audit 2026-07-25).  Every zone carries exactly ONE town
+        span, so once you walk past it the warp had nothing to warp to: it
+        spent a 500b ticket, rested you where you stood and still announced
+        "Warped to a town", with no hub, no shop and no visit-or-walk-on
+        choice -- and LATE, DRAINED and past the town is exactly when a
+        tamer reaches for it."""
         inv = getattr(self.pet, "inventory", {}) or {}
         return [k for k, n in inv.items() if n > 0 and self._transport_kind(k)
                 and not (self._transport_kind(k) == "life"
-                         and self.lives >= MAX_LIVES)]
+                         and self.lives >= MAX_LIVES)
+                and not (self._transport_kind(k) == "town"
+                         and not self._town_ahead())]
 
     def use_transport(self, key):
         """Spend a road item.  Town warp -> jump to the town and rest
@@ -583,9 +598,15 @@ class Adventure:
             self.lives = MAX_LIVES
             self.last = "A second wind — lives restored!"
             return "life-recovery"
+        if kind == "town" and not self._town_ahead():
+            # defensive, like the life warp's full-hearts guard: the menu
+            # already hides it, and a ticket must never buy a rest that
+            # calls itself a town (adventure audit 2026-07-25)
+            return None
         self.pet.take_item(key)
         if kind == "town":
-            legs = self.zone.get("town_legs") or ()
+            legs = [lg for lg in (self.zone.get("town_legs") or ())
+                    if lg[1] >= self.loc]              # the town AHEAD of you
             if legs:
                 self.loc = max(self.loc, legs[0][0])   # forward only, never backward
             self._rest_up()

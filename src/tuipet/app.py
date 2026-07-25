@@ -133,15 +133,14 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE ROAD'S BOSS IS REACHABLE AGAIN — SORRY: yesterday's "
-                 "\"a hurt pet can't be marched into a boss\" fix brought "
-                 "the HOME battle rules with it, including \"too drained "
-                 "to fight\" — and a march is SUPPOSED to arrive drained. "
-                 "The gate was refusing every honest run. Out on the road "
-                 "an empty tank is a penalty you fight through, never a "
-                 "locked door; that was the rule before and it is the rule "
-                 "again. Hurt, sick, starving or filthy still stops you at "
-                 "the gate, because those are the device's own.")
+    WHATS_NEW = ("A TOWN TICKET ALWAYS BUYS A TOWN NOW: every zone has one "
+                 "town, and past it the Town Transport was still spending "
+                 "your 500b — resting you where you stood while announcing "
+                 "a warp, with no shop and no town to visit. Late, drained "
+                 "and past the town is exactly when you reach for it. It "
+                 "now steps aside when there is nothing ahead to warp to, "
+                 "keeps your ticket, and the road stops offering a warp it "
+                 "can't make.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and
