@@ -133,14 +133,16 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("A TOWN TICKET ALWAYS BUYS A TOWN NOW: every zone has one "
-                 "town, and past it the Town Transport was still spending "
-                 "your 500b — resting you where you stood while announcing "
-                 "a warp, with no shop and no town to visit. Late, drained "
-                 "and past the town is exactly when you reach for it. It "
-                 "now steps aside when there is nothing ahead to warp to, "
-                 "keeps your ticket, and the road stops offering a warp it "
-                 "can't make.")
+    WHATS_NEW = ("THE CUP HAD FOUR ROWS HANGING OFF THE SCREEN: every page "
+                 "of a tournament — the faceoff, the walk-in, the "
+                 "advancing field, the podium — was drawing a full-height "
+                 "arena AND captions under it, four rows more than the "
+                 "screen holds. Everything below the fold was invisible: "
+                 "who you were about to fight, who just advanced, even "
+                 "\"SPACE fight\". The arena is pure picture now, the "
+                 "announcements moved to the line under it, your opponent "
+                 "is on the status card, and the fighters stop jumping a "
+                 "row when the bell rings.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

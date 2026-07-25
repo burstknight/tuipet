@@ -80,7 +80,13 @@ def test_the_crown_plays_the_ceremony_before_the_numbers():
         pan.key("escape")                      # locked: the show plays out
         assert pan._ceremony is not None
         txt = pan.text().plain
-        assert "CHAMPION" in txt               # the podium page
+        # REPOINTED (cup audit 2026-07-25): the podium page is PURE SCENE
+        # now -- it was drawing a title bar and three caption rows around a
+        # full-height arena, 16 rows into a 12-row LCD, so every word this
+        # used to read was clipped off screen.  The crown is announced on
+        # the strip, which the player can actually see.
+        assert len(txt.split("\n")) <= 12       # fits the box
+        assert "CHAMPION" in pan.strip()        # ...and the crown is SAID
         pan.anim()
     pan.anim()
     assert pan._ceremony is None and pan.tree_view   # then the crowned tree
@@ -121,11 +127,16 @@ def test_space_stages_the_introductions_then_the_bell():
         pan.key("escape")                      # locked: no forfeit mid-entrance
         assert pan.tourney.over is False
         txt = pan.text().plain
-        if "enters!" in txt:
+        assert len(txt.split("\n")) <= 12       # the entrance fits the box
+        # REPOINTED (cup audit 2026-07-25): the introductions narrate on the
+        # STRIP now -- these three beats were captioned under a full-height
+        # arena, four rows past the LCD, and never reached the screen.
+        line = pan.strip()
+        if "enters!" in line or "RIVAL" in line:
             saw.add("opp")
-        if "answers!" in txt or "You answer!" in txt:   # named / unnamed grammar
+        if "answers!" in line or "You answer!" in line:  # named / unnamed grammar
             saw.add("pet")
-        if "FIGHT!" in txt:
+        if "FIGHT!" in line:
             saw.add("bell")
         pan.anim()
     assert saw == {"opp", "pet", "bell"}       # all three phases showed

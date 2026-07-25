@@ -50,6 +50,9 @@ class TournamentPanel(menu.SubHost):
         self.phase = "select"
         self.tree_view = False       # the bracket page (B toggles; shown between rounds)
         self._advance = None         # the field-advances parade: {"t","nums"}
+        self._say = ""               # the drawing frame's caption -> the strip
+        #                              (cup audit 2026-07-25: the LCD is pure
+        #                              scene, so the words live on the line)
         self._ceremony = None        # the champion's podium beat: {"t"}
         self._intro = None           # the match introductions: {"t"}
 
@@ -81,15 +84,22 @@ class TournamentPanel(menu.SubHost):
             return
 
     def strip(self):
-        """The message-box hint line (hint overhaul 2026-07-10)."""
+        """The message-box hint line (hint overhaul 2026-07-10).
+
+        THE SHOW PAGES NARRATE HERE NOW (cup audit 2026-07-25).  Each of
+        them used to caption itself in three rows UNDER a 12-row arena --
+        four rows past the LCD's 12, so every word was clipped off screen:
+        who walked in, who advanced, the foe you faced.  The scene is pure
+        now and the caption rides this line, which is always visible.
+        `_say` is set by the frame that is drawing."""
         if self.sub is not None:
             return ""                          # the bout's own panel owns the box
         if self._ceremony is not None:
-            return "[b]★ CHAMPION![/]"
+            return "[b]%s[/]" % (self._say or "★ CHAMPION!")
         if self._advance is not None:
-            return "[dim]the field advances…[/]"
+            return "[dim]%s[/]" % (self._say or "the field advances…")
         if self._intro is not None:
-            return "[dim]introductions…[/]"
+            return "[b]%s[/]" % (self._say or "introductions…")
         if self.phase == "select":
             return menu.hints(("↑↓", "pick"), ("ENTER", "go"),
                               ("F", "feat."), ("A", "alarm"))
@@ -277,15 +287,12 @@ class TournamentPanel(menu.SubHost):
         if bgimg and any(a <= t % 20 < b for a, b in ((3, 8), (12, 17))):
             bgimg = _brighten(bgimg, 0.5)      # the podium light, on the beat
         on = menu.scene_ink(bgimg)
-        out = menu.bar(self.tourney.name, "CHAMPION")
-        scene = render_scene([grid.center(self._frames(self.pet.num, "happy"),
-                                          ph=FIGHT_ROWS * 2)],
-                             COLS, FIGHT_ROWS, on, LCD_BG, bgimg=bgimg)
-        out.append_text(scene)
-        out.append("\n%s\n" % ("★" * min(self.pet.trophies, 14)), style=INK_B)
-        out.append_text(menu.note("The trophy is yours!", tick=self.frame_i))
-        out.append_text(menu.footer("— the crowd roars —"))
-        return out
+        # pure scene (cup audit 2026-07-25): the crown, the trophy count and
+        # the purse are all on the CARD; the roar rides the strip
+        self._say = "★ CHAMPION — the trophy is yours!"
+        return render_scene([grid.center(self._frames(self.pet.num, "happy"),
+                                         ph=FIGHT_ROWS * 2)],
+                            COLS, FIGHT_ROWS, on, LCD_BG, bgimg=bgimg)
 
     def _advance_frame(self):
         """THE FIELD ADVANCES: the other winners cross the arena one at a
@@ -310,14 +317,11 @@ class TournamentPanel(menu.SubHost):
         scene = render_scene([(rows, x, False)], COLS, FIGHT_ROWS,
                              menu.scene_ink(bgimg), LCD_BG, bgimg=bgimg,
                              clip=grid.WINDOW)
-        out = menu.bar(self.tourney.name, "ADVANCING")
-        out.append_text(scene)
         nm = (self.tourney.results[i]
               if i < len(self.tourney.results) else "")
-        out.append("\n%s advances\n" % nm, style=INK)
-        out.append_text(menu.note(self.tourney.last, tick=self.frame_i))
-        out.append_text(menu.footer("— the next round forms —"))
-        return out
+        # pure scene; who advanced rides the STRIP (cup audit 2026-07-25)
+        self._say = ("%s advances" % nm) if nm else "the field advances"
+        return scene
 
     def _intro_frame(self):
         """MATCH INTRODUCTIONS: the challenger strides in from the RIGHT and
@@ -353,18 +357,11 @@ class TournamentPanel(menu.SubHost):
         scene = render_scene(placements, COLS, FIGHT_ROWS,
                              menu.scene_ink(bgimg), LCD_BG, bgimg=bgimg,
                              clip=grid.WINDOW)
-        out = menu.bar(self.tourney.name,
-                       "%s %d/3" % (self.tourney.round_name, self.tourney.round + 1))
-        out.append_text(scene)
-        # "your ★N": the card's trophy glyph, ownership said out loud --
-        # bare "Trophy 0" beside the challenger's name read as THEIR record
-        # (menu polish round 5, 2026-07-22)
-        out.append("\nvs %s[%s]   your ★%d\n"
-                   % (opp["name"], opp["attribute"][:2], self.pet.trophies),
-                   style=INK)
-        out.append_text(menu.note(note, tick=self.frame_i))
-        out.append_text(menu.footer("— introductions —"))
-        return out
+        # pure scene; the announcement rides the STRIP (cup audit
+        # 2026-07-25), where it is actually visible -- and "vs <foe>" +
+        # "your ★N" ride the card, which already carries the trophy count
+        self._say = note
+        return scene
 
     def text(self):
         if self.sub is not None:
@@ -444,7 +441,12 @@ class TournamentPanel(menu.SubHost):
             else:
                 out.append("  no cup left you can enter today\n", style=DIM)
             out.append_text(menu.note(self.msg, tick=self.frame_i))
-            out.append_text(menu.footer("↑↓ browse  ENTER go  A alarm  ESC out"))
+            # (the in-LCD key footer went 2026-07-25, cup audit: it repeated
+            # the strip word for word -- the FOOTER PURGE the QOL sweep ran
+            # across sound/options/themes/shop, which this page missed -- and
+            # the row it cost pushed the page to 13 in the states that carry
+            # both the win-gate line and the next-winnable line, so the LCD
+            # clipped it anyway.  The strip is the one true key line.)
             return out
         # bracket
         t = self.tourney
@@ -455,27 +457,23 @@ class TournamentPanel(menu.SubHost):
         bgimg = self.pet.background(file="tourneyBack")
         on = menu.scene_ink(bgimg)
         if t.over:
-            out = menu.bar(t.name, "RESULT")
             pose = "happy" if t.champion else "tired"
-            scene = render_scene([grid.center(self._frames(self.pet.num, pose), ph=FIGHT_ROWS * 2)],
-                                 COLS, FIGHT_ROWS, on, LCD_BG, bgimg=bgimg)
-            out.append_text(scene)
-            if t.champion:
-                out.append("\n%s\n" % ("★" * min(self.pet.trophies, 14)), style=INK_B)
-            else:
-                out.append("\n\n")
-            out.append_text(menu.note(t.last, tick=self.frame_i))
-            out.append_text(menu.footer("ESC leave"))
-            return out
+            # pure scene (see below): the verdict, the trophy count and the
+            # purse all live on the CARD already, and ESC rides the strip
+            return render_scene(
+                [grid.center(self._frames(self.pet.num, pose), ph=FIGHT_ROWS * 2)],
+                COLS, FIGHT_ROWS, on, LCD_BG, bgimg=bgimg)
         # the DECISION page holds the EMPTY arena (double-intro fix 2026-07-24,
         # Joel "shows both mons, then another where both enter"): the fighters
         # aren't pre-placed here, so the SPACE walk-in is their real first
         # entrance instead of a re-entrance after they were already standing.
-        opp = t.current_opponent()
-        scene = render_scene([], COLS, FIGHT_ROWS, on, LCD_BG, bgimg=bgimg)
-        out = menu.bar(t.name, "%s %d/3" % (t.round_name, t.round + 1))
-        out.append_text(scene)
-        out.append("\nvs %s[%s]   your ★%d\n" % (opp["name"], opp["attribute"][:2], self.pet.trophies), style=INK)
-        out.append_text(menu.note(t.last, tick=self.frame_i))
-        out.append_text(menu.footer("SPACE fight   ESC leave"))
-        return out
+        # PURE SCENE, 12 rows (cup audit 2026-07-25 -- the family law the
+        # raid page got in v0.5.183 and the battle panel has always had).
+        # This page used to stack a title bar ABOVE a full 12-row arena and
+        # three caption rows BELOW it: 16 rows into a 12-row LCD, so the
+        # bottom four -- the arena's own floor, "vs <foe> your ★N", the cup
+        # line and "SPACE fight ESC leave" -- were CLIPPED OFF SCREEN.  The
+        # foe now rides the CARD, the keys ride the STRIP, and the scene
+        # sits exactly where the fight's does, so the entrance no longer
+        # jumps a row at the bell.
+        return render_scene([], COLS, FIGHT_ROWS, on, LCD_BG, bgimg=bgimg)

@@ -135,7 +135,12 @@ def test_the_town_cup_plays_the_whole_show_through_the_town():
     pan = t.sub
     assert "BRACKET" in t.text().plain                 # the tree, through the town
     t.key("space")                                     # tree -> faceoff
-    assert not pan.tree_view and "your ★" in t.text().plain
+    # REPOINTED (cup audit 2026-07-25): the faceoff page is PURE SCENE now
+    # -- "vs <foe>  your ★N" used to be drawn BELOW a full-height arena,
+    # off the bottom of a 12-row LCD.  The foe and the trophy count live on
+    # the CARD; here we hold the page to the box it has to fit in.
+    assert not pan.tree_view
+    assert len(t.text().plain.split("\n")) <= 12
     t.key("space")                                     # faceoff -> introductions
     assert pan._intro is not None
     for _ in range(60):                                # the walk-ins play out

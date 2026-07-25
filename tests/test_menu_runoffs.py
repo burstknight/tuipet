@@ -92,7 +92,13 @@ def test_unnamed_pet_intro_says_you_answer(monkeypatch):
     pan.phase = "bracket"
     pan._intro = {"t": INTRO_OPP_T + 2}           # the answer beat
     plain = pan.text().plain
-    assert "You answer!" in plain and "answers!" not in plain
+    assert len(plain.split("\n")) <= 12          # the entrance fits the LCD
+    # REPOINTED (cup audit 2026-07-25): the announcement rides the STRIP --
+    # it used to sit in a caption row under a full-height arena, four rows
+    # past the box, where the player never saw the grammar this pins.
+    line = pan.strip()
+    assert "You answer!" in line and "answers!" not in line.replace(
+        "You answer!", "")
 
 
 # ---- smoke walks for the panels the budget net never staged ------------------

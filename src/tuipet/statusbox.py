@@ -662,10 +662,20 @@ def tournament(app):
                  f"Trophy   [{T.COIN}]★{p.trophies}[/]", DIV,
                  "[dim]train up, try again[/]"]
     else:
+        # WHO YOU FACE (cup audit 2026-07-25): the faceoff and the
+        # introductions used to name the challenger in a caption row UNDER
+        # a full-height arena -- four rows past the LCD, so it was clipped
+        # off screen and the fight opened against a stranger.  The card is
+        # where a fight's context lives (the battle card's own law), so the
+        # foe lives here now.
+        opp = t.current_opponent() if not t.over else None
+        foe = (f"vs [b]{opp['name'][:12]}[/][dim][{opp['attribute'][:2]}][/]"
+               if isinstance(opp, dict) else "")
         lines = [
             f"[b]{p.name[:14]}[/] [dim]· cup[/]", DIV,
             f"[b]{t.name[:24]}[/]",
             f"Match    {t.round + 1} / 3",
+            foe,
             f"Trophy   [{T.COIN}]★{p.trophies}[/]",
             DIV,
             f"Effort   {hearts(p.strength)}",
