@@ -591,7 +591,13 @@ class BattlePanel:
         # lost to an invisible starved weight; never again.  Same drag
         # detector as the post-fight coach line (one truth, two tenses).
         from .battle import Side, readiness_line
-        foe = Side.wild(self._pick.get("num", 0), boss=bool(self._pick.get("boss")))
+        # THE FIGHT'S OWN FOE, not a fresh species copy (battle audit
+        # 2026-07-25): a cup opponent carries a RAMPED Side and a lobby peer
+        # carries its relayed card, and rebuilding from the number alone
+        # quietly read a different creature than the one about to swing.
+        # `Battle` prefers enemy["side"] the same way -- one foe, one truth.
+        foe = self._pick.get("side") or Side.wild(
+            self._pick.get("num", 0), boss=bool(self._pick.get("boss")))
         self.hud_note = readiness_line(Side.of_pet(self.pet), foe)
         return self._scene([], strikefx.timing_bar(self.bar, self.mega_lo,
                                                    self.mega_hi))

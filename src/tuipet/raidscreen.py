@@ -208,6 +208,17 @@ class RaidPanel(menu.SubHost):
                 self.msg = "No attempts left today."
                 self.sfx = "error"
                 return None
+            # THE DEVICE'S GATE (battle audit ruling 2026-07-25, Joel: "as
+            # close to bandai vpet as much as possible"): a volley is a
+            # fight you CHOOSE, so the body answers first -- exactly as the
+            # home key, both cups and the lobby have always done.  The raid
+            # board asked only the relay's attempt count, so a pet that the
+            # house key refuses ("Too hurt to fight.") could still throw
+            # itself at a Mega three times a day.
+            if (cond := self.pet.battle_condition()) is not None:
+                self.msg = cond
+                self.sfx = "error"
+                return None
             # the clone raid bout: RaidBout precomputes generate_raid and
             # the battlescreen replays it (records nothing on the pet)
             self.sub = BattlePanel(self.pet, self._boss_enemy(), raid=True)

@@ -88,7 +88,29 @@ home key all say "Too hurt to fight."  That was P5 on the REAL VPET board
 ("'too hurt to fight' isn't literally true"), still unruled, and it is
 wider than injury.
 
-**Options, no work done until Joel rules:**
+> ### ✅ RULED + SHIPPED v0.5.246 — option (b)
+>
+> Joel, same day: *"tuipet is its own game, supposed to feel as close to
+> bandai vpet as much as possible, so anything else is extra and need
+> something smart to build it."*  That settles it by principle rather than
+> by taste: **`battle_condition` IS the device's battle button asking
+> whether this body can fight.**  Adventure and raids are tuipet's own
+> extras, so they answer to the device wherever the PLAYER chooses the
+> fight — and only there.
+>
+> * the road **BOSS gate** asks the body; refused, the pet STANDS at the
+>   gate wearing the reason ("Too hurt to fight. · T warp · ESC home")
+>   instead of being marched in.  Pressing SPACE re-asks.
+> * the **raid volley** asks the body; refused, the board says which, and
+>   the attempt is not spent.
+> * the **wayside ambush** keeps its carve-out and is now PINNED as the one
+>   exception: you cannot decline a pounce, and the energy grammar has
+>   always had the same hole in the same place.
+> * a refused gate is never a dead end — ESC home always works, and a held
+>   transport still opens the warp menu (the same honest outs the
+>   planted-on-the-road refusal offers).
+
+**The options as they stood:**
 
 - **(a) leave it** — the road is the road; only chosen HOME fights gate.
   Then the injury alert's wording should soften ("too hurt for the ring").
@@ -138,12 +160,17 @@ road and keeps the ambush carve-out that the energy grammar depends on.
   carries a `pvp` key, because the lobby drives its panel as a
   presentation-only replay and records the bout itself.  Harmless, and
   removals need a named order.
-- **The pre-fight readiness line builds its own foe** (`Side.wild(num)`)
-  instead of the fight's actual Side.  Today the two agree on everything
-  `readiness_line` reads (stage rank), so it is latent, not live.
+- ~~**The pre-fight readiness line builds its own foe**~~ → FIXED
+  v0.5.246: it reads `enemy["side"]` first, exactly as `Battle` does, so
+  the card and the fight can never describe two different creatures (a cup
+  opponent carries a RAMPED Side, a lobby peer its relayed card).
 
 ## 6. SHIPPED
 
-v0.5.245 — F1 plus `tests/test_battle_audit.py` (22 pins: the hurry key,
-the five-door ledger matrix, the gate, the lock, the card).  Suite
-1967 → 1989 green.
+- **v0.5.245** — F1 (the hurry key) plus `tests/test_battle_audit.py`
+  (22 pins: the hurry key at four press rates, the five-door ledger
+  matrix, the gate, the lock, the card).  Suite 1967 → 1989.
+- **v0.5.246** — the §3 ruling: the device's gate on every chosen fight
+  (road boss + raid volley), the ambush carve-out pinned as the one
+  exception, and the readiness line reading the fight's own foe.  12 more
+  pins; suite 1989 → 2001.

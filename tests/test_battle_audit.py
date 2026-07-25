@@ -157,11 +157,9 @@ CONDITIONS = [("injured", "Too hurt"), ("sick", "Too sick"),
 
 @pytest.mark.parametrize("field,word", CONDITIONS)
 def test_every_chosen_fight_asks_the_same_condition_gate(field, word):
-    """battle_condition is THE source: the home key, the cup door and the
-    lobby's accept all read it.  (The ROAD deliberately does not — an
-    ambush cannot be declined — which is the open ruling on the board;
-    that asymmetry is documented, not pinned, so ruling it needs no test
-    surgery.)"""
+    """battle_condition is THE source: the home key, the cup door, the
+    lobby's accept — and, since the 2026-07-25 ruling, the road's BOSS
+    gate and the raid volley too."""
     p = _pet(**({field: 0} if field == "hunger" else {field: 3 if field == "poop" else True}))
     assert word in (p.battle_condition() or "")
     assert word in (p.can_battle() or "")
@@ -262,3 +260,106 @@ def test_the_skip_debounce_still_guards_the_first_presses():
         pan.anim()
     pan.key("space")
     assert pan.i >= i0
+
+
+# ---- the ruling: the device's gate on every CHOSEN fight -------------------
+#
+# Joel 2026-07-25: "tuipet is its own game, supposed to feel as close to
+# bandai vpet as much as possible, so anything else is extra."  The battle
+# gate IS the device asking whether this body can fight; adventure and raids
+# are tuipet's own extras, so they answer to it wherever the PLAYER chooses
+# the fight.  The wayside ambush keeps its carve-out -- you cannot decline a
+# pounce -- and that is the one exception, pinned below so it stays one.
+
+def _road(pet):
+    from tuipet import adventure
+    from tuipet.adventurescreen import AdventurePanel
+    pet.adv_progress = 3
+    pan = AdventurePanel(pet, zone=adventure.ZONES[adventure.PROGRESSION[0]])
+    pan._trans = pan._pulse = None                # skip the teleport-out beat
+    return pan
+
+
+@pytest.mark.parametrize("field,word", CONDITIONS)
+def test_the_road_BOSS_gate_asks_the_body_first(field, word):
+    p = _pet(**({field: 0} if field == "hunger"
+                else {field: 3 if field == "poop" else True}))
+    pan = _road(p)
+    pan._start_boss(pan.adv.boss)
+    assert pan.sub is None, "a refused body was marched into the boss"
+    assert pan._at_gate and word in pan._gate_refusal
+    assert word in pan.strip()                    # and the strip SAYS which
+    pan.key("space")                              # pressing again re-asks
+    assert pan.sub is None
+
+
+def test_a_healthy_pet_still_walks_straight_into_the_boss():
+    p = _pet()
+    pan = _road(p)
+    pan._start_boss(pan.adv.boss)
+    assert pan.sub is not None and not pan._at_gate
+    assert pan._gate_refusal is None
+
+
+def test_a_refused_gate_is_never_a_dead_end():
+    """ESC home always works, and a held transport still warps -- the same
+    honest outs the planted-on-the-road refusal offers."""
+    p = _pet(injured=True)
+    p.add_item("town_transport")
+    pan = _road(p)
+    pan._start_boss(pan.adv.boss)
+    assert "ESC home" in pan.strip() and "T warp" in pan.strip()
+    pan.key("t")
+    assert pan._transport == ["town_transport"]
+
+
+class _GateClient:
+    """The relay's answers, standing boss, attempts left — the raid door's
+    own gates all OPEN, so only the BODY can refuse."""
+    def __init__(self, boss_num):
+        self.me_id = 1
+        self.raid = {"t": "raid", "now": 100.0,
+                     "boss": {"num": boss_num, "name": "BossMon", "hp": 1000,
+                              "max_hp": 1000, "start": 0.0, "end": 604800.0},
+                     "top": [], "you": [1, 0], "attempts": 3, "award": None}
+        self.last_hit = None
+        self.raid_reward = None
+
+    def raid_get(self):
+        pass
+
+
+@pytest.mark.parametrize("field,word", CONDITIONS)
+def test_a_raid_volley_asks_the_body_first(field, word):
+    import json
+    from tuipet.raidscreen import RaidPanel
+    boss_num = json.load(open("server/raid_pool.json"))[0]["num"]
+    p = _pet(**({field: 0} if field == "hunger"
+                else {field: 3 if field == "poop" else True}))
+    p.world_seconds = 600.0
+    pan = RaidPanel(p, None, client=_GateClient(boss_num))
+    pan.key("space")
+    assert pan.sub is None, "a refused body threw itself at a raid boss"
+    assert word in (pan.msg or "")
+
+
+def test_a_healthy_pet_still_gets_its_raid_volley():
+    import json
+    from tuipet.raidscreen import RaidPanel
+    boss_num = json.load(open("server/raid_pool.json"))[0]["num"]
+    p = _pet()
+    p.world_seconds = 600.0
+    pan = RaidPanel(p, None, client=_GateClient(boss_num))
+    pan.key("space")
+    assert pan.sub is not None
+
+
+def test_a_wayside_AMBUSH_still_cannot_be_declined():
+    """The one carve-out, and it stays one: a pounce is not a choice, and
+    the energy grammar has always had the same exception."""
+    p = _pet(injured=True, sick=True)
+    pan = _road(p)
+    enemy = {"num": 120, "name": "Kuwagamon", "stage": "Champion",
+             "attribute": "Virus"}
+    pan._start_battle(enemy)
+    assert pan.sub is not None                     # the fight happens

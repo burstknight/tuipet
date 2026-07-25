@@ -156,6 +156,8 @@ class AdventurePanel(menu.SubHost):
         self._fighting_boss = False   # the current sub is the gate boss, not a wild
         self._fighting_enemy = None   # the enemy dict of the active fight (for the bounty)
         self._at_gate = False         # knocked back: standing before the boss
+        self._gate_refusal = None      # ...or standing because the body said no
+        #                                (the device's battle gate, 2026-07-25)
         self._rest_t = 0              # ticks left resting (transport town-warp beat)
         self._heal_t = 0              # ticks left on the Life Recovery second-wind beat
         self._note = ""               # a transient strip verdict (heal / bare warp)
@@ -456,10 +458,30 @@ class AdventurePanel(menu.SubHost):
 
     def _start_boss(self, boss):
         """The gate boss fight -- same road biome, flagged so _battle_done knows
-        to settle it as the zone's end, not a wayside wild."""
+        to settle it as the zone's end, not a wayside wild.
+
+        THE DEVICE'S GATE HOLDS ON A CHOSEN FIGHT (battle audit ruling,
+        2026-07-25, Joel: "as close to bandai vpet as much as possible, so
+        anything else is extra").  `battle_condition` is the device's own
+        battle button asking whether this body can fight at all -- the home
+        key, both cups and the lobby have always asked it, and the road
+        never did, so an injured pet was told "Too hurt to fight" at home
+        and then marched into a BOSS.  A wayside ambush keeps the carve-out
+        (you cannot decline a pounce; that beat is tuipet's own extra), but
+        the gate is a stop you choose to walk into, so it asks.  Refused,
+        the pet STANDS at the gate -- ESC home and a town warp both still
+        work, so this can never strand a run."""
+        if (cond := self.pet.battle_condition()) is not None:
+            self.travelling = False
+            self._at_gate = True
+            self._fighting_enemy = boss
+            self._gate_refusal = cond
+            self.sfx = "refuse"
+            return
         from .battlescreen import BattlePanel
         self.travelling = False
         self._at_gate = False
+        self._gate_refusal = None
         self._fighting_boss = True
         self._fighting_enemy = boss
         self.sub = BattlePanel(self.pet, enemy=boss, wild=True, scene=self.adv.scene)
@@ -632,7 +654,15 @@ class AdventurePanel(menu.SubHost):
             return None
         if self._at_gate:                     # knocked back before the boss
             if k == "space":
-                self._start_boss(self.adv.boss)   # face it again
+                self._start_boss(self.adv.boss)   # face it again (the gate
+                #                                   asks the body first now)
+            elif k == "t" and self._gate_refusal:
+                # the same honest out the planted-on-the-road refusal offers
+                # (energy audit 2026-07-23): a town rest is a real answer to
+                # a drained or filthy body, so the warp menu opens here too
+                held = self.adv.held_transports()
+                if held:
+                    self._transport, self._transport_cursor = held, 0
             elif k == "escape":
                 self._home_msg = f"Turned back from {self.adv.boss_name}.{self._bits_tail()}"
                 self._go_home()
@@ -662,6 +692,9 @@ class AdventurePanel(menu.SubHost):
             return menu.hints(("any key", "home"))
         if self._at_gate:                      # knocked back before the boss
             hearts = "♥" * self.adv.lives + "[dim]♡[/]" * (MAX_LIVES - self.adv.lives)
+            if self._gate_refusal:             # the body said no: SAY WHICH
+                out = "T warp · " if self.adv.held_transports() else ""
+                return f"[b]{self._gate_refusal}[/]  [dim]· {out}ESC home[/]"
             return f"{self.adv.boss_name} {hearts}  [dim]· SPACE fight  ESC home[/]"
         if self.travelling:
             lost = MAX_LIVES - self.adv.lives
