@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.249 — ONE WAY TO SAY "ONLINE" (2026-07-25)
+
+ONE WAY TO SAY "ONLINE": the fight code had two different ways to mark a duel as an online one, and only ever used a single one of them — the other was a spare spelling waiting to disagree with the first. The spare is gone. The rule it guarded is untouched and still tested: a duel never feeds your Mega-kill count, your record or your evolution gates, no matter who you fight or how often.
+
 ## 0.5.248 — ONE LESS GHOST IN THE FIGHT CODE (2026-07-25)
 
 ONE LESS GHOST IN THE FIGHT CODE: the battle screen used to check every fight for a marker meaning "this is an online duel" — a marker nothing in the game has ever set, because a lobby duel is replayed by a different path entirely. The check is gone, so every fight that starts at the timing bar is simply what it always was: yours, and local. Nothing you can see changed; there is one less way for it to go wrong.
