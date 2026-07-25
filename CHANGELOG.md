@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.271 — YOUR MON BLOWS SMOKE WHEN IT LOSES. The happy dance pops the (2026-07-25)
+
+YOUR MON BLOWS SMOKE WHEN IT LOSES. The happy dance pops the SUN; the smoke puff is its opposite — but it only ever played on a whiffed drill and a scold. A lost battle and a lost cup flashed a SKULL instead, so the two moments you hit most never blew smoke. Now every frustration show does.
+
 ## 0.5.270 — THE SMOKE CLOUD ANSWERS THE SUN. The happy dance pops a big  (2026-07-25)
 
 THE SMOKE CLOUD ANSWERS THE SUN. The happy dance pops a big radiating SUN, but the frustration dance wore a tiny droop mark that half-vanished — so losing a drill or a battle read as no reaction at all. Both now blow the SMOKE CLOUD, same size, same beat, right where the sun goes.
