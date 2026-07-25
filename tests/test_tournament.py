@@ -277,9 +277,15 @@ def test_bracket_page_renders_and_toggles():
     pan.phase, pan.tree_view = "bracket", True
     txt = pan.text().plain
     assert "BRACKET" in txt and "Rookling" in txt   # the field of eight, you included
-    pan.key("space")                                # onward to the faceoff
+    # SUPERSEDED FLOW (dead-stop fix 2026-07-25): space used to park on the
+    # empty faceoff until a second press; it now starts the walk-in at once,
+    # and the show plays out (no skips) -- B is locked until it ends.
+    pan.key("space")
+    assert not pan.tree_view and pan._intro is not None
+    pan.key("b")                                    # locked mid-show
     assert not pan.tree_view
-    pan.key("b")                                    # B recalls the tree any time
+    pan._intro = None                               # show over (fallback state):
+    pan.key("b")                                    # ...B recalls the tree
     assert pan.tree_view
 
 
