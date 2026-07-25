@@ -84,7 +84,7 @@ Birthday-only treats (never sold; fixes the broken birthday grants):
 | Music Player | i:9 | 300b | clean wake, no grudge | alarm_clock re-skinned to real art |
 | Textbook | i:0 | 1500b | erase **ALL** care mistakes | eraser at DSprite's canon strength, Study anim |
 | Dumbbell | i:7 | 300b | stage trainings **+10** (cap 999) | Training Pack at canon value, art as shipped |
-| Grow Capsule | i:78 | 500b | stage time +120 game-min | time_gear re-skinned to real art |
+| Grow Capsule | i:78 | 500b | growth clock +¼ of THIS stage (never reaches the gate; a final form refuses) | time_gear re-skinned to real art |
 | Anti-Evo Chip | f:32 | 1000b | evolution block toggle | as shipped |
 | X-Antibody | i:79 | 2000b | X-state → Permanent (once) | as shipped |
 | Rev. Floppy | i:32 | 2500b | revive the dead | as shipped |

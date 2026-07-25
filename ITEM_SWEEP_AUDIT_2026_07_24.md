@@ -95,6 +95,25 @@ number: **+120 game-minutes**, the label's own figure.
 > a balance call and one number (`petcare._time_gear`).  What it must
 > never be again is a growth constant denominated in real time.
 
+**RULED, same day — "make the grow capsule worth 500b" (v0.5.242).**  The
+honest +120 was worth about 8% of a Rookie stage, which is not 500b of
+anything.  It now buys **a quarter of THIS stage**
+(`GROW_CAPSULE_FRACTION`), which is the only shape that means the same
+thing at both ends of a 180→2880 range — a flat figure worth having at
+Ultimate skips a baby stage whole.  Two rails keep the priced version from
+becoming the bug it replaced:
+
+* it **hurries the wait, never ends it** — the push stops one tick short
+  of the gate, so no stack of capsules evolves a pet outright, and at
+  Ultimate (whose stage length IS `LATE_STAGE_WINDOW`) that same stop is
+  what keeps capsules from arming the Pen20 frailty death by themselves;
+* a **final form refuses** it — a Mega has no clock to hurry and
+  `stage_seconds` only feeds frailty there, so the shelf would be selling
+  a pure downside (the no-duds rule, same call as F6).
+
+The shelf text moved with it: "growth: a quarter of this stage", and the
+use message names the real figure ("+360min" in a Rookie).
+
 ### F5 — the home daily deal was an uncapped bits printer  ✅ FIXED
 
 The town economy was built so every flip lands at-or-below water, and the

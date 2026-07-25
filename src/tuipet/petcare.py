@@ -783,21 +783,40 @@ class CareMixin:
         return "Rise and shine!"
 
     def _time_gear(self):
-        """The Grow Capsule: +120 GAME-minutes on the growth clock, the
-        number its own label sells ("growth +120min").
+        """The Grow Capsule: a QUARTER of this stage off the growth clock
+        (Joel 2026-07-24: "make the grow capsule worth 500b").
 
-        ⚠ THE UNIT LAW (item sweep 2026-07-24).  The 2026-07-19 pass read
-        "+120min" as 120 REAL minutes and set 7200 -- but dt is
-        game-minutes 1:1, so 7200 was 7200 GAME-minutes against stage
-        clocks of 180/360/1440/2160/2880.  One 500b capsule filled ANY
-        stage's growth gate outright (2.5x the longest stage), and it
-        also vaulted stage_seconds past LATE_STAGE_WINDOW (2880), arming
-        the Pen20 frailty death an Ultimate/Mega meets at 5 care
-        mistakes -- a killer the shelf sold as a nudge.  Same 60x family
-        as the vitamin guard (P0a).  The label was right; the number
-        wasn't."""
-        self.stage_seconds += 120.0
-        return "Time lurches forward."
+        Three rules keep it worth the bits without becoming the bug it
+        replaced:
+
+        * a FRACTION, not a flat number of minutes.  Stages run 180..2880
+          game-minutes, so a figure that matters to an Ultimate would skip
+          a baby stage whole.  A quarter is a quarter everywhere.
+        * it HURRIES the wait, it never ENDS it: the push stops one tick
+          short of the gate, so no stack of capsules can evolve a pet
+          outright -- and at Ultimate, whose stage length IS
+          LATE_STAGE_WINDOW, that same stop is what keeps capsules from
+          arming the Pen20 frailty death by themselves.
+        * a final form has no clock to hurry, and stage_seconds only
+          feeds frailty there, so the capsule REFUSES rather than sell a
+          pure downside (the no-duds rule).
+
+        ⚠ THE UNIT LAW (item sweep 2026-07-24) is why the old number went:
+        the 2026-07-19 pass read "+120min" as 120 REAL minutes and set
+        7200, but dt is game-minutes 1:1 -- 2.5x the longest stage in the
+        game, from one 500b bottle."""
+        from . import digicore
+        dur = self.STAGE_DURATION.get(self.stage, 0)
+        if not dur or dur >= 9e8 or not digicore.has_next(self):
+            return _Refused(f"{self.name} has nothing left to hurry.")  # noqa: F405
+        ceiling = dur - 1.0                       # never reaches the gate
+        target = min(self.stage_seconds + dur * GROW_CAPSULE_FRACTION,  # noqa: F405
+                     ceiling)
+        if target <= self.stage_seconds:
+            return _Refused("The growth clock is already full.")  # noqa: F405
+        moved = target - self.stage_seconds
+        self.stage_seconds = target
+        return f"Time lurches forward. (+{int(moved)}min)"
 
     def _anti_evo(self):
         self.evo_blocked = not getattr(self, "evo_blocked", False)

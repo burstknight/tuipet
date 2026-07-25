@@ -41,32 +41,55 @@ def _pet(**kw):
 
 # ---- 4. the Grow Capsule ---------------------------------------------------
 
-def test_the_grow_capsule_is_a_nudge_not_a_stage_skip():
-    """THE UNIT LAW, third instance (after the vitamin guard and the
-    fidget cadence): dt is game-minutes 1:1, so a growth constant may
-    never be denominated in real time.  One capsule must not fill any
-    stage's clock."""
-    p = _pet()
+def test_the_grow_capsule_buys_a_quarter_of_the_STAGE():
+    """Priced on Joel's word (2026-07-24: "make the grow capsule worth
+    500b").  A FRACTION, because the stages run 180..2880 game-minutes and
+    any flat figure worth having at Ultimate skips a baby stage whole.
+
+    ⚠ THE UNIT LAW still governs the constant it replaced: 7200 was
+    "+120min" read as REAL minutes, 2.5x the longest stage in the game."""
+    from tuipet.petbase import GROW_CAPSULE_FRACTION
+    for stage in ("InTraining", "Rookie", "Champion", "Ultimate"):
+        p = _pet(stage=stage)
+        p.stage_seconds = 0.0
+        p.add_item("grow_capsule")
+        out = p.use_item("grow_capsule")
+        dur = p.STAGE_DURATION[stage]
+        assert p.stage_seconds == dur * GROW_CAPSULE_FRACTION, stage
+        assert p.stage_seconds < dur, f"one capsule completes {stage}"
+        assert f"+{int(dur * GROW_CAPSULE_FRACTION)}min" in out   # it SAYS how far
+
+
+def test_capsules_hurry_the_wait_but_never_END_it():
+    """The invariant that keeps the priced version from becoming the bug it
+    replaced: the push stops one tick short of the gate, so no stack of
+    capsules evolves a pet outright -- and at Ultimate, whose stage length
+    IS LATE_STAGE_WINDOW, that same stop is what keeps capsules from arming
+    the Pen20 frailty death (5 care mistakes = dead) by themselves."""
+    for stage in ("Rookie", "Champion", "Ultimate"):
+        p = _pet(stage=stage)
+        p.stage_seconds = 0.0
+        for _ in range(8):                    # far more than it takes
+            p.add_item("grow_capsule")
+            p.use_item("grow_capsule")
+        assert p.stage_seconds < p.STAGE_DURATION[stage], stage
+    assert p.stage_seconds < p.LATE_STAGE_WINDOW          # the Ultimate run
+    # and a capsule against a full clock refuses instead of vanishing
+    p.add_item("grow_capsule")
+    held = p.inventory.get("grow_capsule")
+    assert isinstance(p.use_item("grow_capsule"), _Refused)
+    assert p.inventory.get("grow_capsule") == held        # kept, not burned
+
+
+def test_a_final_form_refuses_the_capsule_instead_of_taking_the_bits():
+    """A Mega has no growth clock to hurry, and stage_seconds only feeds
+    FRAILTY there -- so selling it a capsule would sell a pure downside."""
+    p = _pet(stage="Mega")
     p.stage_seconds = 0.0
     p.add_item("grow_capsule")
-    p.use_item("grow_capsule")
-    assert p.stage_seconds == 120.0                  # the label's own number
-    for stage, dur in p.STAGE_DURATION.items():
-        if dur < 9e8:
-            assert p.stage_seconds < dur, f"one capsule completes {stage}"
-
-
-def test_the_capsule_cannot_arm_the_frailty_death():
-    """The quiet half of the same bug: LATE_STAGE_WINDOW is 2880, so a
-    7200-second capsule opened the Pen20 window instantly -- an Ultimate
-    at 4 care mistakes bought a 500b bottle and died on its next slip,
-    with nothing on the shelf saying so."""
-    p = _pet(stage="Ultimate")
-    p.stage_seconds = 0.0
-    for _ in range(5):
-        p.add_item("grow_capsule")
-        p.use_item("grow_capsule")
-    assert p.stage_seconds < p.LATE_STAGE_WINDOW
+    out = p.use_item("grow_capsule")
+    assert isinstance(out, _Refused) and "nothing left to hurry" in out
+    assert p.stage_seconds == 0.0 and p.inventory.get("grow_capsule") == 1
 
 
 # ---- 5. the home deal ------------------------------------------------------

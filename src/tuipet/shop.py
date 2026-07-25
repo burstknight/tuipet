@@ -98,7 +98,7 @@ _AUTHORED = {
     "slim_drink":      ("Slim Drink",      "f:23", 100,  "Training", "weight -10", "the crash diet"),
     "dumbbell":        ("Dumbbell",        "i:7",  300,  "Training", "training +10", "reps in a box"),
     # ---- EVOLUTION (the gates: growth, locks, X, DNA) -----------------------
-    "grow_capsule":    ("Grow Capsule",    "i:78", 500,  "Evolution", "growth +120min", "time in a bottle"),
+    "grow_capsule":    ("Grow Capsule",    "i:78", 500,  "Evolution", "growth: a quarter of this stage", "time in a bottle"),
     "anti_evo_chip":   ("Anti-Evo Chip",   "f:32", 1000, "Evolution", "toggle evolution lock", "holds this form"),
     "x_antibody":      ("X-Antibody",      "i:79", 2000, "Evolution", "the X-Antibody takes hold", "the X factor"),
     "dna_crystal":     ("DNA Crystal",     "i:35", 1500, "Evolution", "+10 own-Field DNA banked", "a Field's worth of code"),

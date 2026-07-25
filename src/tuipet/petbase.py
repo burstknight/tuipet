@@ -550,6 +550,14 @@ PILL_ENERGY_GAIN = 7                    # the DSprite pill (feed menu, BASIC VPE
 MIRACLE_ENERGY_GAIN = 12
 # items.csv row 0 (Textbook) = Obedience +20, on the canon 150 scale.
 TEXTBOOK_OBEDIENCE = 20
+# THE GROW CAPSULE, priced (Joel 2026-07-24: "make the grow capsule worth
+# 500b").  A FRACTION of the stage rather than a flat number of minutes:
+# the stages run 180..2880 game-minutes, so any flat figure worth having in
+# an Ultimate skips a baby stage whole -- the fraction is the only shape
+# that means the same thing at every stage.  A quarter puts it beside its
+# shelf-mates (the 300b Dumbbell buys ~10 drills of an evolution gate; the
+# 500b Vitamin fills effort outright).
+GROW_CAPSULE_FRACTION = 0.25
 PILL_WEIGHT_GAIN = 5
 STOMACH_CAPACITY = 4                    # legacy fallback only -- see stomach_capacity()
 # canon stomach (food audit 2026-07-15): capacity is a PER-SPECIES field
