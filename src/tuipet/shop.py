@@ -1030,9 +1030,24 @@ def town_egg_buy(pet, idx):
 
 def town_buy(pet, e, today=None):
     """A town counter purchase: blocked once the day's authored stock is
-    gone, recorded in the pet's daily ledger otherwise."""
-    if e.get("left", 0) <= 0:
+    gone, recorded in the pet's daily ledger otherwise.
+
+    THE LIVE ROW, never the caller's copy (live-play audit 2026-07-25):
+    this is the ONE rationed counter door, and it trusted the entry dict
+    it was handed -- a stale row replayed after the ration was spent
+    oversold the deal at the deal price.  The UI rebuilds rows every
+    keypress so no key reaches it today, but any future caller that
+    caches a row would mint discounted stock.  Re-fetch the row from its
+    own builder and buy THAT: forged/stale `left` and `price` both die
+    here."""
+    tid = e.get("town_id", HOME_SHOP_ID)
+    rows = (home_stock(today, pet) if tid == HOME_SHOP_ID
+            else town_stock(tid, today, pet))
+    live = next((r for r in rows if r.get("key") == e.get("key")
+                 and r.get("left") is not None), None)
+    if live is None or live.get("left", 0) <= 0:
         return ("Sold out today — come back tomorrow.", "error")
+    e = live
     msg, sfx = buy(pet, e)
     if sfx == "confirm":
         day = _today_ordinal(today)

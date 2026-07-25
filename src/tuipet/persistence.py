@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 import os
 import time
-from dataclasses import asdict, fields
+from dataclasses import MISSING, asdict, fields
 
 from .pet import Pet
 from .petbase import (FRESH_OBEDIENCE, IN_TRAINING_OBEDIENCE,
@@ -725,6 +725,35 @@ def pet_from_save(data, strict=False):
     # their TUIPET heirs (catalog turnover 2026-07-18)
     if isinstance(data.get("inventory"), dict):
         _heal_bag(data["inventory"])
+    # THE TYPE GATE, whole-roster edition (live-play audit 2026-07-25): the
+    # 13-field wrong-type list missed ~20 fields that crashed tick() or the
+    # first render, and two pre-construction migrations (the manners heal's
+    # float(), the wager settle's compare) raised on strings BEFORE any
+    # check ran -- so load()'s promised .bak/quarantine fallback never got
+    # the chance.  Every save value must match its dataclass default's
+    # shape (numbers for numbers, dict for dict, ...); one generic sweep
+    # over fields(Pet), no list to forget -- a defense is only as good as
+    # its worst consumer (visual audit 2026-07-25).  Values a heal above
+    # already coerced (egg_type, _lights_t, trophies_won keys) arrive here
+    # healed; anything else malformed rejects into the fallback chain.
+    for f in fields(Pet):
+        if f.name not in data or data[f.name] is None:
+            # None is TOLERATED, not rejected: the foreign-save repair
+            # contract (the 2026-07-04 'Child' incident) loads real saves
+            # carrying line_id: None and heals them downstream -- the gate
+            # judges wrong TYPES, absence-shaped values pass through
+            continue
+        proto = (f.default if f.default is not MISSING
+                 else f.default_factory() if f.default_factory is not MISSING
+                 else 0)                    # `num` is the one default-less field
+        if isinstance(proto, bool):
+            want = (bool, int)
+        elif isinstance(proto, (int, float)):
+            want = (int, float)
+        else:
+            want = type(proto)
+        if not isinstance(data[f.name], want):
+            return None, ""
     # THE MANNERS HEAL, once per save (D1/P3, 2026-07-23).  _set_obedience
     # was a NO-OP for the whole BASIC VPET era, so every pet on disk sits
     # at the dataclass default 0 -- "worst-raised pet alive" through no
@@ -746,19 +775,10 @@ def pet_from_save(data, strict=False):
         pet = Pet(**kwargs)
     except TypeError:
         return None, ""
-    # a dataclass constructor validates NOTHING: a save with the right keys but
-    # wrong-typed values (hand-edited file, corrupt cloud payload) builds a pet
-    # that crashes minutes later in tick().  Reject it here instead -- this also
-    # guards sync_down_at_startup's probe (audit 2026-07).
-    for fname, want in (("hunger", (int, float)), ("energy", (int, float)),
-                        ("mood", (int, float)), ("weight", (int, float)),
-                        ("bits", (int, float)), ("poop", (int, float)),
-                        ("world_seconds", (int, float)), ("age_seconds", (int, float)),
-                        ("sleep_lapse", (int, float)),
-                        ("stage", str), ("attribute", str),
-                        ("inventory", dict), ("poop_sizes", list)):
-        if not isinstance(getattr(pet, fname), want):
-            return None, ""
+    # (the 13-field wrong-type list that stood here was superseded by THE
+    # TYPE GATE above: same rejection, every field, checked BEFORE the
+    # migrations that used to crash on the poison -- live-play audit
+    # 2026-07-25.  It still guards sync_down_at_startup's probe.)
     msg = ""
     if pet.num >= 0 and pet.stage != "Egg":
         from . import data as _data
@@ -831,7 +851,14 @@ def load(path=None):
         except (ValueError, OSError):
             broken = broken or candidate
             continue
-        pet, msg = pet_from_save(data)
+        try:
+            pet, msg = pet_from_save(data)
+        except Exception:
+            # the BELT under the type gate (live-play audit 2026-07-25): this
+            # function's contract is fallback/quarantine, NEVER a raise -- a
+            # poisoned save that slips any future gate must land in the same
+            # .bak -> quarantine chain, not crash the boot in app.py
+            pet, msg = None, ""
         if pet is None:
             broken = broken or candidate
             continue

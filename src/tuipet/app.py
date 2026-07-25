@@ -133,15 +133,19 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE VISUAL AUDIT: every animation in the game was "
-                 "soak-tested end to end — all 15 care/scene effects, all "
-                 "15 item shows, the assistant's visits, the hatch crack, "
-                 "the jogress fusion, and every pose of all 1548 species. "
-                 "One real bug fixed: a save carrying a creature this "
-                 "build doesn't know (say, from a newer version) is meant "
-                 "to wear a stand-in sprite — but the stand-in only had "
-                 "one frame, so nearly any animation crashed the app in a "
-                 "loop. The stand-in now answers every pose.")
+    WHATS_NEW = ("THE LIVE-PLAY AUDIT: three robot play-testers ran whole "
+                 "lifetimes overnight and four finds shipped. Your mon "
+                 "should wake up sick less often — the per-species filth "
+                 "resistance the data always carried was never wired, so "
+                 "one overnight pile rolled the full 3-pile sickness rate; "
+                 "the real scaling is live now. The road's Town Cup now "
+                 "shares the home board's once-per-hour cadence (it could "
+                 "be farmed with the clock parked — and each entry was "
+                 "silently eating your home cup slot anyway). And a "
+                 "damaged save file can no longer crash the game at "
+                 "launch: every field is type-checked and a bad file "
+                 "falls back to the backup, then quarantine, like it "
+                 "always promised.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

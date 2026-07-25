@@ -100,6 +100,17 @@ class TownPanel(menu.SubHost):
         if reason:
             self.msg = reason
             return
+        # THE SHARED HOURLY CADENCE (live-play audit 2026-07-25): entering
+        # ANY cup spends the pet's cup-hour slot -- Tournament.__init__ has
+        # always burned it -- but this door never CHECKED it.  Wrong both
+        # ways: with the world clock parked on the road, a march-and-flee
+        # loop re-entered the town cup every arrival (the exact "~1,500b a
+        # minute" farm the hour rule exists to close -- measured: 100 cups,
+        # +47,632 bits, 0.0 game-seconds), and each entry silently killed
+        # that hour's HOME cup.  One slot, both doors.
+        if tournament._hour(self.pet) in (getattr(self.pet, "fought_hours", None) or []):
+            self.msg = "The cup hour is spent — the next starts on the hour."
+            return
         cup = tournament.town_cup(self.pet, self.town_id)
         fee = tournament.entry_fee(self.pet, cup)
         if self.pet.bits < fee:

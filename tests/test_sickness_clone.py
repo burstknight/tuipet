@@ -18,13 +18,20 @@ def _pet(**kw):
     return p
 
 
-def test_filth_sickens_at_the_clone_rate(monkeypatch):
+def test_filth_sickens_at_the_canon_scaled_rate(monkeypatch):
+    """SUPERSEDED FLAT RATE (live-play audit 2026-07-25): the clone's flat
+    SICK_POOP_P was always a stand-in for the documented chance x piles /
+    bound x species-multiplier roll (_filth_effects' own docstring), whose
+    wiring was lost.  The DSprite MODEL survives untouched -- one flag, no
+    worsening, pill-cured -- only the catch rate now scales; at the 3-pile
+    mess it equals the old flat rate exactly."""
     monkeypatch.setattr(random, "random", lambda: SICK_POOP_P * 0.99)
-    p = _pet(poop=2)
-    p._tick_mortality(1.0)                        # one game-minute
+    p = _pet(poop=3)                              # the mess where old == new
+    p._filth_effects(1.0)                         # one game-minute
     assert p.sick
     q = _pet(poop=0)
-    q._tick_mortality(1.0)                        # a clean room never rolls
+    q._filth_effects(1.0)                         # a clean room never rolls
+    q._tick_mortality(1.0)
     assert not q.sick
 
 

@@ -481,7 +481,11 @@ FILTH_WORSE_CHANCE = 20                 # FilthWorseSickChance (x piles, already
 # the CLONE's rules): one flag, caught per game-minute from filth or
 # overweight, cured ONLY by the pill.  No spell timer, no worsening, no
 # contagion, no counters.  Constants verbatim from the clone (v0.4.12).
-SICK_POOP_P = 0.015            # sickness per minute while filth is present
+SICK_POOP_P = 0.015            # RETIRED (live-play audit 2026-07-25): the flat
+#                                stand-in the lost FILTH_SICK_CHANCE/BOUND
+#                                wiring shipped with; kept only to name the
+#                                rate the scaled roll matches at 3 piles.
+#                                The live roll is in _filth_effects.
 SICK_OVERWEIGHT_P = 0.00375    # per overweight step: floor(excess/(base*0.5))
 DEATH_SICK_P = 7.5e-5          # the clone's per-minute death whisper while sick
 # ---- the DSprite mortality (rebuilt 2026-07-22, Joel: "we gotta do it how

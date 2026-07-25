@@ -292,7 +292,7 @@ class BodyMixin:
         game-min each pile is a sickness risk (chance x piles vs the bound x the
         species multiplier -- the 12000 real-min bound rides the /60 game scale,
         which lands within a hair of the old hand-rolled rate while gaining the
-        per-pile scaling and the worse-sick path the flat roll lacked).
+        per-pile scaling the flat roll lacked).
         Away, canon's countFilth() reads 0 (poopable gates on _isHome): the
         home mess can't sicken a pet out on the road (sweep 2026-07-06)."""
         if getattr(self, "away", False):
@@ -305,6 +305,19 @@ class BodyMixin:
             if self._filth_mood_t >= FILTH_MOOD_DEC_MIN:
                 self._filth_mood_t = 0.0
                 self._set_mood(self.mood + fm * self.poop)
+        # the sickness roll this docstring always promised (live-play audit
+        # 2026-07-25: the wiring was lost -- FILTH_SICK_CHANCE/BOUND and 232
+        # species' PoopSickChanceBoundMultiplier sat unread while
+        # _tick_mortality rolled a flat SICK_POOP_P whatever the mess).
+        # chance x piles vs bound x species multiplier, per game-min: one
+        # pile is 3x gentler than the flat roll, a 4-pile sty is worse, and
+        # the resistant species (mult 2.0) shrug at half the rate.  At the
+        # 3-pile mess the old flat rate matched, they agree exactly.
+        if not self.sick:
+            mult = self._phys().get("poop_sick_mult", 1.0) or 1.0
+            p = (FILTH_SICK_CHANCE * self.poop) / (FILTH_SICK_BOUND * mult)  # noqa: F405
+            if random.random() < p * dt:
+                self.sick = True
 
     def _tick_hunger(self, dt):
         """hunger: the DVPet calorie buffer drains each lapse; emptying it drops
@@ -651,12 +664,14 @@ class BodyMixin:
                 self.discipline_call = True
                 self._open_scold()
                 self._set_anim("angry", 2.0)      # the emote-free grumble
-        # the DSprite sickness (clone rules, 2026-07-17): caught per game-min
-        # from filth (never on the road -- countFilth reads 0 away) or from
-        # overweight steps
+        # the DSprite sickness, overweight half (clone rules, 2026-07-17).
+        # The FILTH half moved home to _filth_effects (live-play audit
+        # 2026-07-25): its flat SICK_POOP_P stood in for the documented
+        # chance x piles / bound x species-multiplier roll, leaving the
+        # canon scaling and 232 species' PoopSickChanceBoundMultiplier
+        # unread.
         if not self.sick:
-            p = (SICK_POOP_P if (self.poop > 0
-                                 and not getattr(self, "away", False)) else 0.0)
+            p = 0.0
             bw = self._base_weight()
             if bw > 0 and self.weight > bw:
                 p += int((self.weight - bw) // (bw * 0.5)) * SICK_OVERWEIGHT_P
