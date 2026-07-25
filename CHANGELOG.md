@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.245 — MASHING NO LONGER FREEZES A FIGHT (2026-07-25)
+
+MASHING NO LONGER FREEZES A FIGHT: tapping SPACE to hurry a battle was snapping the animation BACK to the start of the punch — every tap — so a fast tapper could sit in round one forever while the bars refused to move. Now a hurry key only ever hurries: mash away and the fight finishes faster than ever, with exactly the same result. One fix, every fight — home bouts, road ambushes, boss gates, both cups, raid volleys and online duels.
+
 ## 0.5.244 — ONE ANSWER TO "IS THIS EATEN" (2026-07-25)
 
 ONE ANSWER TO "IS THIS EATEN": under the hood the shop kept two lists of what your pet swallows, and they disagreed about six goods — both drinks, both pills, the vitamin and the anti-evo chip, which DO get eaten on the LCD through their own artwork. The losing list is gone. Nothing you can see changed today; there is simply one less way for a good to eat wrong tomorrow.
