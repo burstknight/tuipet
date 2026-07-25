@@ -144,11 +144,18 @@ def test_poop_costs_weight_not_hunger():
     from tuipet.pet import Pet
     p = Pet(num=102, name="D", stage="Champion", attribute="Virus")
     p.world_seconds = 12 * 60.0
-    p.hunger, p.weight, p.mood = 3, 20, 0
+    # ABOVE the species base: since 2026-07-25 the shed FLOORS at base like
+    # every other weight sink (the weight-floor law's last hold-out -- at
+    # four piles a game-day an unfloored shed wasted even a well-fed pet to
+    # the hard clamp), so the cost is only visible on a pet carrying extra.
+    p.hunger, p.mood = 3, 0
+    p.weight = p._base_weight() + 10
+    w0 = p.weight
     o0 = p.obedience
     p._do_poop()
     assert p.hunger == 3                     # NEVER touched by pooping
-    assert p.weight < 20                     # the canon cost is WEIGHT
+    assert p.weight < w0                     # the canon cost is WEIGHT
+    assert p.weight >= p._base_weight()      # ...but never below base
     # (the poop relief mood left with the mood system)
     assert p.obedience == o0                 # FloorPoopObedienceChange = 0 (shipped)
 

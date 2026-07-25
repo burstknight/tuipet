@@ -188,11 +188,27 @@ def test_manners_fade_while_awake():
         p._set_energy(p.max_energy)
         p.awake_limit = 9e9                  # keep it up: a 600-min tick would
         p.sleep_limit = 9e9                  # otherwise reach bedtime mid-test
+        # a CLEAN floor for the whole tick: since the poop clock was put on
+        # the day (2026-07-25) a 600-minute tick drops a pile of its own,
+        # and each fade also bills the mess -- which is the NEXT
+        # assertion's job, not this one's.  The potty keeps it spotless
+        # from inside _do_poop, so nothing lands mid-tick.
+        p.auto_clean_until = p.world_seconds + 1e9
         p.tick(600.0)                        # 600 game-min == 10 real min
         assert p.obedience == 98
-        p.poop = 2                           # each fire also bills the mess
-        p.tick(600.0)
-        assert p.obedience == 94
+        # AND THE MESS BITES HARDER.  Pinned as a COMPARISON rather than an
+        # exact figure (2026-07-25): each fade bills OBEDIENCE_FILTH_SCALE x
+        # piles, and now that a pile lands every ~6 real minutes the pile
+        # count moves DURING the tick, so an exact target was really pinning
+        # the old poop cadence.  What the rule says is this: the same
+        # stretch costs more manners with filth on the floor than without.
+        clean_cost = 100 - p.obedience        # what a spotless 600 min cost
+        q = _pet(obedience=100, disposition=0)
+        q._set_energy(q.max_energy)
+        q.awake_limit = q.sleep_limit = 9e9
+        q.poop, q.poop_sizes = 2, [1, 1]
+        q.tick(600.0)
+        assert (100 - q.obedience) > clean_cost
     finally:
         pb.random.random = old
     assert petbody is not None

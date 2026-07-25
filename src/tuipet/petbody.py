@@ -729,12 +729,25 @@ class BodyMixin:
         (gauge still >= bmMax/2 after the poop) makes the pile one size bigger --
         the only source of size-4 piles -- and sheds an extra half weight."""
         self._set_mood(self.mood + POOP_MOOD_INC)                 # PoopMoodInc
-        wdec = min(int(self._base_weight() * POOP_WEIGHT_DEC_COEF), POOP_WEIGHT_LIMIT)
-        self._set_weight(self.weight - wdec)
+        # ⭐ THE WEIGHT FLOOR LAW REACHES THE LAST SINK (2026-07-25).  Every
+        # other drain floors at the species BASE -- training (v0.5.17),
+        # battles (v0.5.204, "the one sink still grinding to a skeleton"),
+        # the march -- and this one never did.  It did not show while a pile
+        # arrived every 1.9 game-days; the moment poop went to four a day
+        # the budget inverted: at base 40 that is -16g of pooping against
+        # +3g of meals, so even a pet fed on the dot wasted to the hard
+        # clamp in two game-days and wore the maximum condition penalty
+        # (-0.10 hit chance) for its whole life.  A body that eats and
+        # relieves itself in balance sits AT its base; only real starvation
+        # takes it below, and that branch (the calorie crash) is
+        # deliberately unfloored.
+        base = self._base_weight()
+        wdec = min(int(base * POOP_WEIGHT_DEC_COEF), POOP_WEIGHT_LIMIT)
+        self._set_weight(max(base, self.weight - wdec))
         size = self._poop_size()
         if backlog:
             size = min(4, size + 1)
-            self._set_weight(self.weight - math.ceil(wdec / 2))
+            self._set_weight(max(base, self.weight - math.ceil(wdec / 2)))
         self._add_filth(size)                    # capped; a full room upgrades a smaller pile
 
     def _sleep_inc(self):

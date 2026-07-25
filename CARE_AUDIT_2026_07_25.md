@@ -90,11 +90,45 @@ this is a **balance ruling, not a unit slip**, and it is yours.
 > starvation death — which is now what actually kills a neglected pet,
 > rather than a clock that could never run.
 >
-> **The sibling clocks were NOT touched** — poop still comes every 1.9
-> game-days and an effort heart every 2.1.  They are tuned to the same
-> old scale and now look slow beside hunger; that is the next ruling, not
-> this one.  (Worth knowing for it: the effort gauge has its own call, so
-> a pet nobody drills books slips exactly like a pet nobody feeds.)
+> **The sibling clocks followed** — see §2b.
+
+## 2b. THE SIBLING CLOCKS  ✅ RULED + RETUNED (v0.5.258)
+
+Joel, immediately after: *"retune the poop and effort clocks too."*  Both
+were left on the old scale by the hunger pass and looked absurd beside a
+one-game-day belly.  Both are now expressed against `DAY_MINUTES`:
+
+| clock | before | after |
+|---|---|---|
+| a poop pile | 1.9 game-days | **0.25 (four a game-day — the device's eat→poop coupling)** |
+| an effort heart | 2.1 game-days | **0.33 (three a game-day; gentler than the belly, since a drill is a bigger ask than a meal)** |
+
+**And that exposed the last unfloored weight sink.**  `_do_poop` shed
+weight with no base floor — invisible while a pile arrived every 1.9
+game-days, ruinous at four a day: at base 40 that is **−16g of pooping
+against +3g of meals**, so a pet fed exactly on time still wasted to the
+hard clamp within two game-days and wore the **maximum condition penalty
+(−0.10 hit chance) for its whole life**.  Every other drain — training,
+battles, the march — has floored at the species base since v0.5.204's
+weight-floor law; this one never got it.  It has it now.  Real starvation
+still wastes a pet below base, deliberately: that branch is the body with
+nothing left to burn.
+
+**The difficulty curve, measured across five play styles** (6 game-days
+each), because a retune that quietly makes the game brutal is a bad
+retune:
+
+| player | outcome |
+|---|---|
+| perfect | survives · 0 mistakes · weight exactly at base |
+| misses 30% of chores | survives · 0 mistakes |
+| misses 60% | survives · 0 mistakes · sick 0.1 game-hours |
+| misses 90% | survives · 0 mistakes · a little overweight (29 vs 25) |
+| **never touches it** | **dies of sickness at 0.42 game-days (~10 real min)** |
+
+That is the shape to keep: **present but sloppy is fine; abandonment
+kills.**  It is pinned as a parametrised test, so a future tuning pass that
+breaks the forgiving end fails immediately.
 
 ## 3. HELD UNDER LOAD
 
@@ -117,3 +151,5 @@ this is a **balance ruling, not a unit slip**, and it is yours.
 - **v0.5.257** — F2 ruled and retuned: a full belly is one game-day.  The
   pins that recorded the broken numbers were superseded in place, which is
   exactly what they were written for.  Suite 2126 → 2127.
+- **v0.5.258** — the sibling clocks ruled and retuned (§2b), plus the
+  weight-floor law's last sink.  Suite 2127 → 2135.

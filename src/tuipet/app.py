@@ -133,14 +133,16 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("YOUR PET IS ACTUALLY HUNGRY NOW: a full belly used to "
-                 "last FIVE in-game days — longer than a neglected pet "
-                 "survives — so it never emptied, the hunger alarm never "
-                 "rang, and you could raise a whole pet without feeding it "
-                 "once. A belly now lasts one game-day: a heart every few "
-                 "minutes of play, three or so meals a day, and a pet "
-                 "nobody feeds will actually starve. Look after it and you "
-                 "will never see an empty heart.")
+    WHATS_NEW = ("MESSES AND MUSCLES KEEP UP WITH THE BELLY: after "
+                 "yesterday's hunger fix your pet still only pooped every "
+                 "TWO in-game days and took eight to run its effort gauge "
+                 "down, so cleaning and training were formalities. Both "
+                 "now run on the same clock as feeding — about four "
+                 "messes and three drills a day. Fixing that exposed one "
+                 "more thing: every poop shed weight with no floor, so a "
+                 "perfectly-fed pet was quietly wasting away to the "
+                 "skinniest it could be, and fighting at the worst "
+                 "possible odds. It sits at its proper weight now.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

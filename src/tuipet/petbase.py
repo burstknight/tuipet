@@ -661,8 +661,23 @@ CALORIE_DECAY_SEC = DAY_MINUTES / (FULL_HUNGER * 2 * CALORIE_LIMIT)
 REF_HUNGER_COEF = 60          # modal HungerDecayCoefficient
 REF_STRENGTH_COEF = 50        # modal StrengthDecayCoefficient
 REF_POOP_RATIO = 64           # modal PoopLimit / PoopLapseInc
-POOP_INTERVAL_BASE = 2700     # tuipet's tuned poop interval at the modal ratio
-STRENGTH_DECAY_BASE = 3000    # gentle effort decay at the modal coefficient (~50 min/heart)
+# ⭐ THE SIBLING CLOCKS, PUT ON THE DAY TOO (Joel 2026-07-25: "retune the
+# poop and effort clocks too", right after the hunger ruling).  Both were
+# left on the old scale when the belly moved, and beside a one-game-day
+# belly they were absurd: a pile every 1.9 GAME-DAYS and an effort heart
+# every 2.1, so a pet produced half a mess a day and its gauge took eight
+# days to empty.  Neither chore could become a rhythm, and the effort CALL
+# -- which books a care mistake exactly like the hunger call -- could
+# barely fire.
+#
+# POOP follows MEALS, the device's own coupling: four piles a game-day,
+# the same cadence as the four hunger hearts, so eating and cleaning keep
+# step.  EFFORT is deliberately gentler than the belly -- a drill is a
+# bigger ask than a meal -- so its four hearts drain over ~1.3 game-days.
+# Both are expressed against DAY_MINUTES so they cannot drift out of the
+# day the way the belly did.
+POOP_INTERVAL_BASE = DAY_MINUTES / 4          # 360: four piles a game-day
+STRENGTH_DECAY_BASE = DAY_MINUTES / 3         # 480: the gauge empties in ~1.3 days
 
 # DVPet discipline (config.csv, PhysicalState.praise / scold / checkPraiseScoldWindow).
 # The pet flags a praise window after a good deed and a scold window after a bad one;

@@ -184,13 +184,22 @@ def test_the_meters_never_leave_their_rails(days):
             break
 
 
-def test_every_care_mistake_has_exactly_one_source():
-    """The four doors that book a slip, each fired in isolation."""
+def test_every_care_mistake_has_exactly_one_source(monkeypatch):
+    """The four doors that book a slip, each fired in isolation.
+
+    Rolls are pinned (the house pattern): the body has RANDOM callers too
+    -- a sickness roll, a discipline tantrum -- and either can book a
+    second slip mid-wait.  That only ever showed in SUITE ORDER, where the
+    RNG arrives in a different state, which is exactly why it is patched
+    rather than seeded."""
+    import tuipet.petbody as pb
+    monkeypatch.setattr(pb.random, "random", lambda: 0.99)
     # an ignored hunger call.  ISOLATED: the body has other callers (the
     # effort gauge, a discipline tantrum), and with the retuned clock two
     # can mature in the same tick -- so quiet them and let hunger be the
     # only thing left to book a slip.
     p = _pet(hunger=0)
+    p.auto_clean_until = p.world_seconds + 1e9   # no filth call: 4 piles/day now
     for _ in range(int(DAY_LENGTH)):
         p.strength = 4                        # no effort call
         p.discipline_call = False             # no tantrum
@@ -224,3 +233,92 @@ def test_the_death_ladder_holds_at_both_ends():
     q.stage_seconds = q.LATE_STAGE_WINDOW + 1
     q.tick(1.0)
     assert q.dead and q.death_cause == "frailty"
+
+
+# ---- the sibling clocks, ruled 2026-07-25 ("retune the poop and effort
+# clocks too") ------------------------------------------------------------
+
+def test_all_three_body_clocks_are_tied_to_the_day():
+    """Hunger, filth and effort now share one scale — the day itself — so
+    none of them can drift out of it the way the belly had.  Roughly four
+    meals, four piles and three drills a game-day."""
+    p = _pet()
+    assert 32 * p._hunger_interval == pytest.approx(DAY_LENGTH, rel=0.05)
+    assert DAY_LENGTH / p._poop_interval == pytest.approx(4, abs=0.5)
+    assert DAY_LENGTH / p._strength_interval == pytest.approx(3, abs=0.5)
+
+
+def test_a_cared_for_pet_never_wastes_below_its_base_weight():
+    """THE WEIGHT FLOOR LAW'S LAST SINK.  Pooping shed weight with no floor;
+    invisible at a pile every 1.9 game-days, ruinous at four a day — at
+    base 40 that is -16g of pooping against +3g of meals, so even a pet fed
+    on the dot wasted to the hard clamp and wore the maximum condition
+    penalty for life."""
+    p = _pet()
+    base = p._base_weight()
+    lowest = base
+    for _ in range(int(DAY_LENGTH * 4)):
+        p.tick(1.0)
+        lowest = min(lowest, p.weight)
+        if p.hunger <= 1 and not p.asleep:
+            p.feed_meat()
+        if p.poop:
+            p.clean()
+        if p.strength <= 1 and not p.asleep and not p.can_train():
+            p.train_result(True)
+        if p.sick:
+            p.feed_pill()
+        if p.discipline_call:
+            p.scold()
+        if p.asleep and p.lights:
+            p.toggle_lights()
+        elif not p.asleep and not p.lights:
+            p.toggle_lights()
+    assert lowest >= base, f"a tended pet wasted to {lowest} from base {base}"
+
+
+def test_starvation_alone_may_still_waste_a_pet_below_base():
+    """The one deliberate exception: a body with nothing to burn."""
+    p = _pet(hunger=0)
+    base = p._base_weight()
+    for _ in range(600):
+        p.tick(1.0)
+        p.hunger = 0
+        if p.dead:
+            break
+    assert p.weight < base
+
+
+@pytest.mark.parametrize("skip,should_live", [(0.0, True), (0.3, True),
+                                              (0.6, True), (0.9, True),
+                                              (1.0, False)])
+def test_the_difficulty_curve_forgives_an_imperfect_player(skip, should_live):
+    """The shape the retunes have to keep: someone who is PRESENT but
+    sloppy keeps a healthy pet; only total abandonment kills.  (Measured at
+    the retune: 90% of chores missed still survives six game-days with no
+    care mistakes; never touching it at all dies of sickness in under a
+    game-day.)"""
+    import random
+    random.seed(3)
+    p = _pet()
+    for _ in range(int(DAY_LENGTH * 6)):
+        p.tick(1.0)
+        if random.random() < skip:
+            continue                       # the chore was missed
+        if p.hunger <= 1 and not p.asleep:
+            p.feed_meat()
+        if p.poop:
+            p.clean()
+        if p.strength <= 1 and not p.asleep and not p.can_train():
+            p.train_result(True)
+        if p.sick:
+            p.feed_pill()
+        if p.discipline_call:
+            p.scold()
+        if p.asleep and p.lights:
+            p.toggle_lights()
+        elif not p.asleep and not p.lights:
+            p.toggle_lights()
+        if p.dead:
+            break
+    assert (not p.dead) == should_live
