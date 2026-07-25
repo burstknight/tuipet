@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.241 — THE ITEM SWEEP, AUDITED END TO END (2026-07-24)
+
+THE ITEM SWEEP, AUDITED END TO END: every good walked from the shelf to the belly. A felled raid boss now names your prizes properly ("Energy Drink", not "energy_drink"). Town counters finally honour the map-clear gate the home shop always did — and they carry the whole road shelf, so Life Recovery is buyable somewhere at last. The GROW CAPSULE was quietly worth a whole stage (and could drop an elder into the frailty window); it now does the +120min it says. The home daily deal is rationed like a town's, so it can't be flipped for endless bits. And a Caffeine Pill that would do nothing is refused instead of spent.
+
 ## 0.5.240 — CUP FIGHTS OPEN CLEAN NOW (2026-07-24)
 
 CUP FIGHTS OPEN CLEAN NOW: the match no longer stands both mons in the ring, then walks them BACK in, then flashes a third banner — it's one entrance: the walk-in, straight into the fight. And the advancing-field parade actually strides on- and off-screen instead of blinking in and out at the edges.
