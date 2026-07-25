@@ -61,26 +61,69 @@ def test_an_effort_heal_survives_a_long_empty_spell():
     assert p.mistake_day == md0
 
 
+def test_an_unhappy_pet_actually_reaches_the_sulk_over_a_day():
+    """THE REACHABILITY PIN (pose audit 2026-07-25, Joel: "ive yet to see an
+    angry pose to this day on anything. see a lot of happy poses").  The
+    branch existing is not the same as the branch FIRING: the roll that
+    calls _special_idle carried `not self.poop and not self.sick`, and sick
+    and filthy are two of the three states that read Unhappy -- so the two
+    commonest unhappy pets could never fume at all.  Measured over a full
+    game-day before the fix: sick 0 sulks, filthy 0, starving-but-trained
+    0.  This walks the REAL tick, not the branch."""
+    import random
+    from tuipet.pet import Pet
+
+    def sulks_per_day(**state):
+        random.seed(7)
+        p = Pet(num=100, stage="Champion", attribute="Vaccine", obedience=500)
+        p.world_seconds = 600.0
+        n = 0
+        for _ in range(1440):                      # one game-day, a minute a tick
+            p.energy, p.hunger, p.asleep = p.max_energy, 4, False
+            p.sick, p.poop, p.strength = False, 0, 0
+            for k, v in state.items():
+                setattr(p, k, v)
+            p.tick(1.0)
+            n += p.anim == "tantrum"
+        return n
+
+    assert sulks_per_day(sick=True) > 20, "a sick pet still never fumes"
+    assert sulks_per_day(poop=4) > 20, "a filthy pet still never fumes"
+    assert sulks_per_day(hunger=0, strength=4) > 20, "a trained pet still never fumes"
+    assert sulks_per_day() == 0, "a well-kept pet must NOT sulk"
+
+
 def test_good_care_no_longer_mutes_the_happy_idles():
     """Gameplay polish #10 (2026-07-22): the under-drilled gate (effort<=2)
     muted BOTH idle families, so a well-kept pet played no ambient emote
-    while a neglected one danced.  Joy plays at any effort now; the sulk
-    stays an under-drilled tell."""
+    while a neglected one danced.  Joy plays at any effort now.
+
+    POSE AUDIT 2026-07-25 (Joel: "ive yet to see an angry pose to this day
+    on anything"): the effort gate left on the SULK is gone too -- it made
+    fuming unreachable for anyone who trains, and this pin's old
+    `idled(4, sick=True) == "idle"` line WAS that rule.  An unhappy pet
+    sulks at any effort, drained or not."""
     from tuipet.pet import Pet
 
-    def idled(strength, sick=False):
+    def idled(strength, sick=False, energy=None, poop=0):
         p = Pet(num=100, stage="Champion", attribute="Vaccine")
         p.world_seconds = 10 * 60.0
         p.hunger, p.energy, p.enthusiasm = 4, p.max_energy, 5
-        p.strength, p.sick = strength, sick
+        p.strength, p.sick, p.poop = strength, sick, poop
+        if energy is not None:
+            p.energy = energy
         p.anim = "idle"
-        assert p.current_mood() == ("Unhappy" if sick else "Happy")
         p._special_idle()
         return p.anim
 
     assert idled(4) in ("play", "happy")           # well-drilled joy PLAYS
-    assert idled(4, sick=True) == "idle"           # a drilled pet doesn't sulk
-    # the sulk is ALWAYS the tantrum now (the discouraged show, Joel
+    # the sulk is ALWAYS the tantrum (the discouraged show, Joel
     # 2026-07-23): it wears the depressed gloom-cloud emote -- "angry"
     # is the same pose pair but stays the disturb grumble, emote-free
     assert idled(1, sick=True) == "tantrum"
+    assert idled(4, sick=True) == "tantrum"        # a DRILLED pet fumes too
+    assert idled(4, sick=True, energy=1) == "tantrum"   # ...and a spent one
+    # the joy family keeps every gate it was written with: a pile on the
+    # floor or an empty tank and the bounce sits out
+    assert idled(4, poop=1) == "idle"
+    assert idled(4, energy=1) == "idle"

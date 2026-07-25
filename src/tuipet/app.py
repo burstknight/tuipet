@@ -141,11 +141,12 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("Training now shows what you actually hit. A PERFECT "
-                 "strike cheers; a solid shoulder hit SULKS — the wall "
-                 "held, and your mon knows it; a whiff slumps. The drill "
-                 "graded three ways all along but only had two faces, so "
-                 "a mediocre shot celebrated like a perfect one.")
+    WHATS_NEW = ("Your mon can finally look UNHAPPY. The ambient sulk — "
+                 "the gloom-cloud fume — could never fire while sick or "
+                 "filthy, the two states that cause it, and any pet that "
+                 "trained was locked out entirely. Now a sick, starving "
+                 "or filthy mon visibly fumes. Only a PERFECT training "
+                 "strike opens a proud moment.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

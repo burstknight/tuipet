@@ -148,6 +148,22 @@ def test_three_grades_wear_three_verdict_poses():
     assert training.CHEER_A not in seen and training.CHEER_B not in seen
 
 
+def test_only_a_clean_strike_opens_the_praise_window():
+    """Joel 2026-07-25 ("tighten"): the proud-moment window read `success`,
+    so the shoulder hit the pet now SULKS over still opened one.  A clean
+    strike is the proud moment; a solid hit and a whiff are not."""
+    def window(where):
+        p = _pet()
+        p.praise_window = 0.0
+        pan = training.TrainingPanel(p)
+        _lock_at(pan, where(pan))
+        return p.world_seconds <= getattr(p, "praise_window", 0.0)
+
+    assert window(lambda pan: (pan.mega_lo + pan.mega_hi) // 2)      # mega
+    assert not window(lambda pan: pan.mega_lo - 3)                   # solid hit
+    assert not window(lambda pan: 0 if pan.mega_lo - 5 > 0 else 24)  # whiff
+
+
 def test_the_bool_callers_still_read_pass_fail():
     """train_result's grade is OPTIONAL: the sim-side callers that only care
     about the counters (lines/care/discipline pins) keep passing a bool, and

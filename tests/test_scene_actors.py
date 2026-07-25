@@ -92,6 +92,52 @@ def test_no_sprite_ever_draws_on_another(monkeypatch):
                 assert not hit, (kw, n, i, sorted(hit)[:6])
 
 
+def test_the_sulks_gloom_cloud_yields_to_the_floor_zones(monkeypatch):
+    """Pose audit 2026-07-25: the ambient sulk only reached a sick or filthy
+    pet once the idle roll's sick/filth guard moved, and those are exactly
+    the scenes that already own floor -- a skull slot on the right, a filth
+    block on the left.  The cloud pinned to the pet's right edge printed
+    STRAIGHT into the skull (both land at x=28..35).  It takes the right
+    edge when it's free, tucks left when the skull owns it, and is dropped
+    entirely when the corridor is full -- the POSE is the show."""
+    cap = _paint_capture(monkeypatch)
+
+    def cloud_pts(p):
+        s = _screen()
+        s.paint(p)
+        overlay = set(cap["overlay"])
+        q = _pet(weather="Clear", **{k: getattr(p, k) for k in
+                                     ("sick", "poop", "poop_sizes") if hasattr(p, k)})
+        q.anim = "idle"                       # same scene, no cloud
+        base = set(arena._effect_overlay(q, s.frame_i // 4, 40, 24, tick=s.frame_i))
+        return overlay, base, _sprite_px(cap["rows"], cap["xshift"], cap["mirror"])
+
+    # SICK: the skull owns the right edge -> the cloud tucks in on the left
+    sickp = _pet(weather="Clear", sick=True, sick_length=99.0, anim="tantrum",
+                 anim_ttl=9.0)
+    overlay, skull, pet_px = cloud_pts(sickp)
+    cloud = overlay - skull
+    assert cloud, "the sulk lost its gloom cloud entirely"
+    assert not (cloud & skull), "the cloud printed on the skull"
+    assert not (cloud & pet_px), "the cloud printed on the pet"
+    assert max(x for x, _ in cloud) < grid.X1 - arena.SICK_ZONE
+    assert all(grid.X0 <= x < grid.X1 for x, _ in cloud), "the cloud left the window"
+
+    # FILTH BLOCK + the pet = no corridor: the pose plays, the bubble doesn't
+    filthy = _pet(weather="Clear", poop=4, poop_sizes=[3, 3, 2, 1],
+                  anim="tantrum", anim_ttl=9.0)
+    overlay, piles, pet_px = cloud_pts(filthy)
+    assert not (overlay - piles), "the cloud squeezed into a full corridor"
+    assert cap["rows"], "the sulk POSE must still play with no room for the bubble"
+
+    # a clean, healthy sulk keeps the canonical right-edge bubble
+    plain = _pet(weather="Clear", anim="tantrum", anim_ttl=9.0)
+    overlay, base, pet_px = cloud_pts(plain)
+    cloud = overlay - base
+    assert cloud and min(x for x, _ in cloud) >= arena.PET_BASE_X + arena.SPRITE_W
+    assert not (cloud & pet_px)
+
+
 def test_badges_never_touch_the_lcd():
     """Medicine, bandage, vitamin, fatigue, injury, teach, the care-call and
     the idle emotes are BADGES -- zero pixels on the play field."""

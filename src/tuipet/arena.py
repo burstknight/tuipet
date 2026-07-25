@@ -203,10 +203,27 @@ class Screen(FxMixin, Static):
             # with the cheer/jeer emote grammar: rides the pet's right
             # edge, head height, frame-cycled on the 6-beat.  The happy
             # side's sun bubble finally has its opposite.
+            # THE CLOUD YIELDS TO THE FLOOR ZONES (pose audit 2026-07-25):
+            # the sulk only reached a sick/filthy pet once the roll's guard
+            # moved, and those are exactly the scenes with a skull slot on
+            # the right and a filth block on the left -- the cloud would
+            # have printed straight over one of them.  Right edge first
+            # (the cheer/jeer grammar), left if the skull owns the right,
+            # and NOTHING if the corridor is full: the POSE is the show,
+            # the bubble is trim.
             dep = _FX.get("depressed")
             if dep:
                 df = dep[(self.frame_i // 6) % len(dep)]
-                pts += _blit(df, PET_BASE_X + xshift + SPRITE_W, grid.TOP)
+                w = max(len(r) for r in df)
+                left_wall = _filth_right(pet.poop) if pet.poop else grid.X0
+                right_wall = grid.X1 - SICK_ZONE if _sick_mark_up(pet) else grid.X1
+                x = PET_BASE_X + xshift + SPRITE_W          # the pet's right edge
+                fits = x + w <= right_wall
+                if not fits:
+                    x = PET_BASE_X + xshift - w             # tuck it on the left
+                    fits = x >= left_wall                   # else: no room, pose only
+                if fits:
+                    pts += _blit(df, x, grid.TOP)
         overlay = _clip_win(pts)
         if not pet.lights:                 # lights off: DVPet's lightsOff is a fully-opaque black
             rows, xshift, mirror = [], 0, False   # cover -> the pet is hidden; only black (+ Zzz) shows

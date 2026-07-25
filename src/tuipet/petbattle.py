@@ -218,11 +218,14 @@ class BattleMixin:
         # live 2026-07-17; the adaptation stands)
         if self.weight > self._base_weight():
             self._set_weight(max(self._base_weight(), self.weight - 2))
-        if success:
+        g = grade or ("mega" if success else "miss")
+        if g == "mega":
+            # the praise window opens for a CLEAN STRIKE only (Joel
+            # 2026-07-25 "tighten"): it read `success`, so a shoulder hit
+            # -- the one the pet now sulks over -- opened a proud moment
             self._open_praise()      # a clean strike is a proud moment (discipline B)
         # mega -> Cheering / normal -> the frustrated sulk (tantrum wears the
         # gloom-cloud emote) / miss -> the dejected slump
-        g = grade or ("mega" if success else "miss")
         self._set_anim({"mega": "happy", "normal": "tantrum"}.get(g, "sad"), 1.8)
         return True
 

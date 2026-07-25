@@ -44,8 +44,12 @@ class BodyMixin:
         self._tick_sleep_pressure(dt)
         if self._tick_mortality(dt):
             return
-        if (self.anim in ("idle", "walk") and self.anim_ttl <= 0 and not self.poop
-                and not self.sick and random.random() < 0.03 * dt):
+        # the sick/filth guard moved INTO _special_idle (pose audit
+        # 2026-07-25): it sat on the roll itself, so the two states that
+        # actually make a pet Unhappy -- sick and filthy -- were the two
+        # that could never reach the sulk.  It still gates the JOY family.
+        if (self.anim in ("idle", "walk") and self.anim_ttl <= 0
+                and random.random() < 0.03 * dt):
             self._special_idle()
         self._maybe_evolve()
 
@@ -915,23 +919,36 @@ class BodyMixin:
         weather system; BASIC VPET 2026-07-16.)"""
         if getattr(self, "away", False):
             return                                   # no home idles on the road
-        # the personality idles: rested + spirited gates for both families;
-        # the under-drilled gate (effort <= 2) now scopes ONLY the sulk
-        # (gameplay polish #10, 2026-07-22): it used to mute the HAPPY
-        # family too, so a freshly-fed, well-trained pet played NO ambient
-        # emote for its first ~50-100 min while a neglected one danced --
-        # good care made the mon look MORE inert.  Joy plays at any effort;
-        # fuming stays an under-drilled tell.
+        m = self.current_mood()
+        if m in ("Unhappy", "Depressed"):
+            # THE SULK COMES FIRST, UNGATED (pose audit 2026-07-25, Joel:
+            # "ive yet to see an angry pose to this day on anything. see a
+            # lot of happy poses").  It carried three gates a fuming pet
+            # can rarely pass at once: the roll's own sick/filth guard --
+            # and sick and filthy ARE two of the three states that read
+            # Unhappy, so those could never fume at all -- plus a rested
+            # gate (a neglected pet is usually drained) and an
+            # under-drilled one (effort <= 2, so anyone who trains never
+            # saw it).  Measured before the fix: sick 0 sulks/day, filthy
+            # 0/day, starving-but-trained 0/day.  A pet that feels bad
+            # SHOWS it; the gates below stay on the JOY family, which is
+            # what they were written for.
+            # (it wears the depressed gloom-cloud emote -- the discouraged
+            # show, Joel 2026-07-23; "angry" is the same pose pair but
+            # stays the disturb grumble, emote-free)
+            self._set_anim("tantrum", 2.0)
+            return
+        # the personality idles: rested + spirited gates for the JOY family
+        # (gameplay polish #10, 2026-07-22): a freshly-fed, well-trained pet
+        # used to play NO ambient emote for its first ~50-100 min while a
+        # neglected one danced -- good care made the mon look MORE inert.
+        # Joy plays at any effort, but not while filthy, sick or spent.
+        if self.poop or self.sick:
+            return
         if self.energy < self.max_energy / 3 or self.enthusiasm < 0:
             return
-        m = self.current_mood()
         if m == "Happy":
             self._set_anim(random.choice(("play", "happy")), 2.0)
-        elif m in ("Unhappy", "Depressed") and self.strength <= 2:
-            # always the TANTRUM: it wears the depressed gloom-cloud emote
-            # (the discouraged show, Joel 2026-07-23) -- "angry" is the
-            # same pose pair but stays the disturb grumble, emote-free
-            self._set_anim("tantrum", 2.0)
 
     def _check_discipline_call(self):
         """A NO-OP: the spontaneous tantrum left with the discipline system."""
