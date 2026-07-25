@@ -12,6 +12,7 @@ like the real devices -- the shop sells goods, never digitama.
 """
 from __future__ import annotations
 from functools import lru_cache
+from math import gcd as _gcd
 from typing import NamedTuple
 
 from . import data
@@ -423,11 +424,17 @@ EGG_STOCK_PER_TOWN = 6
 
 def _sellable_eggs():
     """The digitama a town may stock: every egg that ISN'T a free starter
-    (the five START babies you already own)."""
+    (the five START babies you already own) and CAN be owned.  A can_perm
+    FALSE row is a lineage egg -- hatchable only the generation its
+    condition holds, never permanently ownable (eggmigrate._sane_owned
+    strips exactly these from eggs_owned "however they snuck in"), so the
+    buy-outright shortcut must not sell what a repair pass deletes (egg
+    audit 2026-07-25: towns 0/2/5 sold all five lineage eggs)."""
     from . import egg as egg_mod, data
     rules = data.load_egg_unlock()
     return [i for i in range(egg_mod.count())
-            if not (rules.get(i) or {}).get("start")]
+            if not (rules.get(i) or {}).get("start")
+            and (rules.get(i) or {}).get("can_perm", True)]
 
 
 def town_egg_stock(town_id, count=EGG_STOCK_PER_TOWN):
@@ -437,7 +444,14 @@ def town_egg_stock(town_id, count=EGG_STOCK_PER_TOWN):
     if not pool:
         return []
     count = min(count, len(pool))
-    start = (int(town_id) * count) % len(pool)
+    # a stride CO-PRIME with the pool keeps every town's band distinct --
+    # stepping by the band width alone collapsed to len(pool)/count bands
+    # the moment the width divided the pool (egg audit 2026-07-25: cutting
+    # the 5 lineage eggs left a 36-egg pool, and 26 towns fell into 6 bands)
+    stride = count
+    while len(pool) > 1 and _gcd(stride, len(pool)) != 1:
+        stride += 1
+    start = (int(town_id) * stride) % len(pool)
     return [pool[(start + i) % len(pool)] for i in range(count)]
 
 
@@ -998,7 +1012,12 @@ def town_egg_buy(pet, idx):
     """Buy a digitama outright (bits -> persistence.egg_own) -> (msg, sfx).
     THE single buy path — the town egg panel and the shop's Eggs tab both
     call here (single-source law)."""
-    from . import egg as egg_mod, persistence
+    from . import data, egg as egg_mod, persistence
+    rule = data.load_egg_unlock().get(idx)
+    if rule is not None and not rule["can_perm"]:
+        # the single buy path guards what the shelf filter promises: a
+        # lineage egg is never permanently ownable (egg audit 2026-07-25)
+        return ("A lineage egg — it hatches for those who earn it.", "error")
     if idx in persistence.get_eggs_owned():
         return ("You already own that egg.", "error")
     price = egg_price(idx)

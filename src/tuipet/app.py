@@ -133,18 +133,17 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("SOME MONS WERE POOPING 64 TIMES A DAY: yesterday's "
-                 "retune set the pace on the average species, but a "
-                 "seventh of the roster runs on a much faster bowel "
-                 "clock and ended up dropping a pile every 22 minutes — "
-                 "including all night, which is why your sleeping mon "
-                 "kept soiling its bed. Species still differ, but the "
-                 "fastest now tops out at twice the slowest instead of "
-                 "sixteen times. Two more from the same report: filth "
-                 "no longer glows through a dark room (it's still "
-                 "there when you flip the lights), and the biggest "
-                 "pile stops at the largest sprite that actually fits "
-                 "its slot, so no more squashed art.")
+    WHATS_NEW = ("THE EGG AUDIT: re-rolling an unhatched egg no longer "
+                 "counts as a whole generation — it used to pump your "
+                 "generation number (and everything gen-gated) without a "
+                 "single life lived, grade the EGG's 'care' over your "
+                 "departed partner's real record, and destroy the etched "
+                 "Digimemory with the discarded shell. A re-roll now "
+                 "keeps the generation and carries the full inheritance "
+                 "to the new egg. Also: town vendors no longer sell the "
+                 "five lineage eggs (descendant/X-Antibody/devotion "
+                 "eggs) — those hatch only for the generation that "
+                 "earns them, exactly as their unlock stories say.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and
@@ -1408,15 +1407,41 @@ class TuiPetApp(ActionsMixin, App):
         # the generational COMMIT: nothing mutates until the pick is real
         # (an ESC-cancelled carousel used to have already appended a
         # headstone and overwritten last_gen -- gameplay audit 2026-07-19)
-        if not self.pet.dead:
+        # AN UNHATCHED EGG RE-ROLLS AS A RE-PICK, NOT A GENERATION (egg
+        # audit 2026-07-25): a generation is a LIFE -- snapshot_prev_gen has
+        # always refused to record an egg, but this commit still advanced
+        # the counter (five re-rolls pumped max_gen to 7 and opened every
+        # gen-gated egg unearned), graded the EGG's "care" over the dead
+        # elder's banked seed, and dropped the etched Digimemory with the
+        # discarded shell.  A re-pick keeps the generation and carries the
+        # whole inheritance to the new shell.
+        repick = self.pet.stage == "Egg" and not self.pet.dead
+        if repick:
+            gen = self.pet.generation
+        elif not self.pet.dead:
             # a LIVE retire skips the death flow entirely: canon resetDigimon
             # runs careBonusOnReset dead or alive, and a live reset never
             # offers the etch -- the FULL adjusted bonus carries to the heir
             # (digimemory audit 2026-07-06; this seed used to be lost)
             persistence.bank_bonus_seed(self.pet.final_care_grade())
         persistence.snapshot_prev_gen(self.pet)   # previous-generation egg gates
+        old = self.pet
         self.pet = Pet.new_egg(generation=gen, egg_type=egg_type)
         self._grant_digimemory(self.pet)
+        if repick:
+            # the outgoing shell's estate moves over untouched: wallet, bag
+            # (bought goods included -- the shop opens for an egg), trophy
+            # room, DNA bank, the taken seed and the etched memory
+            self.pet.bits = old.bits
+            self.pet.inventory = dict(old.inventory or {})
+            self.pet.trophies = old.trophies
+            self.pet.trophies_won = dict(old.trophies_won or {})
+            self.pet.dna_owned = dict(old.dna_owned or {})
+            self.pet.evol_bonus = old.evol_bonus
+            if getattr(old, "digimemory", None):
+                self.pet.digimemory = dict(old.digimemory)
+                if self.pet.inventory.get("digimemory", 0) <= 0:
+                    self.pet.add_item("digimemory")
         persistence.save(self.pet)
         self._do(f"A new egg appeared! (generation {gen})")
 
