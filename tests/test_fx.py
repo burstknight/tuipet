@@ -264,6 +264,41 @@ def test_play_hops_on_canon_beats_and_ends_in_cheer():
     #                                        re-raise for canon: user-set 2026-07-06)
 
 
+def test_the_emote_grammar_matches_the_decompile():
+    """ICON AUDIT 2026-07-25 (Joel: "do a full blown refactor and audit of all
+    the icon sprites that are supposed to appear on screen").  Canon keeps TWO
+    emote slots (SpriteAnim.java 1913-1934 / 2323-2334):
+
+      _emotionLabel -- the emote BESIDE THE PET: happy, unhappy, unhappy2,
+                       attention, dying, dying2, nap/sleep lights
+      _moodLabel    -- the DATA-PAGE mood readout: happy, happy2, unhappy,
+                       unhappy2, depressed, depressed2
+
+    and the shows draw from the first: cheer() -> "happy" (15586+),
+    jeer() -> "unhappy"/"unhappy2" alternating every 6 beats (15637+),
+    badHealthJeer() -> "dying"/"dying2" (15629).  `depressed` is the THIRD
+    MOOD TIER on the status side, never a scene emote -- tuipet spends it on
+    the ambient sulk instead (Joel 2026-07-23, "the opposite of the sunshine
+    animation"), an authored adaptation, since tuipet has no mood readout.
+    This pin locks the three SHOW emotes so the grammar can't drift again."""
+    import inspect
+
+    from tuipet import data
+    src = {fn: inspect.getsource(getattr(Screen, fn))
+           for fn in ("_fxk_cheer", "_fxk_jeer", "_fxk_losing")}
+    assert '"happy"' in src["_fxk_cheer"], "cheer lost the happy emote"
+    assert '"unhappy"' in src["_fxk_jeer"], "jeer must wear unhappy/unhappy2"
+    assert '"dying"' in src["_fxk_losing"], "the defeat wears the dying mark"
+    # the emote a show never wears: the smoke belongs to the sulk alone
+    for fn, body in src.items():
+        assert '"depressed"' not in body, f"{fn} took the status-page smoke"
+    # and the jeer really ALTERNATES its pair on the canon 6-beat
+    E = data.load_effects()
+    assert len(E["unhappy"]) == 2 and len(E["happy"]) == 2
+    seen = {(step // 6) % len(E["unhappy"]) for step in (0, 6, 12, 18, 24)}
+    assert seen == {0, 1}, "the jeer emote must flip between both frames"
+
+
 def test_bad_praise_and_bad_scold_use_their_own_pose_pairs():
     """Cheer/jeer audit 2026-07-05: canon cheer(goodPraise)/jeer(goodScold)
     swap pose pairs by DESERVEDNESS -- Bad_Praise bounces 6/4 (not 5/7),

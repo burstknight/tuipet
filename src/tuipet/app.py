@@ -141,12 +141,12 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("Your mon can finally look UNHAPPY. The ambient sulk — "
-                 "the gloom-cloud fume — could never fire while sick or "
-                 "filthy, the two states that cause it, and any pet that "
-                 "trained was locked out entirely. Now a sick, starving "
-                 "or filthy mon visibly fumes. Only a PERFECT training "
-                 "strike opens a proud moment.")
+    WHATS_NEW = ("THE SMOKE CLOUD IS BACK. Your mon's fuming sulk could "
+                 "never fire while sick or filthy — the very states that "
+                 "cause it — and training locked it out entirely, so the "
+                 "gloom cloud was unreachable in normal play. A sick, "
+                 "starving or filthy mon now visibly fumes, and only a "
+                 "PERFECT training strike opens a proud moment.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and
