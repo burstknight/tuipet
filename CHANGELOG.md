@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.250 — THE ROAD'S BOSS IS REACHABLE AGAIN (2026-07-25)
+
+THE ROAD'S BOSS IS REACHABLE AGAIN — SORRY: yesterday's "a hurt pet can't be marched into a boss" fix brought the HOME battle rules with it, including "too drained to fight" — and a march is SUPPOSED to arrive drained. The gate was refusing every honest run. Out on the road an empty tank is a penalty you fight through, never a locked door; that was the rule before and it is the rule again. Hurt, sick, starving or filthy still stops you at the gate, because those are the device's own.
+
 ## 0.5.249 — ONE WAY TO SAY "ONLINE" (2026-07-25)
 
 ONE WAY TO SAY "ONLINE": the fight code had two different ways to mark a duel as an online one, and only ever used a single one of them — the other was a spare spelling waiting to disagree with the first. The spare is gone. The rule it guarded is untouched and still tested: a duel never feeds your Mega-kill count, your record or your evolution gates, no matter who you fight or how often.
