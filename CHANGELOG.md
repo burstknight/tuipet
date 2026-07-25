@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.268 — Training now shows what you actually hit. A PERFECT strike c (2026-07-25)
+
+Training now shows what you actually hit. A PERFECT strike cheers; a solid shoulder hit SULKS — the wall held, and your mon knows it; a whiff slumps. The drill graded three ways all along but only had two faces, so a mediocre shot celebrated like a perfect one.
+
 ## 0.5.267 — The raid board warns you up front (2026-07-25)
 
 The raid board warns you up front: if your pet is too drained, hungry, sick, hurt — or asleep — the board says so the moment it opens, instead of waiting for you to press SPACE and get refused. The check is read-only: peeking at the board never wakes a sleeper.
