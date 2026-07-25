@@ -532,7 +532,13 @@ class AdventurePanel(menu.SubHost):
                     paraders = [b["num"] for z in ZONES if z.get("map") == m
                                 for b in z["bosses"]][:3]
                 self._pulse = {"t": 0, "parade": paraders,
-                               "msg": (enemy or {}).get("parade_msg")}
+                               "msg": (enemy or {}).get("parade_msg"),
+                               # the flash must SAY what it celebrates
+                               # (Joel 2026-07-25 "flashing for what?"): the
+                               # conquest line rides the strip for the whole
+                               # pulse, not just the homecoming verdict
+                               "line": (f"{self.adv.boss_name} felled — "
+                                        f"{self.adv.name} conquered!")}
             elif out == "fled":
                 self._home_msg = f"Turned back from {self.adv.boss_name}.{self._bits_tail()}"
                 self._go_home()
@@ -691,8 +697,11 @@ class AdventurePanel(menu.SubHost):
     def strip(self):
         if self.sub is not None:
             return self.sub.strip()            # the wild fight owns the line
-        if self._trans is not None or self._pulse is not None:
-            return ""                          # the teleport / pulse plays out
+        if self._trans is not None:
+            return ""                          # the teleport plays out wordless
+        if self._pulse is not None:
+            line = self._pulse.get("line")     # the flash SAYS what it's for
+            return f"[b]★ {line}[/]" if line else ""
         if self._parade is not None:
             msg = self._parade.get("msg")      # the parade carries the victory line
             return f"[b]★ {msg}[/]" if msg else ""

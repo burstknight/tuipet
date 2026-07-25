@@ -233,3 +233,16 @@ def test_the_final_boss_loss_fails_the_run_home(monkeypatch):
     assert pan._summary                           # the results card shows first
     pan.key("space")
     assert pan._trans is not None
+
+
+def test_the_pulse_flash_says_what_it_celebrates(monkeypatch):
+    """Joel 2026-07-25 "flashing for what? whats the build up here???": the
+    zoneChange pulse ran ~5s of bright flashes with an EMPTY strip -- the
+    conquest line only appeared on the home screen after the teleport.  The
+    line now rides the strip for the whole pulse."""
+    pan = _panel_at_boss(monkeypatch)
+    pan.sub = None
+    pan._battle_done(_Win())
+    assert pan._pulse is not None
+    s = pan.strip()
+    assert "felled" in s and "conquered" in s

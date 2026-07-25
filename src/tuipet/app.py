@@ -141,13 +141,14 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("The 'SPACE T' mystery is solved: the ⚡ glyph is two "
-                 "columns wide, so the road's packed hint line silently "
-                 "overflowed the message box and ESC fell off the visible "
-                 "row. The box now measures true render width everywhere, "
-                 "and the road strip trims its ribbon to always fit — the "
-                 "key hints blink through SPACE walk / T warp / ESC home "
-                 "whole, every beat.")
+    WHATS_NEW = ("THE SHOWS FLOW NOW: one SPACE from the cup bracket "
+                 "starts the walk-in immediately — the old flow parked on "
+                 "a blank arena that looked frozen until you pressed SPACE "
+                 "again (B now always shows the tree mid-cup too). And the "
+                 "victory flash after felling a zone boss finally says "
+                 "what it's for: the conquest line rides the message box "
+                 "through the whole celebration instead of only after the "
+                 "teleport home.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

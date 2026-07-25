@@ -215,3 +215,33 @@ def test_a_pet_that_falls_mid_bracket_is_not_crowned():
     p.dead = True
     t.record(True)
     assert t.over and not t.champion and p.trophies == 0
+
+
+def test_one_space_from_the_tree_starts_the_show():
+    """Dead-stop fix (Joel 2026-07-25 "i have to press space in order for
+    the animation sequence to start? i thought the thing froze, there was
+    nothing on screen"): SPACE on the bracket tree launches the walk-in on
+    the SAME press.  The old flow parked on the empty faceoff arena --
+    render_scene([]) with only a strip hint -- until a second space."""
+    p, pan = _entered()
+    pan.phase = "bracket"
+    pan.tree_view = True
+    pan.key("space")
+    assert pan._intro is not None                # the introductions are RUNNING
+    assert not pan.tree_view
+
+
+def test_B_never_lands_on_the_empty_faceoff_mid_cup():
+    """B is the bracket key: while the cup runs it always SHOWS the tree
+    (the old toggle flipped tree->empty-arena, the same frozen blank);
+    once the cup is over it still toggles tree <-> result."""
+    p, pan = _entered()
+    pan.phase = "bracket"
+    pan.tree_view = True
+    pan.key("b")
+    assert pan.tree_view                         # pinned to the tree mid-cup
+    pan.tourney.over = True
+    pan.key("b")
+    assert not pan.tree_view                     # over: toggle to the result...
+    pan.key("b")
+    assert pan.tree_view                         # ...and back

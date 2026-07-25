@@ -211,10 +211,19 @@ class TournamentPanel(menu.SubHost):
             return None                        # the show plays out (no skips)
         t = self.tourney
         if k == "b":
-            self.tree_view = not self.tree_view
+            # while the cup runs, B always shows the TREE -- flipping the
+            # other way landed on the empty faceoff arena, a dead page that
+            # read as a freeze (Joel 2026-07-25 "i thought the thing froze,
+            # there was nothing on screen")
+            self.tree_view = (not self.tree_view) if t.over else True
             return None
         if k in ("space", "enter") and self.tree_view and not t.over:
-            self.tree_view = False             # from the field to the faceoff
+            # ONE press: "fight on" starts the walk-in THERE AND THEN.  The
+            # old flow parked on the empty faceoff arena until a SECOND
+            # space -- the same frozen-blank complaint as B above.
+            self.tree_view = False
+            self._intro = {"t": 0}
+            self.sfx = "menu"
             return None
         if k in ("space", "enter") and t.over and self.tree_view:
             self.tree_view = False             # from the final tree to the result
@@ -463,9 +472,12 @@ class TournamentPanel(menu.SubHost):
             return render_scene(
                 [grid.center(self._frames(self.pet.num, pose), ph=FIGHT_ROWS * 2)],
                 COLS, FIGHT_ROWS, on, LCD_BG, bgimg=bgimg)
-        # the DECISION page holds the EMPTY arena (double-intro fix 2026-07-24,
-        # Joel "shows both mons, then another where both enter"): the fighters
-        # aren't pre-placed here, so the SPACE walk-in is their real first
+        # the EMPTY faceoff arena -- now only a transient fallback: SPACE on
+        # the tree starts the walk-in on the same press (dead-stop fix
+        # 2026-07-25, Joel "i thought the thing froze") and B pins the tree
+        # while the cup runs, so play never parks here.  The fighters stay
+        # un-pre-placed (double-intro fix 2026-07-24, Joel "shows both mons,
+        # then another where both enter"): the walk-in is their real first
         # entrance instead of a re-entrance after they were already standing.
         # PURE SCENE, 12 rows (cup audit 2026-07-25 -- the family law the
         # raid page got in v0.5.183 and the battle panel has always had).
