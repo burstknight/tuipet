@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.252 — THE CUP HAD FOUR ROWS HANGING OFF THE SCREEN (2026-07-25)
+
+THE CUP HAD FOUR ROWS HANGING OFF THE SCREEN: every page of a tournament — the faceoff, the walk-in, the advancing field, the podium — was drawing a full-height arena AND captions under it, four rows more than the screen holds. Everything below the fold was invisible: who you were about to fight, who just advanced, even "SPACE fight". The arena is pure picture now, the announcements moved to the line under it, your opponent is on the status card, and the fighters stop jumping a row when the bell rings.
+
 ## 0.5.251 — A TOWN TICKET ALWAYS BUYS A TOWN NOW (2026-07-25)
 
 A TOWN TICKET ALWAYS BUYS A TOWN NOW: every zone has one town, and past it the Town Transport was still spending your 500b — resting you where you stood while announcing a warp, with no shop and no town to visit. Late, drained and past the town is exactly when you reach for it. It now steps aside when there is nothing ahead to warp to, keeps your ticket, and the road stops offering a warp it can't make.
