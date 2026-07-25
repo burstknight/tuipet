@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.244 — ONE ANSWER TO "IS THIS EATEN" (2026-07-25)
+
+ONE ANSWER TO "IS THIS EATEN": under the hood the shop kept two lists of what your pet swallows, and they disagreed about six goods — both drinks, both pills, the vitamin and the anti-evo chip, which DO get eaten on the LCD through their own artwork. The losing list is gone. Nothing you can see changed today; there is simply one less way for a good to eat wrong tomorrow.
+
 ## 0.5.243 — EVERY NUMBER ON A SHOP CARD IS NOW CHECKED AGAINST THE PET (2026-07-25)
 
 EVERY NUMBER ON A SHOP CARD IS NOW CHECKED AGAINST THE PET: when a card says "hunger +1 · weight -1", something measures it. All 29 of the shop's numeric promises — every food, toy, chip, the satiety hours, the DNA bank — are read off the card and tested against what the item actually does to your pet, and a good can no longer reach the shelf carrying a number nothing checks. Nothing changed in how the items behave: they were all telling the truth. Now they have to keep telling it.
