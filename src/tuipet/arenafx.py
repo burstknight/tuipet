@@ -440,8 +440,13 @@ class FxMixin:
             #                                  save wears the placeholder
             roles = data.ROLES
         frames = roles.get(role, [0])
-        first = next((f for f in rec["frames"] if f), rec["frames"][0])
-        return rec["frames"][frames[phase % len(frames)]] or first
+        fr = rec["frames"]
+        first = next((f for f in fr if f), fr[0])
+        # index-guarded like paint()/bob_frame: a short sheet (an unknown num
+        # wearing the stand-in) must fall back, never IndexError -- this was
+        # the ONE naked role indexer (visual audit 2026-07-25)
+        idx = frames[phase % len(frames)]
+        return (fr[idx] if idx < len(fr) else None) or first
 
     def _pose_rows_idx(self, pet, i):
         """A single creature frame by raw sprite index (for beat-scripted fx poses)."""

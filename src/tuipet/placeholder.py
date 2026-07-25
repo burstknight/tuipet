@@ -11,7 +11,14 @@ def _frames():
     return cm if cm else [["0000000000000000"]]
 
 
-FRAMES = _frames()
+# the stand-in sheet must answer EVERY raw role index (visual audit
+# 2026-07-25): data.ROLES tops out at index 10 (exhausted) and the geriatric
+# shuffle (+9 over idle's [0,1]) tops at 10 too, but copymon is a single
+# frame -- so the crash-loop defense record_for exists for ("a cross-version
+# save wears the placeholder") crashed on the first non-guarded pose fetch
+# (IndexError in _pose_rows: every care fx, the sleep pose, the sick
+# collapse).  Pad the sheet to 11: same rip, every slot answers.
+FRAMES = (_frames() * 11)[:11]
 W = max(len(r) for r in FRAMES[0])
 H = len(FRAMES[0])
 

@@ -133,17 +133,15 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE EGG AUDIT: re-rolling an unhatched egg no longer "
-                 "counts as a whole generation — it used to pump your "
-                 "generation number (and everything gen-gated) without a "
-                 "single life lived, grade the EGG's 'care' over your "
-                 "departed partner's real record, and destroy the etched "
-                 "Digimemory with the discarded shell. A re-roll now "
-                 "keeps the generation and carries the full inheritance "
-                 "to the new egg. Also: town vendors no longer sell the "
-                 "five lineage eggs (descendant/X-Antibody/devotion "
-                 "eggs) — those hatch only for the generation that "
-                 "earns them, exactly as their unlock stories say.")
+    WHATS_NEW = ("THE VISUAL AUDIT: every animation in the game was "
+                 "soak-tested end to end — all 15 care/scene effects, all "
+                 "15 item shows, the assistant's visits, the hatch crack, "
+                 "the jogress fusion, and every pose of all 1548 species. "
+                 "One real bug fixed: a save carrying a creature this "
+                 "build doesn't know (say, from a newer version) is meant "
+                 "to wear a stand-in sprite — but the stand-in only had "
+                 "one frame, so nearly any animation crashed the app in a "
+                 "loop. The stand-in now answers every pose.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and
