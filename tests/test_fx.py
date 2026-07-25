@@ -278,37 +278,38 @@ def test_the_emote_grammar_matches_the_decompile():
     jeer() -> "unhappy"/"unhappy2" alternating every 6 beats (15637+),
     badHealthJeer() -> "dying"/"dying2" (15629).
 
-    THE SMOKE ANSWERS THE SUN (Joel 2026-07-25, standing order over canon).
-    `happy` is a SUN -- 8x8 of radiating rays -- and it pops on every up-beat
-    of the cheer, which the player sees constantly.  Canon's frustration
-    emote is `unhappy`: a 7px droop whose second frame is FIVE lit pixels,
-    so half the bounce showed nothing.  Beside the sun that reads as no
-    reaction at all.  Both frustration shows -- the lost drill/scold (jeer)
-    and the lost battle/cup (losing) -- now wear the SMOKE CLOUD, the one
-    emote with the sun's weight, on the same 6-beat flip.  The ambient sulk
-    wears it too (Joel 2026-07-23).  Do NOT "restore" unhappy/dying here."""
+    THE SUN AND THE SMOKE (Joel 2026-07-25, pointing at the art itself).
+    `happy` is a SUN -- radiating rays -- and it pops on every up-beat of the
+    cheer, which the player sees constantly.  Its opposite is `unhappy` +
+    `unhappy2`: THE SMOKE, a big puff and then a small one drifting off as it
+    dissipates.  Canon had this right; the sprite was briefly swapped for
+    `depressed` (v0.5.270) on a misread of the 1-bit dump -- `depressed` is a
+    FACE, canon's status-page mood icon, and never belongs beside the pet.
+
+    Every frustration show wears the smoke now: the lost drill and the scold
+    (jeer), the lost battle and the lost cup (losing -- which flashed the
+    `dying` SKULL, canon's battle-end icon-row mark, so the two moments a
+    player hits most never blew smoke), and the ambient sulk."""
     import inspect
 
     from tuipet import data
     src = {fn: inspect.getsource(getattr(Screen, fn))
            for fn in ("_fxk_cheer", "_fxk_jeer", "_fxk_losing")}
     assert '"happy"' in src["_fxk_cheer"], "cheer lost the SUN"
-    assert '"depressed"' in src["_fxk_jeer"], "the lost drill lost its SMOKE"
-    assert '"depressed"' in src["_fxk_losing"], "the lost battle lost its SMOKE"
-    # the speck it replaced must not creep back into either show
-    for fn in ("_fxk_jeer", "_fxk_losing"):
-        assert '"unhappy"' not in src[fn], f"{fn} went back to the droop speck"
-    # both emotes are 2-frame pairs that flip on the canon 6-beat
+    assert '"unhappy"' in src["_fxk_jeer"], "the lost drill lost its SMOKE"
+    assert '"unhappy"' in src["_fxk_losing"], "the lost battle lost its SMOKE"
+    # the FACE is a status-page icon -- it may never ride a scene show again
+    for fn, body in src.items():
+        assert '"depressed"' not in body, f"{fn} took the status-page FACE"
+    # the smoke is a 2-frame pair that flips on the canon 6-beat
     E = data.load_effects()
-    assert len(E["depressed"]) == 2 and len(E["happy"]) == 2
-    seen = {(step // 6) % len(E["depressed"]) for step in (0, 6, 12, 18, 24)}
+    assert len(E["unhappy"]) == 2 and len(E["happy"]) == 2
+    seen = {(step // 6) % len(E["unhappy"]) for step in (0, 6, 12, 18, 24)}
     assert seen == {0, 1}, "the frustration emote must flip between both frames"
-    # ...and the smoke really is the sun's equal, not a speck: every frame of
-    # BOTH pairs carries real ink (the droop's frame 2 lit only 5 pixels)
-    for key in ("happy", "depressed"):
-        for i, f in enumerate(E[key]):
-            lit = sum(row.count("1") for row in f)
-            assert lit >= 12, f"{key} frame {i} is nearly blank ({lit} px)"
+    # the puff DISSIPATES: frame 2 is the small remnant, lower and lighter --
+    # that shrink IS the animation, not a broken crop
+    big, small = (sum(r.count("1") for r in f) for f in E["unhappy"])
+    assert big > small, "the smoke must thin out on its second frame"
 
 
 def test_the_frustration_dance_paints_its_smoke_beside_the_pet(monkeypatch):
@@ -318,7 +319,7 @@ def test_the_frustration_dance_paints_its_smoke_beside_the_pet(monkeypatch):
     from tuipet import data, grid
     from tuipet.app import PET_BASE_X, SPRITE_W
     E = data.load_effects()
-    ink = [sum(r.count("1") for r in f) for f in E["depressed"]]
+    ink = [sum(r.count("1") for r in f) for f in E["unhappy"]]
 
     def emote_px(monkeypatch, kind, beats):
         cap = _capture_render(monkeypatch)
@@ -343,10 +344,14 @@ def test_the_frustration_dance_paints_its_smoke_beside_the_pet(monkeypatch):
         for step, px in seen.items():
             assert all(grid.X0 <= x < grid.X1 for x, _ in px), \
                 f"{kind} smoke left the window at beat {step}"
-            assert min(y for _, y in px) == grid.TOP, \
-                f"{kind} smoke is not at head height"
+            assert all(grid.TOP <= y < grid.TOP + 16 for _, y in px), \
+                f"{kind} smoke left the 16px band at beat {step}"
             assert len(px) == ink[(step // 6) % 2], \
-                f"{kind} beat {step} is not the whole cloud"
+                f"{kind} beat {step} is not the whole puff"
+        # the puff sits high, then the remnant drifts DOWN as it thins
+        assert min(y for _, y in seen[0]) == grid.TOP, f"{kind} puff is not at head height"
+        assert min(y for _, y in seen[6]) > min(y for _, y in seen[0]), \
+            f"{kind} second frame must drift down, not sit on the first"
 
 
 def test_bad_praise_and_bad_scold_use_their_own_pose_pairs():

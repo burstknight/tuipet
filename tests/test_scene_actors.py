@@ -384,17 +384,18 @@ def test_dodge_turns_away_while_airborne():
 def test_the_discouraged_show_wears_the_gloom_cloud(monkeypatch):
     """Joel 2026-07-23: "we are missing the discouraged animation?
     opposite of the sunshine animation."  The ambient sulk (tantrum)
-    wears the `depressed` gloom-cloud emote from the rips -- unused
-    since the mood system left -- with the cheer-sun grammar: the pet's
-    right edge, head height, frame-cycled.  The plain idle never
-    wears it."""
+    wears THE SMOKE -- `unhappy`+`unhappy2`, the big puff and the small
+    one drifting off -- with the cheer-sun grammar: the pet's right edge,
+    head height, frame-cycled.  The plain idle never wears it.
+    (It wore `depressed` until 2026-07-25; that sprite is a FACE, canon's
+    status-page mood icon -- Joel pointed at the real smoke.)"""
     from tuipet import data, grid
     cap = _paint_capture(monkeypatch)
     s = _screen()
     p = _pet()
     p._set_anim("tantrum", 2.0)
     s.paint(p)
-    dep = data.load_effects()["depressed"]
+    dep = data.load_effects()["unhappy"]
     want = {(app.PET_BASE_X + app.SPRITE_W + x, grid.TOP + y)
             for y, row in enumerate(dep[0])
             for x, c in enumerate(row) if c == "1"}

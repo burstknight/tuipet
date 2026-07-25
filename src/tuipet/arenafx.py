@@ -854,16 +854,13 @@ class FxMixin:
             c.rows = self._pose_rows_idx(pet, 4 if down else 6)
         else:                                   # Bad_Scold/Sad_Jeering: the slump (10/9)
             c.rows = self._pose_rows_idx(pet, 10 if down else 9)
-        # THE SMOKE ANSWERS THE SUN (Joel 2026-07-25).  The cheer pops the
-        # SUN -- 8x8 of radiating rays -- on every up-beat, and the player
-        # sees it constantly (feed, clean, praise, win, evolve, perfect
-        # strike).  The frustration dance wore `unhappy`: a 7px droop mark
-        # whose second frame is 5 lit pixels, so half the bounce showed
-        # essentially nothing.  Beside a full sun that reads as no reaction
-        # at all.  The frustration show now wears the SMOKE CLOUD -- the
-        # one emote with the sun's visual weight -- alternating its pair on
-        # the same 6-beat canon flips icon/icon2 on.
-        smoke = data.load_effects().get("depressed")
+        # THE SMOKE (Joel 2026-07-25, pointing at the art): `unhappy` +
+        # `unhappy2` ARE the smoke -- the big puff, then the small one
+        # drifting off as it dissipates.  I misread the 1-bit dump as a
+        # "droop mark" and swapped it for `depressed` (which is a FACE, and
+        # canon's status-page mood icon) for exactly one release.  It is the
+        # smoke, it belongs here, and it belongs on every frustration show.
+        smoke = data.load_effects().get("unhappy")
         if smoke:
             sf = smoke[(step // 6) % len(smoke)]
             # DVPet jeer(): centred pet, emote at its right edge (not the corner),
@@ -1017,12 +1014,15 @@ class FxMixin:
                 c.rows = self._pose_rows_idx(pet, 4 if down else 6)
             else:
                 c.rows = self._pose_rows_idx(pet, 10 if down else 9)
-            # the LOST BATTLE is the other frustration dance, so it wears the
-            # same SMOKE (Joel 2026-07-25: "the smoke animation from
-            # frustration from losing training and battles").  It used to
-            # flash the `dying` skull -- canon's battle-end mark, drawn in
-            # DVPet's own icon row, not as the sulk's emote.
-            smoke = E.get("depressed")
+            # THE LOST BATTLE BLOWS SMOKE (Joel 2026-07-25: "the smoke
+            # animation from frustration from losing training and
+            # battles").  This flashed the `dying` SKULL -- canon draws
+            # that in DVPet's own battle-end icon ROW, with the emote
+            # label hidden (losing(), decompile L15432), not as the sulk's
+            # emote beside the pet.  So the two frustration moments a
+            # player hits most -- a lost battle and a lost cup -- were the
+            # two that never blew smoke.
+            smoke = E.get("unhappy")
             if smoke:
                 c.overlay += _blit(smoke[(step // 6) % len(smoke)],
                                    PET_BASE_X + c.xshift + SPRITE_W, grid.TOP)

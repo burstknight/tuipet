@@ -141,12 +141,12 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE SMOKE CLOUD ANSWERS THE SUN. The happy dance pops a "
-                 "big radiating SUN, but the frustration dance wore a tiny "
-                 "droop mark that half-vanished — so losing a drill or a "
-                 "battle read as no reaction at all. Both now blow the "
-                 "SMOKE CLOUD, same size, same beat, right where the sun "
-                 "goes.")
+    WHATS_NEW = ("YOUR MON BLOWS SMOKE WHEN IT LOSES. The happy dance pops "
+                 "the SUN; the smoke puff is its opposite — but it only "
+                 "ever played on a whiffed drill and a scold. A lost battle "
+                 "and a lost cup flashed a SKULL instead, so the two "
+                 "moments you hit most never blew smoke. Now every "
+                 "frustration show does.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

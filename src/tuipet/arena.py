@@ -198,12 +198,13 @@ class Screen(FxMixin, Static):
         if pet.anim == "tantrum" and pet.num != -1:
             # THE DISCOURAGED SHOW (Joel 2026-07-23: "we are missing the
             # discouraged animation? opposite of the sunshine animation"):
-            # the ambient sulk wears the `depressed` emote -- the gloom
-            # cloud from the rips, unused since the mood system left --
-            # with the cheer/jeer emote grammar: rides the pet's right
-            # edge, head height, frame-cycled on the 6-beat.  The happy
-            # side's sun bubble finally has its opposite.
-            # THE CLOUD YIELDS TO THE FLOOR ZONES (pose audit 2026-07-25):
+            # the ambient sulk wears the SMOKE -- `unhappy`+`unhappy2`, the
+            # big puff and the small one drifting off -- on the cheer/jeer
+            # emote grammar: the pet's right edge, head height, cycled on
+            # the 6-beat.  The sun finally has its opposite.  (It wore
+            # `depressed` until 2026-07-25; that sprite is a FACE, canon's
+            # status-page mood icon, and Joel identified the real smoke.)
+            # THE SMOKE YIELDS TO THE FLOOR ZONES (pose audit 2026-07-25):
             # the sulk only reached a sick/filthy pet once the roll's guard
             # moved, and those are exactly the scenes with a skull slot on
             # the right and a filth block on the left -- the cloud would
@@ -211,7 +212,7 @@ class Screen(FxMixin, Static):
             # (the cheer/jeer grammar), left if the skull owns the right,
             # and NOTHING if the corridor is full: the POSE is the show,
             # the bubble is trim.
-            dep = _FX.get("depressed")
+            dep = _FX.get("unhappy")
             if dep:
                 df = dep[(self.frame_i // 6) % len(dep)]
                 w = max(len(r) for r in df)
