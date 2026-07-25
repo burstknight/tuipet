@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.246 — A HURT PET NO LONGER GETS MARCHED INTO A BOSS (2026-07-25)
+
+A HURT PET NO LONGER GETS MARCHED INTO A BOSS: the device's own battle check — too hurt, too sick, too hungry, too drained, clean up first — now answers wherever YOU choose the fight, which means the road's boss gate and raid volleys too, not just the home key and the cups. Your pet stands at the gate wearing the reason, and ESC home or a town warp always get it out. A wayside ambush is the one exception: you can't decline a pounce.
+
 ## 0.5.245 — MASHING NO LONGER FREEZES A FIGHT (2026-07-25)
 
 MASHING NO LONGER FREEZES A FIGHT: tapping SPACE to hurry a battle was snapping the animation BACK to the start of the punch — every tap — so a fast tapper could sit in round one forever while the bars refused to move. Now a hurry key only ever hurries: mash away and the fight finishes faster than ever, with exactly the same result. One fix, every fight — home bouts, road ambushes, boss gates, both cups, raid volleys and online duels.
