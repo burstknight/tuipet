@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.269 — THE SMOKE CLOUD IS BACK. Your mon's fuming sulk could never  (2026-07-25)
+
+THE SMOKE CLOUD IS BACK. Your mon's fuming sulk could never fire while sick or filthy — the very states that cause it — and training locked it out entirely, so the gloom cloud was unreachable in normal play. A sick, starving or filthy mon now visibly fumes, and only a PERFECT training strike opens a proud moment.
+
 ## 0.5.268 — Training now shows what you actually hit. A PERFECT strike c (2026-07-25)
 
 Training now shows what you actually hit. A PERFECT strike cheers; a solid shoulder hit SULKS — the wall held, and your mon knows it; a whiff slumps. The drill graded three ways all along but only had two faces, so a mediocre shot celebrated like a perfect one.
