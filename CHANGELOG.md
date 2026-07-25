@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.261 — SOME MONS WERE POOPING 64 TIMES A DAY (2026-07-25)
+
+SOME MONS WERE POOPING 64 TIMES A DAY: yesterday's retune set the pace on the average species, but a seventh of the roster runs on a much faster bowel clock and ended up dropping a pile every 22 minutes — including all night, which is why your sleeping mon kept soiling its bed. Species still differ, but the fastest now tops out at twice the slowest instead of sixteen times. Two more from the same report: filth no longer glows through a dark room (it's still there when you flip the lights), and the biggest pile stops at the largest sprite that actually fits its slot, so no more squashed art.
+
 ## 0.5.260 — THE SHOP STOPS CHANGING ITS MIND (2026-07-25)
 
 THE SHOP STOPS CHANGING ITS MIND: the line teasing which sealed relic wakes next could pick a different answer every time you launched the game — same pet, same progress, different hint. It now names the closest goal and keeps naming it. Behind that, a full audit of the shops: 26 town counters, the deals, the egg bands, the ledger and every panel were driven and measured, and they all held — including the trade game, where every profitable run between towns is still rationed to a few units a day.
