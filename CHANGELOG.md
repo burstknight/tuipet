@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.255 — THE EVOLUTION CHARTS CAME THROUGH CLEAN (2026-07-25)
+
+THE EVOLUTION CHARTS CAME THROUGH CLEAN: every one of the 46 digitama was raised twice — cared for and neglected — all the way to whatever it becomes, and every road ended on a real creature. No dead ends, no impossible requirements anywhere in 1,151 chart rows, the counters reset exactly as they should on each evolution, and the DNA and armor doors land where they promise. Nothing to fix this time: the check itself is what shipped, so it stays that way.
+
 ## 0.5.254 — A HURT PET NOW ASKS TO BE PATCHED UP (2026-07-25)
 
 A HURT PET NOW ASKS TO BE PATCHED UP: an injury stopped your pet fighting anywhere — but it could still be sent to do timed strike drills, it raised no alarm and no ❗ on the rail, and the one line that would have told you pointed at the bag for a Bandage that moved to the free care menu two days earlier. So a wound could sit there unnoticed and unfixed. Now it calls for you like sickness does, the drill refuses too, and the alert names the key that actually cures it: F.
