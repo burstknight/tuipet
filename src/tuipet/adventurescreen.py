@@ -26,6 +26,8 @@ mid-march to spend a town/danger warp item (skip ahead, rest or get ambushed).
 Nothing here is faked.
 """
 from __future__ import annotations
+from rich.cells import cell_len
+from rich.text import Text
 from . import data, grid, menu
 from . import adventure
 from . import strikefx
@@ -42,6 +44,8 @@ COLS, ROWS = 40, 12           # the ONE locked LCD arena, like every other scree
 # rule serialises canon's three-abreast).
 PULSE_T = 54
 PULSE_ON = ((5, 10), (15, 20), (25, 30), (35, 54))
+STRIP_W = 40                  # the message box's CELL budget (== app.HUD_W;
+#                               importing app here would be circular)
 HINT_BEAT = 20                # the road strip's key hint holds ~2s per step
 #                               (10Hz clock): the bare SET, then one labelled
 #                               key, so the packed 40-col line never has to fit
@@ -771,8 +775,15 @@ class AdventurePanel(menu.SubHost):
                 cyc.append(f"[dim]· [/][b]{k}[/][dim] {lbl}[/]")  # one, labelled
             hint = cyc[(self.frame_i // HINT_BEAT) % len(cyc)]
             chain = f" [b]×{self.adv.streak}[/]" if self.adv.streak >= 2 else ""
-            return (f"[dim]{self.adv.ribbon()}[/] ⚡{self.pet.energy} {hearts}"
-                    f"{chain}  {hint}")
+            # the packed line must fit the box in CELLS or the anchor beat is
+            # mutilated (bug report #32, v0.5.264 "what is space t?": '⚡' is
+            # two cells wide, so the char budget passed while the render ran
+            # 41 cells and 'ESC' wrapped onto the box's invisible second row).
+            # The ribbon absorbs the squeeze -- energy/hearts/chain are LIVE
+            # data and the hint is the whole point; a dot of road is not.
+            tail = f" ⚡{self.pet.energy} {hearts}{chain}  {hint}"
+            w = max(6, min(14, STRIP_W - cell_len(Text.from_markup(tail).plain)))
+            return f"[dim]{self.adv.ribbon(w)}[/]" + tail
         return menu.hints(("ESC", "home"))
 
     # -- render ---------------------------------------------------------------

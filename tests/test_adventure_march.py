@@ -155,3 +155,30 @@ def test_space_hurries_a_leg_while_travelling(no_encounters):
     assert pan.travelling and pan.adv.loc == 0
     pan.key("space")
     assert pan.adv.loc == 1                             # SPACE advanced a leg immediately
+
+
+def test_the_road_strip_fits_the_box_in_cells_every_beat(no_encounters):
+    """Bug report #32 (Joel, v0.5.264): "the key hints on the road showed
+    space T at one point.  what is space t?"  '⚡' is TWO terminal cells, so
+    the packed anchor beat (3-digit energy + a ×N chain + T held) measured
+    41 cells against the 40-cell box -- Textual wrapped 'ESC' onto the box's
+    invisible second row and the anchor read 'SPACE T'.  The ribbon now
+    absorbs the squeeze: EVERY hint-cycle beat must fit, worst case."""
+    from rich.cells import cell_len
+    from rich.text import Text
+    from tuipet.adventurescreen import HINT_BEAT, STRIP_W
+    p = _champ()
+    p.energy = 125                                # 3-digit ⚡
+    pan = AdventurePanel(p)
+    pan._trans = None
+    pan._landed = True
+    pan.travelling = True
+    pan.adv.streak = 12                           # a fat chain: ' ×12'
+    pan.adv.held_transports = lambda: ["autopilot"]   # T joins the anchor
+    for f in range(0, HINT_BEAT * 12):
+        pan.frame_i = f
+        plain = Text.from_markup(pan.strip()).plain
+        assert cell_len(plain) <= STRIP_W, f"frame {f}: {plain!r}"
+    # ...and the anchor beat still carries its whole key set
+    pan.frame_i = 0
+    assert "SPACE T ESC" in Text.from_markup(pan.strip()).plain

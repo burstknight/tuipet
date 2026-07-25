@@ -9,6 +9,7 @@ import os as _os
 import random
 if not _os.environ.get("COLORTERM"):
     _os.environ["COLORTERM"] = "truecolor"
+from rich.cells import cell_len, set_cell_size
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Static
@@ -63,6 +64,13 @@ def _hud_plain(t):
 def _hud_esc(t):
     """Escape '[' so a plain marquee window is never parsed as Rich markup."""
     return t.replace("[", "\\[")
+def _hud_fits(markup):
+    """True when a message renders inside the box -- measured in CELLS, never
+    chars (bug report #32, Joel v0.5.264 "what is space t?": '⚡' is TWO
+    terminal cells, so a 40-char road strip measured 41 cells, slipped past
+    the char check, and Textual wrapped 'ESC' onto the box's invisible
+    second row)."""
+    return cell_len(_hud_plain(markup)) <= HUD_W
 
 
 def keys_markup():
@@ -133,19 +141,13 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE LIVE-PLAY AUDIT: three robot play-testers ran whole "
-                 "lifetimes overnight and four finds shipped. Your mon "
-                 "should wake up sick less often — the per-species filth "
-                 "resistance the data always carried was never wired, so "
-                 "one overnight pile rolled the full 3-pile sickness rate; "
-                 "the real scaling is live now. The road's Town Cup now "
-                 "shares the home board's once-per-hour cadence (it could "
-                 "be farmed with the clock parked — and each entry was "
-                 "silently eating your home cup slot anyway). And a "
-                 "damaged save file can no longer crash the game at "
-                 "launch: every field is type-checked and a bad file "
-                 "falls back to the backup, then quarantine, like it "
-                 "always promised.")
+    WHATS_NEW = ("The 'SPACE T' mystery is solved: the ⚡ glyph is two "
+                 "columns wide, so the road's packed hint line silently "
+                 "overflowed the message box and ESC fell off the visible "
+                 "row. The box now measures true render width everywhere, "
+                 "and the road strip trims its ribbon to always fit — the "
+                 "key hints blink through SPACE walk / T warp / ESC home "
+                 "whole, every beat.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and
@@ -1277,7 +1279,7 @@ class TuiPetApp(ActionsMixin, App):
         if markup == getattr(self, "_hud_text", None):
             return
         self._hud_text = markup
-        if len(_hud_plain(markup)) <= HUD_W:
+        if _hud_fits(markup):
             self._hud_scroll = None
             self.msg_w.update(markup)
         else:
@@ -1285,7 +1287,7 @@ class TuiPetApp(ActionsMixin, App):
             self._hud_off = 0
             self._hud_hold = HUD_HOLD
             self._hud_tick = 0
-            self.msg_w.update(_hud_esc(self._hud_scroll[:HUD_W]))
+            self.msg_w.update(_hud_esc(set_cell_size(self._hud_scroll, HUD_W)))
 
     def _hud_marquee(self):
         """Advance the message marquee one step.  Called from the 10 Hz frame clock;
@@ -1299,7 +1301,10 @@ class TuiPetApp(ActionsMixin, App):
             self._hud_hold -= 1
             return                                  # pause on the head (and at each wrap)
         loop = self._hud_scroll + HUD_GAP
-        self.msg_w.update(_hud_esc((loop + loop)[self._hud_off:self._hud_off + HUD_W]))
+        # the window is cropped in CELLS (see _hud_fits) -- a char slice with a
+        # wide glyph inside would spill the box and wrap-clip the tail
+        self.msg_w.update(_hud_esc(set_cell_size(
+            (loop + loop)[self._hud_off:self._hud_off + HUD_W], HUD_W)))
         self._hud_off += 1
         if self._hud_off >= len(loop):
             self._hud_off = 0
