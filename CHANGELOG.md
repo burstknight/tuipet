@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.270 — THE SMOKE CLOUD ANSWERS THE SUN. The happy dance pops a big  (2026-07-25)
+
+THE SMOKE CLOUD ANSWERS THE SUN. The happy dance pops a big radiating SUN, but the frustration dance wore a tiny droop mark that half-vanished — so losing a drill or a battle read as no reaction at all. Both now blow the SMOKE CLOUD, same size, same beat, right where the sun goes.
+
 ## 0.5.269 — THE SMOKE CLOUD IS BACK. Your mon's fuming sulk could never  (2026-07-25)
 
 THE SMOKE CLOUD IS BACK. Your mon's fuming sulk could never fire while sick or filthy — the very states that cause it — and training locked it out entirely, so the gloom cloud was unreachable in normal play. A sick, starving or filthy mon now visibly fumes, and only a PERFECT training strike opens a proud moment.
