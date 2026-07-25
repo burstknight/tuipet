@@ -133,15 +133,14 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("STARVING CAN KILL AGAIN: the starvation clock has been "
-                 "asking for THIRTY in-game days of an empty belly instead "
-                 "of twelve hours — a unit slip that made the death it "
-                 "guards impossible, on a timer the game carefully saves "
-                 "so quitting can't dodge it. A pet left with an empty "
-                 "belly now dies after twelve game-hours, as it always "
-                 "said it would. Feeding it resets the clock, and it "
-                 "never starves in its sleep. A tended pet notices "
-                 "nothing.")
+    WHATS_NEW = ("YOUR PET IS ACTUALLY HUNGRY NOW: a full belly used to "
+                 "last FIVE in-game days — longer than a neglected pet "
+                 "survives — so it never emptied, the hunger alarm never "
+                 "rang, and you could raise a whole pet without feeding it "
+                 "once. A belly now lasts one game-day: a heart every few "
+                 "minutes of play, three or so meals a day, and a pet "
+                 "nobody feeds will actually starve. Look after it and you "
+                 "will never see an empty heart.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

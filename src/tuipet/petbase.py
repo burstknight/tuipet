@@ -642,7 +642,20 @@ BONUS_ATTRIBUTE_POWER = 1               # BonusAttributePower: a Happy pet's sta
 #                                         the only canon callers of the bonus-carrying setters)
 CALORIE_LAPSE_CHANGE = -1               # CalorieLapseChange (drain per lapse)
 CALORIE_LAPSE_GERIATRIC_EXTRA = -3      # CalorieLapseChangeGeriatric (added when elderly)
-CALORIE_DECAY_SEC = 1800 / (2 * CALORIE_LIMIT)   # keep ~1800s per hunger heart
+# ⭐ A FULL BELLY IS ONE GAME-DAY (Joel 2026-07-25: "retune the hunger, do
+# it" -- the care audit's F2 ruling).  The old value read "~1800s per
+# hunger heart" and was consumed on a counter that ticks in GAME-MINUTES,
+# so a heart took 1,800 of those (1.2 game-days) and a full belly FIVE --
+# while ordinary neglect killed the pet at 3.5.  Hunger therefore never
+# reached zero in a natural life: the hunger call, both "too hungry"
+# refusals and the starvation death were all unreachable, and feeding was
+# optional in a game about feeding.
+#
+# Tied to the day so it can never drift out of scale again: 4 hearts x
+# (2 x CALORIE_LIMIT) lapses each == one DAY_MINUTES.  A heart is ~6 real
+# minutes of play, a full belly one game-day -- the device's own rhythm,
+# where you feed the thing a few times a day.
+CALORIE_DECAY_SEC = DAY_MINUTES / (FULL_HUNGER * 2 * CALORIE_LIMIT)
 # DVPet per-species physiology (calcNeedDecay: higher coefficient = SLOWER decay). ~85% of
 # species share the modal values below, so only outliers diverge from tuipet's tuned pace.
 REF_HUNGER_COEF = 60          # modal HungerDecayCoefficient

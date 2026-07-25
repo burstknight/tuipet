@@ -83,28 +83,69 @@ def test_a_sleeping_pet_does_not_starve_in_its_sleep():
 
 # ---- F2: the measurement the ruling needs ------------------------------
 
-def test_the_hunger_clock_is_what_the_board_says_it_is():
-    """These are the numbers CARE_AUDIT §2 asks Joel to rule on.  If they
-    move, the board's argument moved with them and needs rereading."""
+def test_a_full_belly_is_one_game_day():
+    """RULED AND RETUNED (Joel 2026-07-25: "retune the hunger, do it").
+    Was 225 game-min a lapse -- a heart every 1.2 game-days, a full belly
+    every FIVE -- which is why hunger could never reach zero before
+    something else killed the pet.  Now tied to the day itself: 4 hearts x
+    8 lapses == DAY_MINUTES, so a heart is ~6 real minutes and a belly
+    lasts one game-day, the device's own rhythm."""
     p = _pet()
     lapse = p._hunger_interval
     full_belly = 32 * lapse                       # 4 hearts x 8 lapses
-    assert lapse == pytest.approx(225, abs=1)
-    assert full_belly / DAY_LENGTH == pytest.approx(5.0, abs=0.2)
+    assert lapse == pytest.approx(45, abs=1)
+    assert full_belly / DAY_LENGTH == pytest.approx(1.0, abs=0.05)
 
 
-def test_ordinary_neglect_still_kills_before_the_belly_empties():
-    """The consequence, measured end to end: a pet nobody feeds dies of the
-    mistake ladder while it still has hearts left.  This is the pin that
-    fails the day the hunger pace is retuned -- which is the point."""
+def test_a_pet_nobody_feeds_now_starves_as_it_should():
+    """SUPERSEDED-IN-PLACE.  This pin used to assert the BROKEN world: that
+    neglect killed by the mistake ladder while hearts remained, because the
+    belly needed five game-days and the ladder only three and a half.  The
+    retune inverted it, which is exactly what the pin existed to catch.
+    Measured now: the belly empties at ~1.4 game-days and starvation takes
+    the pet at ~1.9."""
     p = _pet()
-    for _ in range(int(DAY_LENGTH * 8)):
+    emptied_at = None
+    for i in range(int(DAY_LENGTH * 8)):
         p.tick(1.0)
+        if p.hunger == 0 and emptied_at is None:
+            emptied_at = i / DAY_LENGTH
         if p.dead:
             break
-    assert p.dead
-    assert p.death_cause != "starvation"
-    assert p.hunger > 0, "the belly emptied after all -- retune the board"
+    assert p.dead and p.death_cause == "starvation"
+    assert emptied_at is not None and emptied_at < 2.0
+    assert p.care_mistakes < 20, "the ladder should NOT be what got there first"
+
+
+def test_the_attentive_player_is_not_punished_by_the_faster_clock():
+    """The other half of the ruling: feeding becomes a rhythm (~3 meals a
+    game-day), not a treadmill -- and a tended pet never sees an empty
+    belly at all."""
+    p = _pet()
+    feeds = drills = 0
+    for _ in range(int(DAY_LENGTH * 4)):
+        p.tick(1.0)
+        if p.hunger <= 1 and not p.asleep:
+            p.feed_meat()
+            feeds += 1
+        if p.strength <= 1 and not p.asleep and not p.can_train():
+            # effort decays too (~2 game-days a heart) and its call books a
+            # slip like hunger's -- an attentive player drills, so does this
+            p.train_result(True)
+            drills += 1
+        if p.poop:
+            p.clean()
+        if p.sick:
+            p.feed_pill()
+        if p.discipline_call:
+            p.scold()          # an ignored tantrum is a slip too (discipline B)
+        if p.asleep and p.lights:
+            p.toggle_lights()
+        elif not p.asleep and not p.lights:
+            p.toggle_lights()
+        assert p.hunger > 0 or p.asleep, "a tended pet went hungry"
+    assert not p.dead and p.care_mistakes == 0
+    assert 6 <= feeds <= 24, f"{feeds} meals in 4 game-days is not a rhythm"
 
 
 # ---- the care loop's own invariants ------------------------------------
@@ -145,9 +186,14 @@ def test_the_meters_never_leave_their_rails(days):
 
 def test_every_care_mistake_has_exactly_one_source():
     """The four doors that book a slip, each fired in isolation."""
-    # an ignored hunger call
+    # an ignored hunger call.  ISOLATED: the body has other callers (the
+    # effort gauge, a discipline tantrum), and with the retuned clock two
+    # can mature in the same tick -- so quiet them and let hunger be the
+    # only thing left to book a slip.
     p = _pet(hunger=0)
     for _ in range(int(DAY_LENGTH)):
+        p.strength = 4                        # no effort call
+        p.discipline_call = False             # no tantrum
         p.tick(1.0)
         p.hunger = 0
         if p.care_mistakes:

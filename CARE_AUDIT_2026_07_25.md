@@ -39,7 +39,7 @@ the clock; a sleeping pet does not starve in its sleep (awake-only, like
 the hunger call).  **An attentive player is untouched** — 0 mistakes over
 three game-days, no breaches.
 
-## 2. F2 — HUNGER IS TOO SLOW TO MATTER  ⚠ RULING NEEDED
+## 2. F2 — HUNGER WAS TOO SLOW TO MATTER  ✅ RULED + RETUNED
 
 While measuring F1 I had to answer "how long until a belly is empty?", and
 the answer is the bigger finding:
@@ -71,16 +71,30 @@ several times a device-day — that reads wrong.  But the constants are
 labelled *"tuipet's tuned pace"* and *"keep ~1800s per hunger heart"*, so
 this is a **balance ruling, not a unit slip**, and it is yours.
 
-**My recommendation:** bring a full belly to roughly ONE game-day
-(`CALORIE_DECAY_SEC` ≈ 45 rather than 225), which puts a hunger heart at
-~6 real minutes and makes feeding a daily rhythm instead of a formality.
-That single constant moves it; the sibling clocks (poop 1.9 game-days,
-effort 2.1 game-days) would want a look in the same pass, since they are
-tuned to the same scale.
-
-Nothing is changed until you rule.  The numbers above are pinned in
-`test_the_hunger_clock_is_what_the_board_says_it_is`, so if the pace moves,
-that pin fails and sends the next reader back here.
+> ### ✅ RULED — Joel, same day: "yeah retune the hunger, do it"
+>
+> `CALORIE_DECAY_SEC` is now **tied to the day itself** rather than to a
+> loose number: `DAY_MINUTES / (FULL_HUNGER × 2 × CALORIE_LIMIT)` = 45, so
+> four hearts × eight lapses is exactly one game-day and the scale can
+> never drift out of the day again.
+>
+> | | before | after |
+> |---|---|---|
+> | one hunger heart | 1.2 game-days (30 real min) | **0.25 game-days (6 real min)** |
+> | a full belly | 5.0 game-days (2 real hours) | **1.0 game-day (24 real min)** |
+> | a pet nobody feeds | died at 3.5 days of *neglect*, hearts left | **belly empties at 1.4, starves at 1.9** |
+> | an attentive player | 0 mistakes | **0 mistakes, ~3 meals a game-day, never sees an empty belly** |
+>
+> So the whole chain downstream of an empty belly is live for the first
+> time: the hunger call and its `!`, both "too hungry" refusals, and F1's
+> starvation death — which is now what actually kills a neglected pet,
+> rather than a clock that could never run.
+>
+> **The sibling clocks were NOT touched** — poop still comes every 1.9
+> game-days and an effort heart every 2.1.  They are tuned to the same
+> old scale and now look slow beside hunger; that is the next ruling, not
+> this one.  (Worth knowing for it: the effort gauge has its own call, so
+> a pet nobody drills books slips exactly like a pet nobody feeds.)
 
 ## 3. HELD UNDER LOAD
 
@@ -98,5 +112,8 @@ that pin fails and sends the next reader back here.
 
 ## 4. SHIPPED
 
-**v0.5.256** — F1 plus `tests/test_care_audit.py` (11 pins).  F2 awaits a
-ruling.  Suite 2115 → 2126.
+- **v0.5.256** — F1, the starvation clock, plus `tests/test_care_audit.py`
+  (11 pins).  Suite 2115 → 2126.
+- **v0.5.257** — F2 ruled and retuned: a full belly is one game-day.  The
+  pins that recorded the broken numbers were superseded in place, which is
+  exactly what they were written for.  Suite 2126 → 2127.
