@@ -175,6 +175,8 @@ def test_net_raid_messages_land_in_client_state():
 
 class _StubState:
     me_id = 1
+    login_failed = None
+    error = None
 
 
 class _StubClient:
@@ -659,3 +661,31 @@ def test_the_intro_never_shows_the_classic_five_on_a_raid_tank():
         sub.text()
         assert sub.hud_php == RAID_PLAYER_HP, sub.hud_php
         sub.i += 1
+
+
+def test_the_board_pre_warns_what_the_volley_would_refuse():
+    """Joel 2026-07-25 "do i get any kind of warning?": the body gate only
+    answered AFTER the press.  The rally line now runs the same gate
+    read-only -- a drained/sick/sleeping pet sees the reason on the board
+    before spending a keypress, and the check never wakes or bills."""
+    pan = _panel()
+    pan._no_account = False                             # the stub client is "in"
+    pan.pet.energy = 1                                  # under BATTLE_MIN_ENERGY
+    pan.client.raid = _view(_mega())
+    pan.anim()
+    assert "Too drained" in pan.msg and "boss stands" in pan.msg
+    # the sleeper's warning is read-only: no wake, no disturb billed
+    pan2 = _panel()
+    pan2._no_account = False
+    pan2.pet.asleep = True
+    d = pan2.pet.disturb
+    pan2.client.raid = _view(_mega())
+    pan2.anim()
+    assert "asleep" in pan2.msg.lower()
+    assert pan2.pet.asleep and pan2.pet.disturb == d
+    # a fit pet still gets the rally cry
+    pan3 = _panel()
+    pan3._no_account = False
+    pan3.client.raid = _view(_mega())
+    pan3.anim()
+    assert "SPACE to raid" in pan3.msg

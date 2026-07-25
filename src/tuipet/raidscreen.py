@@ -91,8 +91,17 @@ class RaidPanel(menu.SubHost):
             elif st is not None and st.error:
                 self.msg = f"Gate error: {st.error}"
             elif self.view:
-                self.msg = "The boss stands. SPACE to raid!" if self._standing() \
-                    else "The next boss is incoming…"
+                if self._standing():
+                    # PRE-WARN what the volley key will refuse (Joel
+                    # 2026-07-25 "do i get any kind of warning?"): the same
+                    # gate the press runs, read-only -- NEVER _disturbed()
+                    # here, a warning must not wake or bill anyone
+                    cond = ("Fast asleep — raiding would wake it."
+                            if self.pet.asleep else self.pet.battle_condition())
+                    self.msg = ("The boss stands. SPACE to raid!"
+                                if cond is None else f"The boss stands — {cond}")
+                else:
+                    self.msg = "The next boss is incoming…"
         hit = getattr(self.client, "last_hit", None)
         if hit is not None:
             # the gate's authoritative credit (raw x5000 x num-mult) -- the
