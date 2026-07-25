@@ -133,14 +133,14 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("ONE LESS GHOST IN THE FIGHT CODE: the battle screen used "
-                 "to check every fight for a marker meaning \"this is an "
-                 "online duel\" — a marker nothing in the game has ever "
-                 "set, because a lobby duel is replayed by a different "
-                 "path entirely. The check is gone, so every fight that "
-                 "starts at the timing bar is simply what it always was: "
-                 "yours, and local. Nothing you can see changed; there is "
-                 "one less way for it to go wrong.")
+    WHATS_NEW = ("ONE WAY TO SAY \"ONLINE\": the fight code had two "
+                 "different ways to mark a duel as an online one, and only "
+                 "ever used a single one of them — the other was a spare "
+                 "spelling waiting to disagree with the first. The spare "
+                 "is gone. The rule it guarded is untouched and still "
+                 "tested: a duel never feeds your Mega-kill count, your "
+                 "record or your evolution gates, no matter who you fight "
+                 "or how often.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

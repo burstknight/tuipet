@@ -21,7 +21,6 @@ import os
 
 from tuipet import data_meta  # noqa: E402
 from tuipet import data
-from tuipet.battle import Battle
 from tuipet.pet import Pet
 
 
@@ -61,16 +60,21 @@ def test_a_loss_to_a_mega_is_not_a_kill():
 
 def test_pvp_megas_are_not_farmable():
     """The opponent's stage rides an UNTRUSTED peer card -- two colluding tamers
-    must not be able to trade wins with Mega pets and farm KO6/the eggs."""
-    p = _pet()
-    p.record_battle(True, _enemy("Mega"), source="pvp")
-    assert p.mega_kills == 0, "a PvP 'Mega' must never bump the KO6 counter"
+    must not be able to trade wins with Mega pets and farm KO6/the eggs.
 
-    # ...and the host path resolves through the real engine, so Battle must
-    # carry the source too, or the exclusion leaks on the host side.
-    host = Battle(_pet(), _enemy("Mega"), source="pvp")
-    assert host.source == "pvp"
-    assert Battle(_pet(), _enemy("Mega")).source == "battle"
+    Pinned on `online=True`, the ONE door to the online rules since the
+    `source="pvp"` alias was cut 2026-07-25: that is the spelling the lobby
+    -- the only caller that ever fights online -- has always used."""
+    p = _pet()
+    p.record_battle(True, _enemy("Mega"), online=True)
+    assert p.mega_kills == 0, "a PvP 'Mega' must never bump the KO6 counter"
+    assert p.battles == 0 and p.wins == 0, "an online bout is body-only (L17)"
+
+    # ...and a LOCAL bout against the same foe does count, or the guarantee
+    # above would be indistinguishable from a broken counter
+    q = _pet()
+    q.record_battle(True, _enemy("Mega"))
+    assert q.mega_kills == 1
 
 
 # ---------------------------------------------------------------- the roster

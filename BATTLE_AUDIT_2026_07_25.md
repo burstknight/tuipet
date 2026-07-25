@@ -166,12 +166,17 @@ road and keeps the ambush carve-out that the energy grammar depends on.
   REPLAY and files its own bout with `record_battle(online=True)`).  Every
   fight born at the timing bar is local, and a pin now says so.
 
-  **Kept on purpose:** `Battle`'s own `source` parameter and
-  `record_battle`'s, because they carry a live guarantee rather than dead
-  wiring — `test_pvp_megas_are_not_farmable` uses them to prove two
-  colluding tamers cannot trade Mega "wins" into the KO6 counter.  What was
-  dead was the panel GUESSING at a duel from a dict key; the engine's
-  ability to be told is real.
+  ~~**Kept on purpose:** `Battle`'s own `source` parameter and
+  `record_battle`'s~~ → **ALSO CUT v0.5.249**, on Joel's follow-up order.
+  The reasoning that kept them was sound but the conclusion was one step
+  short: the guarantee they protected does not live in the `source`
+  spelling, it lives in **`online`** — the door the lobby, the only caller
+  that ever fights online, has always used.  Two spellings for one rule
+  are two places for it to drift; there is one now.  `Battle` is a LOCAL
+  bout by construction (nothing ever built one otherwise), and
+  `test_pvp_megas_are_not_farmable` pins the same guarantee on
+  `online=True`, plus its mirror — a local bout against the same Mega
+  DOES count — so the pin can no longer pass by simply counting nothing.
 - ~~**The pre-fight readiness line builds its own foe**~~ → FIXED
   v0.5.246: it reads `enemy["side"]` first, exactly as `Battle` does, so
   the card and the fight can never describe two different creatures (a cup
@@ -189,5 +194,8 @@ road and keeps the ambush carve-out that the energy grammar depends on.
 - **v0.5.247** — a bout trains on BOTH clocks (§5's first item, flipped by
   Joel), and the DigiCore row renamed to Training.  Suite 2001 → 2003.
 - **v0.5.248** — the panel's dead PvP selector cut (§5's second item).
-  Suite 2003 → 2004.  **§5 is now empty: every item the audit named is
-  ruled, flipped or cut.**
+  Suite 2003 → 2004.
+- **v0.5.249** — the `source` parameters cut from `Battle` and
+  `record_battle` too; `online` is the one door to the online rules, and
+  the anti-farm guarantee is re-pinned there with its mirror.  **§5 is now
+  empty: every item the audit named is ruled, flipped or cut.**

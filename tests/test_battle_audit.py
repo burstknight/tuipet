@@ -95,25 +95,29 @@ def _ledger(p):
                 log=len(p.battle_log))
 
 
-def _run_engine(source, enemy=None, raid=False):
+def _run_engine(online=False, enemy=None, raid=False):
     random.seed(7)
     # ABOVE the species base, so the weight bill is visible: it floors AT
     # base (v0.5.204), so a pet already at base shows no movement
     p = _pet()
     p.weight = p._base_weight() + 5
     before = _ledger(p)
-    b = (B.RaidBout(p, enemy or dict(ENEMY)) if raid
-         else B.Battle(p, enemy or dict(ENEMY), source=source))
-    for _ in range(40):
-        if b.over:
-            break
-        b.play_round()
+    if online:                                # the lobby's own door: it
+        p.record_battle(True, online=True)     # never builds a Battle at all
+        b = None
+    else:
+        b = (B.RaidBout(p, enemy or dict(ENEMY)) if raid
+             else B.Battle(p, enemy or dict(ENEMY)))
+        for _ in range(40):
+            if b.over:
+                break
+            b.play_round()
     after = _ledger(p)
     return {k: after[k] - before[k] for k in after}, b
 
 
 def test_a_local_bout_bills_the_body_and_feeds_progression():
-    d, b = _run_engine("battle")
+    d, b = _run_engine()
     assert d["energy"] == -5                    # a bout spends energy...
     assert d["weight"] < 0                      # ...and sheds weight...
     assert d["battles"] == 1 and d["stage_battles"] == 1
@@ -128,8 +132,10 @@ def test_a_local_bout_bills_the_body_and_feeds_progression():
 
 
 def test_an_online_bout_bills_the_BODY_ONLY():
-    """L17: PvP is progression-neutral — energy and weight, nothing else."""
-    d, _b = _run_engine("pvp")
+    """L17: PvP is progression-neutral — energy and weight, nothing else.
+    The lobby records its own duel with `online=True`; since 2026-07-25
+    that is the only spelling there is."""
+    d, _b = _run_engine(online=True)
     assert d["energy"] == -5 and d["weight"] < 0
     for k in ("battles", "wins", "stage_battles", "stage_trainings",
               "total_trainings", "exp", "log"):
@@ -139,7 +145,7 @@ def test_an_online_bout_bills_the_BODY_ONLY():
 def test_a_raid_volley_writes_NOTHING_on_the_pet():
     boss = {"num": 288, "name": "Boss", "stage": "Mega", "attribute": "Virus",
             "boss": True}
-    d, b = _run_engine("raid", enemy=boss, raid=True)
+    d, b = _run_engine(enemy=boss, raid=True)
     assert all(v == 0 for v in d.values()), d
     assert getattr(b, "dealt", 0) >= 0          # the report is the whole point
 
@@ -409,12 +415,16 @@ def test_the_panel_never_builds_a_PVP_fight():
     body = "\n".join(ln for ln in src.splitlines()
                      if not ln.lstrip().startswith("#"))
     assert "pvp" not in body, "the dead PvP selector is back"
-    pan = BattlePanel(_pet(), dict(ENEMY))
-    for _ in range(400):
-        pan.anim()
-        if pan.phase == "ready":
-            for _ in range(LOCK_ARM_T + 1):
-                pan.anim()
-            pan.key("space")
+    # ...and the engine no longer has a source to select: a Battle IS a
+    # local bout (the parameter went with the selector, 2026-07-25)
+    import inspect as _i
+    assert "source" not in _i.signature(B.Battle.__init__).parameters
+    assert "source" not in _i.signature(Pet.record_battle).parameters
+    p = _pet()
+    before = p.battles
+    b = B.Battle(p, dict(ENEMY))
+    for _ in range(40):
+        if b.over:
             break
-    assert pan.battle.source == "battle"
+        b.play_round()
+    assert p.battles == before + 1            # it recorded as local

@@ -245,7 +245,7 @@ class BattleMixin:
             return "Clean up first!"
         return None
 
-    def record_battle(self, won, enemy=None, online=False, source="battle",
+    def record_battle(self, won, enemy=None, online=False,
                       free_style=None, low_health=False):
         """One battle, the 0.5 rules (clone record_battle, 2026-07-17):
         counters + flat costs, +2 trainings for a LOCAL bout.  The
@@ -262,9 +262,16 @@ class BattleMixin:
         coherent.  The old free_style/low_health params are
         accepted-and-ignored for stragglers.  (Mood/compliance/contagion
         legs left with their systems; the perfect-wins HP ladder left with
-        the classic battle.)"""
-        if source == "pvp":
-            online = True
+        the classic battle.)
+
+        ⭐`online` IS THE ONE DOOR to those rules (the `source="pvp"`
+        alias was CUT 2026-07-25 on Joel's order, battle audit §5).  Two
+        ways to say the same thing meant two places to get it wrong, and
+        only one of them was ever used: the lobby -- the single caller
+        that fights online -- has always passed `online=True`.  The
+        anti-farm guarantee it protects is unchanged and still pinned
+        (a duel's Mega must never reach the KO6 counter); it now has
+        exactly one spelling."""
         # the injury roll judges the body the pet FOUGHT with -- read the
         # condition BEFORE the bout bills it (the weight bill floors to
         # base, which would erase the very drag that made the fight risky)

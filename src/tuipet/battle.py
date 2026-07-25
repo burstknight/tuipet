@@ -241,10 +241,17 @@ def readiness_line(mine, theirs):
 
 
 class Battle:
-    """A playable fight the screen steps through round by round."""
+    """A playable fight the screen steps through round by round.
 
-    def __init__(self, pet, enemy=None, source="battle", rng=None,
-                 rounds=ROUNDS_LOCAL):
+    ALWAYS A LOCAL BOUT (the `source` parameter was CUT 2026-07-25 on
+    Joel's order, battle audit §5).  Nothing ever built a Battle any other
+    way: a lobby duel is fought on the relay and merely REPLAYED by a
+    presentation-only BattlePanel, and the lobby files its own result with
+    `record_battle(online=True)` -- the one live door to the online rules.
+    A fight that runs THIS engine on THIS pet is local, full stop, so it
+    records like one and always pays the +2."""
+
+    def __init__(self, pet, enemy=None, rng=None, rounds=ROUNDS_LOCAL):
         self.pet = pet
         rng = rng or random.random
         if enemy is None:
@@ -264,7 +271,6 @@ class Battle:
         self.won = False
         self.drawn = False           # both stood at equal HP (counts as a loss)
         self.reward = ""
-        self.source = source
 
     def play_round(self, _choice=None):
         """Advance one precomputed round -> the round record for the stage
@@ -303,13 +309,11 @@ class Battle:
             # draw always read as an unexplained loss on the result card
             self.drawn = self.pet_hp == self.enemy_hp
         if hasattr(self.pet, "record_battle"):
-            self.pet.record_battle(self.won, self.enemy,
-                                   online=self.source == "pvp")
-        if self.source != "pvp":
-            # record_battle grants the +2 on EVERY local bout, win or lose --
-            # gating the line on won left the losing grant silent under a
-            # DEFEAT card with an empty reward line
-            self.reward = "training +2"
+            self.pet.record_battle(self.won, self.enemy)
+        # record_battle grants the +2 on EVERY local bout, win or lose --
+        # gating the line on won left the losing grant silent under a
+        # DEFEAT card with an empty reward line
+        self.reward = "training +2"
 
     def surrender(self):
         if self.over:
@@ -318,10 +322,8 @@ class Battle:
         self.over = True
         self.won = False
         if hasattr(self.pet, "record_battle"):
-            self.pet.record_battle(False, self.enemy,
-                                   online=self.source == "pvp")
-        if self.source != "pvp":
-            self.reward = "training +2"      # the surrendered bout still bills + trains
+            self.pet.record_battle(False, self.enemy)
+        self.reward = "training +2"          # the surrendered bout still bills + trains
 
 
 class RaidBout:
@@ -344,7 +346,6 @@ class RaidBout:
         self.over = False
         self.won = False
         self.reward = ""
-        self.source = "raid"
 
     def play_round(self, _choice=None):
         if self.over or self.round >= len(self.seq):
