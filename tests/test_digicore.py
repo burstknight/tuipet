@@ -653,14 +653,18 @@ def test_the_core_number_wears_its_own_unit():
 
 def test_the_drills_row_shows_both_training_terms():
     """Joel 2026-07-23: "is there a stat somewhere i can see that shows
-    this?"  The POWER page's Drills row now carries BOTH hit-formula
+    this?"  The POWER page's TRAINING row carries BOTH hit-formula
     training terms: lifetime (+20% cap, never resets) and this stage
     (+10% cap, the TR evolution gate, resets on evolve) -- the stage
-    count was live everywhere but visible nowhere."""
+    count was live everywhere but visible nowhere.
+
+    Renamed from "Drills" 2026-07-25, when a BOUT started feeding both
+    counters (+2): a row named for one of its two sources is a row that
+    lies about the other (the liveness law)."""
     from tuipet import digicore
     p = Pet(num=100, stage="Champion", attribute="Vaccine")
     p.total_trainings = 150
     p.stage_trainings = 42
     power = dict(digicore.build_pages(p))["POWER"]
-    val = next(v for lab, v in power if lab == "Drills")
+    val = next(v for lab, v in power if lab == "Training")
     assert val == "150 · 42 this stage"

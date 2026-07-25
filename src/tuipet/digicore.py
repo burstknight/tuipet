@@ -352,7 +352,7 @@ def build_pages(pet):
     # #17 2026-07-22): the Va/D/Vi attribute powers stopped gating growth
     # when those checks left evolution.check() -- lines never read them
     # either.  What still feeds evolution here is Level (LV gates), KO6 and
-    # Effort; the attribute trio, Form and Drills feed the FIGHT
+    # Effort; the attribute trio, Form and Training feed the FIGHT
     # (hit_chance / roll_damage).  The weight/bits/battles bookkeeping
     # moved beside its kin (weight -> CONDITION; battles/bits -> STATUS;
     # trophies have their own page).
@@ -365,9 +365,12 @@ def build_pages(pet):
         # 2026-07-23 "is there a stat somewhere i can see that shows
         # this?"): lifetime (the +20% term, never resets) · this stage
         # (the +10% term AND the TR evolution gate; resets on evolve) --
-        # stage_trainings was live everywhere but visible nowhere
-        ("Drills", f"{getattr(pet, 'total_trainings', 0)}"
-                   f" · {getattr(pet, 'stage_trainings', 0)} this stage"),
+        # stage_trainings was live everywhere but visible nowhere.
+        # Named TRAINING, not "Drills", since 2026-07-25: a bout feeds
+        # both counters now (+2), so a row that says drills would be
+        # naming one of its two sources (the liveness law).
+        ("Training", f"{getattr(pet, 'total_trainings', 0)}"
+                     f" · {getattr(pet, 'stage_trainings', 0)} this stage"),
         ("KO6", f"{pet.mega_kills} Mega felled"),
     ]
     if pet.x_antibody != "None":

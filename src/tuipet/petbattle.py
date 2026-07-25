@@ -288,7 +288,15 @@ class BattleMixin:
         self.battles += 1
         self.stage_battles += 1                          # LINES_SPEC BTL gate (per-stage)
         self.battle_log = (self.battle_log + [1 if won else 0])[-15:]   # Pen20 rolling window
-        self.stage_trainings += 2                        # a local bout trains (clone rule)
+        # A BOUT TRAINS, ON BOTH CLOCKS (Joel 2026-07-25: "feed the
+        # total_trainings thing too, flip it").  The +2 is the clone rule;
+        # what the battle audit found was that only the STAGE counter got
+        # it, so fighting fed the TR evolution gate and the hit formula's
+        # +10% term while the lifetime +20% term -- the bigger of the two
+        # -- sat still no matter how much a pet fought.  The drill has
+        # always fed both 1:1; a bout now does the same at its own rate.
+        self.stage_trainings += 2
+        self.total_trainings += 2
         # THE INJURY ROLL (canon restoration 2026-07-23): battles can
         # wound -- the second ailment the 2026-07-16 strip wrongfully
         # took.  Adapted BattleInjury table (petbase); LOCAL bouts only

@@ -90,7 +90,8 @@ def test_the_outcome_is_the_same_however_you_press():
 def _ledger(p):
     return dict(energy=p.energy, weight=p.weight, battles=p.battles,
                 wins=p.wins, stage_battles=p.stage_battles,
-                stage_trainings=p.stage_trainings, exp=p.exp,
+                stage_trainings=p.stage_trainings,
+                total_trainings=p.total_trainings, exp=p.exp,
                 log=len(p.battle_log))
 
 
@@ -117,7 +118,11 @@ def test_a_local_bout_bills_the_body_and_feeds_progression():
     assert d["weight"] < 0                      # ...and sheds weight...
     assert d["battles"] == 1 and d["stage_battles"] == 1
     assert d["log"] == 1                        # ...and feeds the Pen20 window
-    assert d["stage_trainings"] == 2            # the clone's +2
+    # the clone's +2, on BOTH clocks since 2026-07-25 (Joel: "feed the
+    # total_trainings thing too, flip it") -- fighting used to move the
+    # stage counter and the TR gate while the hit formula's bigger
+    # lifetime term sat still no matter how much a pet fought
+    assert d["stage_trainings"] == 2 and d["total_trainings"] == 2
     assert (d["wins"] == 1) == bool(b.won)
     assert (d["exp"] > 0) == bool(b.won)        # only a win pays experience
 
@@ -126,8 +131,8 @@ def test_an_online_bout_bills_the_BODY_ONLY():
     """L17: PvP is progression-neutral — energy and weight, nothing else."""
     d, _b = _run_engine("pvp")
     assert d["energy"] == -5 and d["weight"] < 0
-    for k in ("battles", "wins", "stage_battles", "stage_trainings", "exp",
-              "log"):
+    for k in ("battles", "wins", "stage_battles", "stage_trainings",
+              "total_trainings", "exp", "log"):
         assert d[k] == 0, k
 
 
@@ -363,3 +368,29 @@ def test_a_wayside_AMBUSH_still_cannot_be_declined():
              "attribute": "Virus"}
     pan._start_battle(enemy)
     assert pan.sub is not None                     # the fight happens
+
+
+def test_fighting_moves_the_lifetime_training_term_too():
+    """The flip: the hit formula's lifetime term (+0.2 cap) used to be
+    unreachable by fighting -- only the drill fed it.
+
+    Measured in two halves on purpose.  The bouts themselves also SPEND
+    the body (energy, weight), so comparing a rested pet with a
+    200-bout-drained one measures the drain, not the term."""
+    p = _pet()
+    for _ in range(200):
+        p.record_battle(True, dict(ENEMY))
+    assert p.total_trainings == 400              # the mechanism...
+    rested, trained = _pet(), _pet()
+    trained.total_trainings = p.total_trainings
+    foe = B.Side.wild(120)
+    assert (B.Side.of_pet(trained).hit_chance(foe)
+            > B.Side.of_pet(rested).hit_chance(foe))   # ...and what it buys
+
+
+def test_the_drill_still_feeds_both_at_its_own_rate():
+    """Unchanged: 1 drill = 1 on each clock.  The bout's +2 is the clone's
+    own number, not a copy of the drill's."""
+    p = _pet()
+    p.train_result(True)
+    assert p.total_trainings == 1 and p.stage_trainings == 1

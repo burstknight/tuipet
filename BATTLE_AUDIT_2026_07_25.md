@@ -151,11 +151,14 @@ road and keeps the ambush carve-out that the energy grammar depends on.
 
 ## 5. LOOKED AT, LEFT ALONE (named, not touched)
 
-- **A bout feeds `stage_trainings` (+2) but never `total_trainings`.**  The
-  drill feeds both.  The DigiCore labels the lifetime counter DRILLS, so a
-  bout not counting reads as deliberate — but it means fighting never
-  moves the biggest training term in the hit formula (+0.2 max).  A change
-  here is a balance ruling, not a wiring fix.
+- ~~**A bout feeds `stage_trainings` (+2) but never `total_trainings`.**~~
+  → **FLIPPED v0.5.247** (Joel: "feed the total_trainings thing too, flip
+  it").  Fighting fed the TR evolution gate and the hit formula's +10%
+  stage term while the bigger +20% LIFETIME term sat still no matter how
+  much a pet fought; a bout now pays both, at its own +2 rate (the drill
+  keeps its 1:1).  The DigiCore row was renamed **Drills → Training** the
+  same hour: a row named for one of its two sources is a row that lies
+  about the other (the liveness law).
 - **`BattlePanel`'s `source="pvp"` branch is dormant**: no enemy dict ever
   carries a `pvp` key, because the lobby drives its panel as a
   presentation-only replay and records the bout itself.  Harmless, and
@@ -174,3 +177,5 @@ road and keeps the ambush carve-out that the energy grammar depends on.
   (road boss + raid volley), the ambush carve-out pinned as the one
   exception, and the readiness line reading the fight's own foe.  12 more
   pins; suite 1989 → 2001.
+- **v0.5.247** — a bout trains on BOTH clocks (§5's first item, flipped by
+  Joel), and the DigiCore row renamed to Training.  Suite 2001 → 2003.
