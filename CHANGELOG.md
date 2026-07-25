@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.265 — The 'SPACE T' mystery is solved (2026-07-25)
+
+The 'SPACE T' mystery is solved: the ⚡ glyph is two columns wide, so the road's packed hint line silently overflowed the message box and ESC fell off the visible row. The box now measures true render width everywhere, and the road strip trims its ribbon to always fit — the key hints blink through SPACE walk / T warp / ESC home whole, every beat.
+
 ## 0.5.264 — THE LIVE-PLAY AUDIT (2026-07-25)
 
 THE LIVE-PLAY AUDIT: three robot play-testers ran whole lifetimes overnight and four finds shipped. Your mon should wake up sick less often — the per-species filth resistance the data always carried was never wired, so one overnight pile rolled the full 3-pile sickness rate; the real scaling is live now. The road's Town Cup now shares the home board's once-per-hour cadence (it could be farmed with the clock parked — and each entry was silently eating your home cup slot anyway). And a damaged save file can no longer crash the game at launch: every field is type-checked and a bad file falls back to the backup, then quarantine, like it always promised.
