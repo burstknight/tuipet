@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.253 — THE ONLINE SAFETY NET WAS BROKEN, NOT THE LOBBY (2026-07-25)
+
+THE ONLINE SAFETY NET WAS BROKEN, NOT THE LOBBY: the two-bot live test that flies a real duel on the real server before each release has been failing on purpose since July 20 — it still demanded that an online duel add to your local record, which is exactly what the anti-cheat rules stopped it doing. It now checks the right things and flies clean. The lobby itself came through a full audit unchanged: forged invites, blocked players, mid-typing invites and mid-fight disconnects all still land where they should.
+
 ## 0.5.252 — THE CUP HAD FOUR ROWS HANGING OFF THE SCREEN (2026-07-25)
 
 THE CUP HAD FOUR ROWS HANGING OFF THE SCREEN: every page of a tournament — the faceoff, the walk-in, the advancing field, the podium — was drawing a full-height arena AND captions under it, four rows more than the screen holds. Everything below the fold was invisible: who you were about to fight, who just advanced, even "SPACE fight". The arena is pure picture now, the announcements moved to the line under it, your opponent is on the status card, and the fighters stop jumping a row when the bell rings.
