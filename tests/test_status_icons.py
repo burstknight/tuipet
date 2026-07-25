@@ -50,7 +50,12 @@ ALLOWED_SILENT = {
     "st_vitamin": "badge -> the +vit HUD deco",
     "st_fatigue": "badge -> the +tired HUD deco",
     # ("depressed" left the silent list 2026-07-23: it now rides the ambient
-    # tantrum as the gloom-cloud emote -- the discouraged show, Joel's order)
+    # tantrum as the gloom-cloud emote -- the discouraged show, Joel's order.
+    # 2026-07-25 it took BOTH frustration shows too -- see "unhappy" below.)
+    "unhappy": ("canon's jeer emote, RETIRED as a scene actor 2026-07-25 (Joel: "
+                "'the smoke!!!'): a 7px droop whose second frame lights 5 pixels, "
+                "beside an 8x8 radiating SUN on the cheer -- the frustration dance "
+                "read as no reaction. Both jeer and losing wear `depressed` now"),
     "flash": "attackHitFlash crop; battle_overlays.json hit_explosion is the source in use",
     "frozen": "DVPet's game-PAUSED indicator, not a cold state (documented in paint)",
     "battle_bag": "superseded by hp_dummies.json (the clean battleBags rows)",

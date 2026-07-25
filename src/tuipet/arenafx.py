@@ -847,19 +847,28 @@ class FxMixin:
 
     def _fxk_jeer(self, pet, fx, step, c):
         # DVPet jeer(goodScold): the SCOLD reaction -- pose alternates down(+4)/up(+6)
-        # every 6 intervals, leading DOWN, with the "unhappy" emote riding the pet;
-        # ends ~beat 30.  (Poses 9/10 belong to badHealthJeer, the dying variant.)
+        # every 6 intervals, leading DOWN, with the frustration emote riding the
+        # pet; ends ~beat 30.  (Poses 9/10 belong to badHealthJeer, the dying variant.)
         down = (step // 6) % 2 == 0
         if fx.get("good", True):                # Jeering: the deserved 4/6 pair
             c.rows = self._pose_rows_idx(pet, 4 if down else 6)
         else:                                   # Bad_Scold/Sad_Jeering: the slump (10/9)
             c.rows = self._pose_rows_idx(pet, 10 if down else 9)
-        un = data.load_effects().get("unhappy")
-        if un:
-            uf = un[(step // 6) % len(un)]
+        # THE SMOKE ANSWERS THE SUN (Joel 2026-07-25).  The cheer pops the
+        # SUN -- 8x8 of radiating rays -- on every up-beat, and the player
+        # sees it constantly (feed, clean, praise, win, evolve, perfect
+        # strike).  The frustration dance wore `unhappy`: a 7px droop mark
+        # whose second frame is 5 lit pixels, so half the bounce showed
+        # essentially nothing.  Beside a full sun that reads as no reaction
+        # at all.  The frustration show now wears the SMOKE CLOUD -- the
+        # one emote with the sun's visual weight -- alternating its pair on
+        # the same 6-beat canon flips icon/icon2 on.
+        smoke = data.load_effects().get("depressed")
+        if smoke:
+            sf = smoke[(step // 6) % len(smoke)]
             # DVPet jeer(): centred pet, emote at its right edge (not the corner),
             # head height in the window (y=1 predated the law's clip).
-            c.overlay += _blit(uf, PET_BASE_X + c.xshift + SPRITE_W, grid.TOP)
+            c.overlay += _blit(sf, PET_BASE_X + c.xshift + SPRITE_W, grid.TOP)
 
     def _fxk_spit(self, pet, fx, step, c):
         # DVPet refuse(): pose 4 held the whole beat while the head SHAKES via
@@ -1008,10 +1017,15 @@ class FxMixin:
                 c.rows = self._pose_rows_idx(pet, 4 if down else 6)
             else:
                 c.rows = self._pose_rows_idx(pet, 10 if down else 9)
-            dye = E.get("dying")
-            if dye and (step // 6) % 2 == 0:
-                c.overlay += _blit(dye[0], PET_BASE_X + c.xshift + SPRITE_W + 1,
-                                   grid.TOP)
+            # the LOST BATTLE is the other frustration dance, so it wears the
+            # same SMOKE (Joel 2026-07-25: "the smoke animation from
+            # frustration from losing training and battles").  It used to
+            # flash the `dying` skull -- canon's battle-end mark, drawn in
+            # DVPet's own icon row, not as the sulk's emote.
+            smoke = E.get("depressed")
+            if smoke:
+                c.overlay += _blit(smoke[(step // 6) % len(smoke)],
+                                   PET_BASE_X + c.xshift + SPRITE_W, grid.TOP)
         else:
             t = step - 30
             wash = E.get("wash", [None])[0]

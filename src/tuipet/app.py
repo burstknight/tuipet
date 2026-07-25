@@ -141,12 +141,12 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE SMOKE CLOUD IS BACK. Your mon's fuming sulk could "
-                 "never fire while sick or filthy — the very states that "
-                 "cause it — and training locked it out entirely, so the "
-                 "gloom cloud was unreachable in normal play. A sick, "
-                 "starving or filthy mon now visibly fumes, and only a "
-                 "PERFECT training strike opens a proud moment.")
+    WHATS_NEW = ("THE SMOKE CLOUD ANSWERS THE SUN. The happy dance pops a "
+                 "big radiating SUN, but the frustration dance wore a tiny "
+                 "droop mark that half-vanished — so losing a drill or a "
+                 "battle read as no reaction at all. Both now blow the "
+                 "SMOKE CLOUD, same size, same beat, right where the sun "
+                 "goes.")
 
     BINDINGS = [
         # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and

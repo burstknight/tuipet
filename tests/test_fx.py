@@ -276,27 +276,77 @@ def test_the_emote_grammar_matches_the_decompile():
 
     and the shows draw from the first: cheer() -> "happy" (15586+),
     jeer() -> "unhappy"/"unhappy2" alternating every 6 beats (15637+),
-    badHealthJeer() -> "dying"/"dying2" (15629).  `depressed` is the THIRD
-    MOOD TIER on the status side, never a scene emote -- tuipet spends it on
-    the ambient sulk instead (Joel 2026-07-23, "the opposite of the sunshine
-    animation"), an authored adaptation, since tuipet has no mood readout.
-    This pin locks the three SHOW emotes so the grammar can't drift again."""
+    badHealthJeer() -> "dying"/"dying2" (15629).
+
+    THE SMOKE ANSWERS THE SUN (Joel 2026-07-25, standing order over canon).
+    `happy` is a SUN -- 8x8 of radiating rays -- and it pops on every up-beat
+    of the cheer, which the player sees constantly.  Canon's frustration
+    emote is `unhappy`: a 7px droop whose second frame is FIVE lit pixels,
+    so half the bounce showed nothing.  Beside the sun that reads as no
+    reaction at all.  Both frustration shows -- the lost drill/scold (jeer)
+    and the lost battle/cup (losing) -- now wear the SMOKE CLOUD, the one
+    emote with the sun's weight, on the same 6-beat flip.  The ambient sulk
+    wears it too (Joel 2026-07-23).  Do NOT "restore" unhappy/dying here."""
     import inspect
 
     from tuipet import data
     src = {fn: inspect.getsource(getattr(Screen, fn))
            for fn in ("_fxk_cheer", "_fxk_jeer", "_fxk_losing")}
-    assert '"happy"' in src["_fxk_cheer"], "cheer lost the happy emote"
-    assert '"unhappy"' in src["_fxk_jeer"], "jeer must wear unhappy/unhappy2"
-    assert '"dying"' in src["_fxk_losing"], "the defeat wears the dying mark"
-    # the emote a show never wears: the smoke belongs to the sulk alone
-    for fn, body in src.items():
-        assert '"depressed"' not in body, f"{fn} took the status-page smoke"
-    # and the jeer really ALTERNATES its pair on the canon 6-beat
+    assert '"happy"' in src["_fxk_cheer"], "cheer lost the SUN"
+    assert '"depressed"' in src["_fxk_jeer"], "the lost drill lost its SMOKE"
+    assert '"depressed"' in src["_fxk_losing"], "the lost battle lost its SMOKE"
+    # the speck it replaced must not creep back into either show
+    for fn in ("_fxk_jeer", "_fxk_losing"):
+        assert '"unhappy"' not in src[fn], f"{fn} went back to the droop speck"
+    # both emotes are 2-frame pairs that flip on the canon 6-beat
     E = data.load_effects()
-    assert len(E["unhappy"]) == 2 and len(E["happy"]) == 2
-    seen = {(step // 6) % len(E["unhappy"]) for step in (0, 6, 12, 18, 24)}
-    assert seen == {0, 1}, "the jeer emote must flip between both frames"
+    assert len(E["depressed"]) == 2 and len(E["happy"]) == 2
+    seen = {(step // 6) % len(E["depressed"]) for step in (0, 6, 12, 18, 24)}
+    assert seen == {0, 1}, "the frustration emote must flip between both frames"
+    # ...and the smoke really is the sun's equal, not a speck: every frame of
+    # BOTH pairs carries real ink (the droop's frame 2 lit only 5 pixels)
+    for key in ("happy", "depressed"):
+        for i, f in enumerate(E[key]):
+            lit = sum(row.count("1") for row in f)
+            assert lit >= 12, f"{key} frame {i} is nearly blank ({lit} px)"
+
+
+def test_the_frustration_dance_paints_its_smoke_beside_the_pet(monkeypatch):
+    """The smoke actually REACHES the screen on both frustration shows, on
+    the same beat and in the same slot the cheer's sun uses -- and stays
+    inside the 32px window (7px cloud at the pet's right edge, x28..34)."""
+    from tuipet import data, grid
+    from tuipet.app import PET_BASE_X, SPRITE_W
+    E = data.load_effects()
+    ink = [sum(r.count("1") for r in f) for f in E["depressed"]]
+
+    def emote_px(monkeypatch, kind, beats):
+        cap = _capture_render(monkeypatch)
+        s = _paint_harness()
+        for m in ("_fxk_jeer", "_fxk_losing"):     # the harness binds only what it needs
+            setattr(s, m, getattr(Screen, m).__get__(s))
+        p = _pose_pet()
+        seen = {}
+        for step in beats:
+            s.fx = {"kind": kind, "step": step, "steps": 50, "icon": None,
+                    "poop": 0, "old_num": None, "good": True}
+            s._paint_fx(p)
+            seen[step] = {(x, y) for x, y in cap["overlay"]
+                          if x >= PET_BASE_X + SPRITE_W}
+        return seen
+
+    for kind in ("jeer", "losing"):
+        seen = emote_px(monkeypatch, kind, (0, 6, 12))
+        assert all(seen.values()), f"{kind} painted no emote beside the pet"
+        assert seen[0] != seen[6], f"{kind} never flipped its pair"
+        assert seen[0] == seen[12], f"{kind} broke the 6-beat cycle"
+        for step, px in seen.items():
+            assert all(grid.X0 <= x < grid.X1 for x, _ in px), \
+                f"{kind} smoke left the window at beat {step}"
+            assert min(y for _, y in px) == grid.TOP, \
+                f"{kind} smoke is not at head height"
+            assert len(px) == ink[(step // 6) % 2], \
+                f"{kind} beat {step} is not the whole cloud"
 
 
 def test_bad_praise_and_bad_scold_use_their_own_pose_pairs():
