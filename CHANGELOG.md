@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.276 — THE FEED MENU LOOKS LIKE THE SHOP NOW (2026-07-26)
+
+THE FEED MENU LOOKS LIKE THE SHOP NOW — same layout as every other menu: pick a row and its sprite shows in the box with its true effects, free tag, and a warning when it would be refused. Meat, Pill and Bandage, one list.
+
 ## 0.5.275 — THE BANDAGE GOT ITS OWN COLUMN (2026-07-26)
 
 THE BANDAGE GOT ITS OWN COLUMN — press RIGHT in the feed menu to reach it: the real bandage roll (the one the bandaging animation applies) sits directly right of the meat, top-aligned, with the cursor clear of the food sprites. LEFT returns to the row you came from.
