@@ -168,14 +168,20 @@ def test_digimemory_is_now_findable():
     assert "digimemory" in found
 
 
-def test_every_catalog_item_is_now_findable():
-    """The gap that opened this whole thread is closed: nothing is
-    unfindable any more."""
+def test_the_road_digs_a_broad_slice_of_the_catalog():
+    """SUPERSEDED SHAPE (item expansion 2026-07-26): the road stopped
+    being the only earn channel, so all-findable moved to
+    test_distribution's all-OBTAINABLE pin.  What the road itself must
+    still guarantee: every pool key is a real catalog key, the dig pool
+    spans a broad slice of the grown catalog, and the digimemory -- the
+    find that opened this thread -- still rides."""
     found = set()
     for z in adv.ZONES:
         found.update(z["find_keys"])
-    never = {k for k in shop.CATALOG if k not in found}
-    assert never == set(), never
+    for k in found:
+        assert k in shop.CATALOG, k
+    assert len(found) >= 55, len(found)
+    assert "digimemory" in found
 
 
 def test_finding_a_digimemory_stashes_a_payload():

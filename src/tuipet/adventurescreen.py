@@ -30,6 +30,7 @@ from rich.cells import cell_len
 from rich.text import Text
 from . import data, grid, menu
 from . import adventure
+from . import shop
 from . import strikefx
 from .adventure import Adventure, MAX_LIVES, ZONES
 from .theme import LCD_ON, LCD_BG, INK, INK_B, DIM, POS, NEG  # noqa: F401  (theme.apply propagation)
@@ -368,6 +369,18 @@ class AdventurePanel(menu.SubHost):
             # empty wild pool: the dash still happened -- say so instead of
             # silently eating the ticket (anim audit A12)
             self._note, self._note_t = "⚡ " + self.adv.last, NOTE_HOLD
+        elif r == "skip-lift":
+            # the safe Birdramon lift (expansion 2026-07-26): the road
+            # slides by -- the verdict on the strip, the march resumes
+            self._note, self._note_t = "⚡ " + self.adv.last, NOTE_HOLD
+            self._refused = False             # lifted = willing to walk on
+            self.sfx = "confirm"
+        elif r == "camp-rest":
+            # the Whamon camp: the heal beat, like the life recovery
+            self._heal_t = TOWN_HOLD
+            self._note, self._note_t = "⚡ " + self.adv.last, NOTE_HOLD
+            self._refused = False             # rested = willing to walk on
+            self.sfx = "confirm"
 
     def _dig(self):
         """ENTER on a glint: the OUTCOME lands now -- the bag gets the loot,
@@ -544,8 +557,10 @@ class AdventurePanel(menu.SubHost):
                 self.adv.wins += 1
         self.adv.chain(won)                   # the streak: BEFORE the bounty, so
         #                                       this win's own chain pays it
+        drop = None
         if won and enemy is not None:
             self.adv.award_bits(enemy)        # the bounty into the purse + run tally
+            drop = self.adv.award_drop(enemy)  # the AUTHORED battle drop (2026-07-26)
         if self._fighting_boss:
             self._fighting_boss = False
             out = self.adv.resolve_boss(won, fled=fled)
@@ -558,6 +573,9 @@ class AdventurePanel(menu.SubHost):
                 if self.adv.holiday:                   # conquered on a festival day
                     persistence.festival_add(self.adv.holiday)  # gates the festival egg
                 tail = " New ground opens!" if unlocked else ""
+                if drop:
+                    e = shop.entry(drop) or {}
+                    tail = f" It drops {e.get('name', 'something')}!{tail}"
                 self._home_msg = (f"{self.adv.boss_name} felled — "
                                   f"{self.adv.name} conquered!{self._bits_tail()}{tail}")
                 # the zoneChange CELEBRATION plays before the homecoming
@@ -590,6 +608,10 @@ class AdventurePanel(menu.SubHost):
             return
         # a wayside wild
         out = self.adv.resolve(won, fled=fled)
+        if out == "won" and drop:
+            e = shop.entry(drop) or {}
+            # the strip speaks the drop over the plain "road clears" line
+            self.adv.last = f"It drops {e.get('name', 'loot')} — bagged!"
         if out == "failed":
             self._home_msg = f"Driven back from {self.adv.name}.{self._bits_tail()}"
             self._go_home()

@@ -395,16 +395,18 @@ def test_mid_bracket_contracts():
 
 
 def test_champion_wins_the_cup_prizes():
-    """Trophy.ItemWon / FoodWonqAmount (tournament audit 2026-07-06): 73 of the
-    shipped cups award an item alongside the purse; the champion banks them."""
+    """Trophy.ItemWon / FoodWonqAmount: the AUTHORED prize table is live
+    (item expansion 2026-07-26) -- ItemID 26 IS the Bubble Bath and
+    FoodID 3 IS the Vegetable, so the champion banks the real authored
+    goods, not the old flat treats."""
     random.seed(4)
     p = _pet("Rookie")
     tm = Tournament(p, _trophy(item=26, food_id=3, food_amt=2))
     tm.record(True); tm.record(True); tm.record(True)
     assert tm.champion
-    # the DVPet prize ids retired with the item system: the cup pays catalog treats
-    assert p.inventory.get("energy_drink", 0) >= 1
-    assert p.inventory.get("cake", 0) >= 2      # the cup pays Cake since the TUIPET catalog
+    assert p.inventory.get("bubble_bath", 0) >= 1
+    assert p.inventory.get("vegetable", 0) >= 2
+    assert "Bubble Bath" in tm.last and "Vegetable" in tm.last
 
 
 def test_the_purse_truncates_per_entrant():

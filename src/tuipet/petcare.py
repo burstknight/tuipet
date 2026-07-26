@@ -319,7 +319,25 @@ class CareMixin:
     # where=="home" test; listed here for intent.)
     _GIFT_BANNED = frozenset({"poison_mushroom", "digimemory", "revive_floppy",
                               "town_transport", "disaster_transport",
-                              "life_recovery"})
+                              "life_recovery",
+                              # the expansion (2026-07-26): traps and earned
+                              # keys are never gift-wrapped -- the spirits
+                              # are ENDGAME prizes (roads give Human, cups
+                              # give Beast), the X-Program is an elite drop,
+                              # and a gift is supposed to be NICE
+                              "zone_transport", "continent_transport",
+                              "x_program", "burnt_food", "hedonism_101",
+                              "prank_capsule_a", "prank_capsule_b",
+                              "human_fire_spirit", "human_light_spirit",
+                              "human_ice_spirit", "human_wind_spirit",
+                              "human_thunder_spirit", "human_earth_spirit",
+                              "human_water_spirit", "human_wood_spirit",
+                              "human_metal_spirit", "human_dark_spirit",
+                              "beast_fire_spirit", "beast_light_spirit",
+                              "beast_ice_spirit", "beast_wind_spirit",
+                              "beast_thunder_spirit", "beast_earth_spirit",
+                              "beast_water_spirit", "beast_wood_spirit",
+                              "beast_metal_spirit", "beast_dark_spirit"})
 
     def _pick_gift(self, festival=False):
         """A SURPRISE present (2026-07-24, Joel: "presents should be just
@@ -466,7 +484,42 @@ class CareMixin:
             "town_transport": lambda: _Refused("Save it for the road (press T)."),
             "disaster_transport": lambda: _Refused("Save it for the road (press T)."),
             "life_recovery": lambda: _Refused("Restores adventure lives — use it on the road."),
+            "zone_transport": lambda: _Refused("Save it for the road (press T)."),  # noqa: F405
+            "continent_transport": lambda: _Refused("Save it for the road (press T)."),  # noqa: F405
+            # ---- THE EXPANSION's singular doors (2026-07-26) ----------------
+            "med": self._med_item,
+            "elixir": self._elixir,
+            "vitamin_g": self._vitamin_g,
+            "gold_pill": self._gold_pill,
+            "supplement": self._supplement,
+            "hp_chip": lambda: self._attr_chip(None, 5),
+            "hp_chip_g": lambda: self._attr_chip(None, 10),
+            "board_game": self._board_game,
+            "computer_game": self._computer_game,
+            "toy_oven": self._toy_oven,
+            "futon": self._futon,
+            "toilet": self._toilet_item,
+            "x_program": self._x_program,
+            "bandage": self._bandage,
+            "chocolate_egg": self._chocolate_egg,
+            "book": self._textbook_lite,
+            "hedonism_101": self._hedonism,
+            "stuffed_animal": lambda: self._toy(obedience=-1,
+                                                msg="Snuggled speechless."),
+            "toy_car": lambda: self._toy(obedience=-1, msg="VROOM."),
+            "balloon": lambda: self._toy(msg="It bobs. Bliss."),
+            "trampoline": lambda: self._toy(weight=-1, strength=1,
+                                            msg="BOING. Light training!"),
         }.get(key)
+        # the expansion FAMILIES: authored snacks, evolution keys, capsules
+        if fx is None and key in self._SNACK_FX:
+            fx = lambda: self._csv_snack(key)          # noqa: E731
+        if fx is None and (key in self._ITEM_EVO_IDS
+                           or key in self._DIRECT_EVO_TARGET):
+            fx = lambda: self._evo_key(key)            # noqa: E731
+        if fx is None and (key in self._CAPSULE_KEYS
+                           or key in self._PRANK_CAPSULES):
+            fx = lambda: self._capsule(key)            # noqa: E731
         if fx is None:
             return ""
         # life-state guard: only the Rev.Floppy works on the dead, and
@@ -478,9 +531,11 @@ class CareMixin:
         # item on a sleeper: the alarm wakes mistake-FREE (its whole point),
         # the sleeping pill is pointless, the cold shower runs its OWN disturb
         # (same law, applied inside so "AWAKE and bracing" can be true),
-        # anything else DISTURBS -- then applies
+        # anything else DISTURBS -- then applies.  The FUTON joins the exempt
+        # set (2026-07-26): it is the sleep family's fourth member -- sliding
+        # a bed under a sleeper is the opposite of a disturbance.
         if self.asleep and key not in ("music_player", "sleeping_pill",
-                                       "cold_shower"):
+                                       "cold_shower", "futon"):
             self._disturbed()
         out = fx()
         if not isinstance(out, _Refused) and out is not None:
@@ -516,9 +571,13 @@ class CareMixin:
         self._set_energy(self.max_energy)
         return "Energy restored!"
 
-    def _snack(self, hunger=0, energy=0, weight=0):
-        """The TUIPET food family (2026-07-18): plain live-meter meals.
-        Positive-hunger food is refused at a full belly, like every meal."""
+    def _snack(self, hunger=0, energy=0, weight=0, obedience=0, powers=None,
+               strength=0):
+        """The TUIPET food family (2018-07-18 -> grown 2026-07-26): plain
+        live-meter meals.  Positive-hunger food is refused at a full belly,
+        like every meal.  The expansion legs (obedience / VDV powers /
+        effort) land the authored columns of the new rows -- a pepper's +1
+        power rides the chip grammar, effort clamps to its 0-4 gauge."""
         if hunger > 0 and self.hunger >= FULL_HUNGER:
             return _Refused("Refused - belly's full.")
         if hunger:
@@ -527,6 +586,15 @@ class CareMixin:
             self._set_energy(self.energy + energy)
         if weight:
             self._set_weight(max(1, self.weight + weight))
+        if obedience:
+            self._set_obedience(self.obedience + obedience)
+        if strength:
+            self.strength = _clamp(self.strength + strength, 0, 4)  # noqa: F405
+        if powers:
+            v, d, vi = powers
+            self.vaccine += v
+            self.data_power += d
+            self.virus += vi
         return "Munch."
 
     def _giga_meal(self):
@@ -686,13 +754,19 @@ class CareMixin:
         self.dna_owned[field] = min(MAX_DNA_INVENTORY, have + 10)
         return f"+{self.dna_owned[field] - have} {field} DNA banked!"
 
-    def _toy(self, weight=0, energy=0, msg="Fun!"):
+    def _toy(self, weight=0, energy=0, msg="Fun!", obedience=0, strength=0):
         """The toy dial: exercise sheds weight, couch time buys energy at a
-        weight price.  The SHOW (itemfx script) is fired by the bag panel."""
+        weight price.  The SHOW (itemfx script) is fired by the bag panel.
+        The expansion legs: a spoiling toy dents obedience (authored), the
+        trampoline's bounce is light training (effort, 0-4 gauge)."""
         if weight:
             self._set_weight(max(1, self.weight + weight))
         if energy:
             self._set_energy(self.energy + energy)
+        if obedience:
+            self._set_obedience(self.obedience + obedience)
+        if strength:
+            self.strength = _clamp(self.strength + strength, 0, 4)  # noqa: F405
         return msg
 
     def _bubble_bath(self):
@@ -904,4 +978,294 @@ class CareMixin:
             return _Refused("Nothing left to trim.")
         self._set_weight(max(1, self.weight - 10))
         return "Feather-light!"
+
+    # ======================= THE EXPANSION (2026-07-26) =====================
+    # Joel: "bring in all 99 unused items ... your call".  Every handler
+    # below lands the AUTHORED columns of its source row on LIVE meters
+    # (Mood/Enthusiasm/Stress stay dormant).  Board:
+    # ITEM_EXPANSION_2026_07_26.md.
+
+    # the plain snacks: stats straight off the authored foods.csv columns
+    # (weight = Calories // 2, the new-row rule).  One table, one handler.
+    _SNACK_FX = {
+        "meat": dict(hunger=1, weight=2),
+        "fruit": dict(hunger=1, obedience=-1),
+        "banana": dict(hunger=1, energy=1, weight=1, obedience=-1),
+        "bread": dict(hunger=1, weight=1),
+        "rice": dict(hunger=1, weight=2),
+        "nuts": dict(hunger=1, weight=1),
+        "oats": dict(hunger=1, weight=1),
+        "milk": dict(hunger=1, weight=1),
+        "egg": dict(hunger=1, weight=1),
+        "cheese": dict(hunger=1, weight=2),
+        "salmon": dict(hunger=1, weight=2),
+        "beans": dict(hunger=1, weight=1, obedience=1),
+        "broccoli": dict(hunger=1, obedience=2),
+        "guava": dict(hunger=1, weight=1),
+        "orange": dict(hunger=1, obedience=-1),
+        "honey": dict(hunger=1, energy=1, weight=1, obedience=-5),
+        "ice_cream": dict(hunger=1, weight=2, obedience=-1),
+        "chicken_soup": dict(hunger=1, weight=1),
+        "yellow_pepper": dict(hunger=1, obedience=1, powers=(0, 0, 1)),
+        "green_pepper": dict(hunger=1, obedience=1, powers=(0, 1, 0)),
+        "red_pepper": dict(hunger=1, obedience=1, powers=(1, 0, 0)),
+        "bitter_herbs": dict(hunger=0, obedience=5),
+        "food_pill": dict(hunger=4, weight=3, obedience=5),
+        "ai_food_pill": dict(hunger=1),
+        "ai_supplement": dict(hunger=0, strength=1),
+        "burnt_food": dict(hunger=1, strength=-1, obedience=5),
+    }
+
+    def _csv_snack(self, key):
+        """A generic authored meal -- and the FOOD EVOLUTION door: one
+        corpus form (Citramon) gates on `evol_food` and the source's
+        processFoodEvol (evolution.food_select) sat with zero callers.
+        Eating a new-table food now asks it; the meal is an extra gate,
+        never a bypass."""
+        out = self._snack(**self._SNACK_FX[key])
+        if isinstance(out, _Refused):  # noqa: F405
+            return out
+        icon = shop.ICON_KEYS.get(key, "")
+        target = evolution.food_select(self, int(icon[2:])) \
+            if icon.startswith("f:") else None
+        if target is not None:
+            prev = self.num
+            self.evolve_to(target)
+            lines_mod.adopt_line(self, prev=prev)
+            self._set_anim("happy", 1.6)
+            return f"...the meal stirs something. {self.name} evolves!"
+        return out
+
+    def _med_item(self):
+        """The field pill (foods.csv 4, grant-only): cures sickness, the
+        free pill's one job in pocket form -- never sold, so the free-cure
+        law holds."""
+        if not self.sick:
+            return _Refused("No sickness to treat.")  # noqa: F405
+        self.sick = False
+        self._set_anim("eat", 1.4)
+        return "The sickness passes."
+
+    def _elixir(self):
+        """The premium combo (2000b): cures sickness AND fills the tank.
+        The free pill stays the cure -- this sells convenience."""
+        if not self.sick and self.energy >= self.max_energy:
+            return _Refused(f"{self.name} doesn't need it.")  # noqa: F405
+        self.sick = False
+        self._set_energy(self.max_energy)
+        self._set_anim("eat", 1.4)
+        return "Illness swept away — brimming with life!"
+
+    def _vitamin_g(self):
+        """The golden mend (2000b): heals the injury AND the vitamin's
+        whole job (effort full + a game-day's injury guard).  H stays the
+        free cure -- this is the vitamin's big sibling."""
+        if not self.injured and self.strength >= 4 \
+                and getattr(self, "vitamin_lapse", 0.0) > 0:
+            return _Refused("Nothing to mend and the guard is running.")  # noqa: F405
+        self.injured = False
+        self.inj_length = 0.0
+        self.strength = 4
+        self.vitamin_lapse = 1440.0
+        self._set_anim("happy", 1.4)
+        return "Golden! Mended, guarded, brimming."
+
+    def _gold_pill(self):
+        """Canon Energy +12 (the miracle drink's dose, no eraser)."""
+        if self.energy >= self.max_energy:
+            return _Refused("Energy is already full.")  # noqa: F405
+        self._set_energy(self.energy + 12)
+        return "Vitality, gilded!"
+
+    def _supplement(self):
+        """Effort to FULL + the obedience leg (authored +5) + its weight."""
+        if self.strength >= 4 and self.obedience >= MAX_OBEDIENCE:  # noqa: F405
+            return _Refused("Nothing left to firm up.")  # noqa: F405
+        self.strength = 4
+        self._set_obedience(self.obedience + 5)
+        self._set_weight(self.weight + 1)
+        return "Effort brims!"
+
+    def _board_game(self):
+        """The attribute RESHAPER (items.csv 5): Vaccine -15 -> Data +15,
+        plus the authored obedience.  Refused when there is no Vaccine to
+        convert -- a converter with an empty tank is a dud."""
+        if self.vaccine < 15:
+            return _Refused("Not enough Vaccine power to trade.")  # noqa: F405
+        self.vaccine -= 15
+        self.data_power += 15
+        self._set_obedience(self.obedience + 5)
+        return "A long game — order yields to logic. (Va-15 → D+15)"
+
+    def _computer_game(self):
+        """Virus -15 -> Data +15 (items.csv 8)."""
+        if self.virus < 15:
+            return _Refused("Not enough Virus power to trade.")  # noqa: F405
+        self.virus -= 15
+        self.data_power += 15
+        return "High score — chaos compiles. (Vi-15 → D+15)"
+
+    def _toy_oven(self):
+        """'+Appetite': makes room for a meal (hunger -1)."""
+        if self.hunger <= 0:
+            return _Refused("The belly is already empty.")  # noqa: F405
+        self.hunger = max(0, self.hunger - 1)
+        return "Something smells wonderful — suddenly peckish."
+
+    def _futon(self):
+        """The deep daytime bed: lie down NOW (the sleeping pill's flow)
+        and the doze HOLDS until the tank is FULL, not half (petbody's
+        recovery-doze threshold reads futon_doze; cleared on wake)."""
+        if getattr(self, "away", False):
+            return _Refused("Not on the road — no bed out here.")  # noqa: F405
+        if self.asleep:
+            if getattr(self, "futon_doze", False):
+                return _Refused("Already tucked in deep.")  # noqa: F405
+            self.futon_doze = True
+            return "The futon slides underneath — deeper sleep."
+        self._fall_asleep()
+        self.lights = False
+        self._bed_postpone_t = 0.0
+        if self._in_sleep_window() is False:
+            self.nap = True
+        self.futon_doze = True
+        return "Tucked in deep. Zzz..."
+
+    def _toilet_item(self):
+        """Clean now + the authored obedience (+1) -- port_potty's little
+        brother: one clean, no 24h auto."""
+        if not self.poop and self.obedience >= MAX_OBEDIENCE:  # noqa: F405
+            return _Refused("Spotless and civilised already.")  # noqa: F405
+        if self.poop:
+            self.clean()
+        self._set_obedience(self.obedience + 1)
+        return "Civilisation, delivered."
+
+    def _x_program(self):
+        """The RISKY X (items.csv 14, a 100%-authored elite drop): the
+        authored drains ARE the price -- belly emptied, effort zeroed,
+        80% of the tank torn away -- then the X takes hold.  No invented
+        death roll; the aftermath (hunger calls, red-energy stings) is
+        the gamble."""
+        if self.x_antibody != "None":
+            return _Refused("The antibody already runs in it.")  # noqa: F405
+        self.hunger = 0
+        self.strength = 0
+        self._set_energy(self.energy - int(self.max_energy * 0.8))
+        self._set_xantibody("Permanent")
+        from . import persistence as _persist
+        _persist.note_xanti()
+        return "It convulses... and TRANSCENDS. The X takes hold!"
+
+    def _textbook_lite(self):
+        """The Book (items.csv 2): the textbook's little brother -- the
+        authored +5, same full-gauge refusal."""
+        if self.obedience >= MAX_OBEDIENCE:                   # noqa: F405
+            return _Refused(f"{self.name} is already a model pupil.")  # noqa: F405
+        before = self.obedience
+        self._set_obedience(self.obedience + 5)
+        return f"A quiet chapter. (+{self.obedience - before} obedience)"
+
+    def _hedonism(self):
+        """Hedonism 101 (items.csv 1): obedience -80, exactly as authored.
+        A trap with a warning label -- the poison mushroom's precedent:
+        a trap always goes down, never refuses."""
+        self._set_obedience(self.obedience - 80)
+        return "It reads the WHOLE thing. Manners: obliterated."
+
+    # the evolution KEYS (Joel: "wire fully").  item_select forms answer to
+    # their care gates (the item is an extra gate, not a bypass);
+    # item_direct is the authored paid shortcut (graph adjacency only).
+    _ITEM_EVO_IDS = {
+        "digitron": 33,
+        "human_fire_spirit": 43, "human_light_spirit": 44,
+        "human_ice_spirit": 45, "human_wind_spirit": 46,
+        "human_thunder_spirit": 47, "human_earth_spirit": 48,
+        "human_water_spirit": 49, "human_wood_spirit": 50,
+        "human_metal_spirit": 51, "human_dark_spirit": 52,
+        "beast_fire_spirit": 53, "beast_light_spirit": 54,
+        "beast_ice_spirit": 55, "beast_wind_spirit": 56,
+        "beast_thunder_spirit": 57, "beast_earth_spirit": 58,
+        "beast_water_spirit": 59, "beast_wood_spirit": 60,
+        "beast_metal_spirit": 61, "beast_dark_spirit": 62,
+    }
+    _DIRECT_EVO_TARGET = {
+        "horn_helmet": 140, "grey_claws": 93, "water_bottle": 110,
+        "torn_tatter": 121, "white_wings": 101, "black_wings": 102,
+        "metal_armor": 213, "flaming_wings": 97,
+    }
+
+    def _evo_key(self, key):
+        """A dormant door opens: the spirits and the Digitron ride the same
+        item_select flow the crest eggs do; the direct items name their form
+        outright.  Refused (item kept) when nothing answers."""
+        item_id = self._ITEM_EVO_IDS.get(key)
+        if item_id is not None:
+            target = evolution.item_select(self, item_id)
+        else:
+            target = evolution.item_direct(self, self._DIRECT_EVO_TARGET[key])
+        if target is None:
+            self._set_anim("refuse", 1.0)
+            return _Refused(f"{self.name} can't use that yet.")  # noqa: F405
+        prev = self.num
+        self.evolve_to(target)
+        lines_mod.adopt_line(self, prev=prev)
+        self._set_anim("happy", 1.6)
+        if key.startswith("human_"):
+            # the Frontier chain, kept authentic: mastering a HUMAN spirit
+            # wakes its BEAST half -- the beast key lands in the bag, ready
+            # for the next stage's door (roads give Human, the Human gives
+            # Beast; no cup RNG invented)
+            beast = key.replace("human_", "beast_", 1)
+            if beast in self._ITEM_EVO_IDS:
+                self.add_item(beast)
+                return (f"{self.name} evolves — and the BEAST half of the "
+                        "spirit answers!")
+        return f"{self.name} evolves!"
+
+    # the CAPSULES (Joel: "roll the existing find tool"): the gift roller
+    # in item form.  The two AngrySurprise rips are PRANKS -- the box is
+    # identical on the shelf and in the bag; that IS the gacha.
+    _CAPSULE_KEYS = frozenset({"capsule_a", "capsule_b", "capsule_c",
+                               "capsule_d", "capsule_e", "capsule_f",
+                               "capsule_g", "capsule_h"})
+    _PRANK_CAPSULES = frozenset({"prank_capsule_a", "prank_capsule_b"})
+    _PRANK_POOL = ("burnt_food", "fruit", "cheese_burger", "ai_food_pill")
+
+    def _capsule(self, key):
+        """Open the box: a tier-weighted surprise from the gift pool -- and
+        on a HOLIDAY the roll reaches one tier higher (the festival-present
+        grammar; 'christmas presents are holiday versions of these').  A
+        prank capsule pays from the junk drawer, every time."""
+        if key in self._PRANK_CAPSULES:
+            prize = random.choice(self._PRANK_POOL)
+        else:
+            from . import tournament
+            prize = self._pick_gift(festival=bool(tournament.holiday()))
+        while prize in self._CAPSULE_KEYS or prize in self._PRANK_CAPSULES:
+            prize = self._pick_gift()        # never a box inside a box
+        self.add_item(prize)
+        e = shop.entry(prize) or {}
+        name = e.get("name", "something")
+        if key in self._PRANK_CAPSULES:
+            self._set_anim("refuse", 1.2)
+            return f"...it's {name}. HA!"
+        self._set_anim("happy", 1.6)
+        return f"Inside: {name}!"
+
+    def _chocolate_egg(self):
+        """A snack with a TOY INSIDE (authored: 'Toy Inside +Mood'): the
+        meal, then a common-tier surprise."""
+        out = self._snack(hunger=1, weight=1)
+        if isinstance(out, _Refused):  # noqa: F405
+            return out
+        pool = [k for k, v in shop.CATALOG.items()
+                if k not in self._GIFT_BANNED and v.where == "home"
+                and k not in self._CAPSULE_KEYS
+                and k not in self._PRANK_CAPSULES
+                and (v.tier or "common") == "common"]
+        prize = random.choice(pool)
+        self.add_item(prize)
+        e = shop.entry(prize) or {}
+        return f"Munch — a toy inside: {e.get('name', 'something')}!"
 

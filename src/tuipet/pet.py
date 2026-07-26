@@ -126,6 +126,9 @@ class Pet(CareMixin, DnaMixin, BattleMixin, BodyMixin):
     rival_line: str = ""            # its pet's line id — the form tracks OUR stage
     rival_wins: int = 0             # head-to-head this generation: our wins...
     rival_losses: int = 0           # ...and theirs
+    # the FUTON (item expansion 2026-07-26): the next daytime doze holds to
+    # a FULL tank instead of half; cleared when that doze's wake lands
+    futon_doze: bool = False
     # ---- home shop (PhysicalState _homeFoodShop/_homeItemShop/_restock) ----
     shop_food: list = _dcf(default_factory=list)    # rolled food slots {key, stock, sale}
     shop_item: list = _dcf(default_factory=list)    # rolled item slots

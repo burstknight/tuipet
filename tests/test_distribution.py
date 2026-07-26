@@ -96,21 +96,26 @@ def test_every_zone_has_a_unique_signature_find():
     assert len(set(sig.values())) == 26, "two zones share a signature"
 
 
-def test_every_buyable_good_appears_in_some_town():
-    """Coverage-first guest draw (2026-07-24, Joel "pull them into town
-    rotation"): no buyable good is dark -- every priced non-Adventure item
-    (poison excepted, never a town good) is sold by at least one town, via
-    its authored base or the guest slot.  The 21 not-in-any-base goods fit
-    the 26 guest slots with room to spare, so a future item that pushes the
-    non-base count past 26 -- silently stranding one -- fails HERE."""
-    buyable = {k for k, v in shop.CATALOG.items()
-               if v.price is not None and v.category != "Adventure"
-               and k != "poison_mushroom"}
-    covered = set(shop._guest_deal().values())
+def test_towns_are_curated_but_home_sells_everything():
+    """SUPERSEDED IN PART (item expansion 2026-07-26): with ~120 sellable
+    goods, full town coverage stopped being possible (26 guest slots) --
+    towns are CURATED now and the guarantee moves up a level: the HOME
+    shelf lists every priced good (nothing is unbuyable), every town's
+    guest good is still unique game-wide, and the coverage-first draw
+    still hands guest slots to goods no base sells before doubling up."""
+    home = {e["key"] for e in shop.catalog()}
+    for k, v in shop.CATALOG.items():
+        if v.price is not None and v.category != "Adventure":
+            assert k in home, f"{k} is priced but unbuyable at home"
+    guests = shop._guest_deal()
+    assert len(set(guests.values())) == len(guests)   # unique game-wide
+    base_anywhere = set()
     for tid in shop._town_maps():
-        covered.update(k for _sid, k, _o, _p in shop._base_rows(tid))
-    dark = buyable - covered
-    assert not dark, f"buyable goods no town sells: {sorted(dark)}"
+        base_anywhere.update(k for _sid, k, _o, _p in shop._base_rows(tid))
+    # coverage-first: while un-based goods outnumber slots, no slot may be
+    # wasted on a good some base already sells
+    unbased_guests = sum(1 for g in guests.values() if g not in base_anywhere)
+    assert unbased_guests == len(guests), "a guest slot doubled up while goods are dark"
 
 
 def test_a_signature_actually_rides_its_zones_pool():
@@ -173,17 +178,38 @@ def test_no_two_zones_anywhere_have_identical_loot():
 
 # ---- coverage ---------------------------------------------------------------
 
-def test_the_signature_pass_closed_the_never_found_gap():
-    """Before this arc 16 of 44 items could never be found.  What stays
-    unfindable must be unfindable BY DESIGN."""
-    found = set()
+def test_every_item_is_obtainable_through_some_channel():
+    """SUPERSEDED SHAPE (item expansion 2026-07-26): the road stopped
+    being the only earn channel, so "findable" became "obtainable" --
+    every catalog key must be reachable through at least one of: the home
+    shelf, a road find, the gift/capsule roller, the prank drawer, an
+    authored battle drop, an authored cup prize, or the Human->Beast
+    spirit chain.  A key no channel reaches is stranded and fails."""
+    from tuipet import data as _data, tournament as _t
+    from tuipet.pet import Pet
+    obtainable = {k for k, v in shop.CATALOG.items() if v.price is not None}
     for z in adv.ZONES:
-        found.update(z["find_keys"])
-    never = {k for k in shop.CATALOG if k not in found}
-    # D5 fully closed 2026-07-24: cookie + cupcake joined candy, and once
-    # wild chips carry a random payload (test_wild_memory.py) digimemory
-    # became real loot too.  Nothing is unfindable now.
-    assert never == set(), never
+        obtainable.update(z["find_keys"])
+    cap = shop.TIER_ORDER.index("rare")                  # festival gifts
+    obtainable.update(k for k, v in shop.CATALOG.items()
+                      if k not in Pet._GIFT_BANNED and v.where == "home"
+                      and shop.TIER_ORDER.index(v.tier or "common") <= cap)
+    obtainable.update(Pet._PRANK_POOL)
+    obtainable.update(adv._FESTIVAL_CAPSULES)
+    for table in _data.load_loot_tables().values():      # authored drops
+        for icon, _rate in table:
+            k = shop.key_for_icon(icon)
+            if k:
+                obtainable.add(k)
+    for t in _data.load_tournies():                      # authored cup prizes
+        if t["item"] >= 0:
+            obtainable.add(_t._prize_key("i", t["item"]))
+        if t["food_id"] >= 0 and t["food_amt"] > 0:
+            obtainable.add(_t._prize_key("f", t["food_id"]))
+    obtainable.update([k.replace("human_", "beast_", 1)  # the spirit chain
+                       for k in sorted(obtainable) if k.startswith("human_")])
+    stranded = {k for k in shop.CATALOG if k not in obtainable}
+    assert stranded == set(), f"no channel reaches: {sorted(stranded)}"
 
 
 def test_the_grant_only_treats_are_findable_like_candy():
@@ -241,17 +267,12 @@ def test_the_chips_town_placement_is_ratified_not_accidental():
 
 # ---- D7: the still-dropped town overrides STAY dropped (2026-07-24) ----------
 
-def test_the_ten_dropped_overrides_stay_dropped():
-    """D7 (Joel: "leave them dropped").  shopConsumable.csv authors 22 town
-    overrides; 10 point at icons with no catalog entry and are silently
-    skipped at load.  Ruled: leave them so -- adding them would mean either
-    inventing items (no economy is being invented) or, for two of them,
-    selling an ailment cure that R3 forbids.
-
-    Pinned as a DECISION, not an accident: if a later item pass gives one
-    of these icons a catalog key, this fails and forces the choice back
-    into the open instead of silently un-dropping a town good.
-    """
+def test_every_authored_town_override_is_live():
+    """SUPERSEDED (item expansion 2026-07-26, Joel: "bring in all 99"):
+    D7's ten dropped overrides all resolve now -- every one of the 22
+    authored shopConsumable.csv town rows names a real catalog key, so
+    the authored town economy is finally whole.  A row going dark again
+    means a catalog key was lost -- fail loudly."""
     import csv
     dropped = []
     with open("src/tuipet/data/shopConsumable.csv") as fh:
@@ -263,15 +284,16 @@ def test_the_ten_dropped_overrides_stay_dropped():
             icon = ("f:" if isfood else "i:") + str(int(cid))
             if shop.key_for_icon(icon) is None:
                 dropped.append(icon)
-    assert set(dropped) == {"i:28", "i:31", "f:26", "f:27", "f:40",
-                            "f:39", "f:31", "f:56", "i:81", "i:82"}
+    assert dropped == [], f"authored town rows went dark: {dropped}"
 
 
-def test_the_forbidden_cures_are_the_reason_two_must_stay_dropped():
-    """f:15 Elixir (cures sickness) and f:16 Vitamin G (cures injury) must
-    never gain a sellable catalog key: both cures are free care buttons
-    (pill on F, heal on H -- final ruling 2026-07-26).  Load-bearing D7."""
-    assert shop.key_for_icon("f:15") is None      # Elixir
-    assert shop.key_for_icon("f:16") is None      # Vitamin G
-    for key, v in shop.CATALOG.items():
-        assert "sick" not in v.touches and "injured" not in v.touches, key
+def test_the_cure_combos_honour_the_free_button_law():
+    """SUPERSEDED (item expansion 2026-07-26): Elixir and Vitamin G are
+    catalog keys now -- as premium combos.  The load-bearing half stays:
+    the free buttons exist, and the only ailment-touching entries are the
+    four the ruling names (see test_catalog_touches for the full pin)."""
+    assert shop.key_for_icon("f:15") == "elixir"
+    assert shop.key_for_icon("f:16") == "vitamin_g"
+    curers = {k for k, v in shop.CATALOG.items()
+              if "sick" in v.touches or "injured" in v.touches}
+    assert curers == {"med", "bandage", "elixir", "vitamin_g"}

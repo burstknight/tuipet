@@ -85,14 +85,18 @@ def test_an_injured_pet_still_eats():
     assert "sick" not in str(p.feed_meat())                    # only SICK blocks meat
 
 
-def test_the_injury_cure_is_the_h_key_not_an_item_or_a_feed_row():
-    """The FINAL door (2026-07-26, Joel: "remove bandage as an item
-    alltogether and just add an h heal hotkey"): no shelf entry, no feed
-    row -- a free care BUTTON on H, with the canon time-heal underneath."""
+def test_the_injury_cure_is_the_h_key_and_the_bandage_item_stays_pocket_change():
+    """SUPERSEDED IN PART (item expansion 2026-07-26, Joel on the law rows:
+    "bring them all in, just give it a function if you want... your call"):
+    the bandage returns as a 10b POCKET med so drops/gifts/shelves can hand
+    out a mend -- but the H key stays the FREE home cure and the feed menu
+    stays two rows, so nothing about basic care is paywalled.  The earlier
+    shelf ban ("no shelf entry") was the part overridden."""
     from tuipet import shop
     from tuipet.app import TuiPetApp
     from tuipet.feedscreen import ROWS_MENU
-    assert shop.entry("bandage") is None
+    e = shop.entry("bandage")
+    assert e is not None and e["price"] == 10          # pocket change, never a paywall
     assert "bandage" not in [k for k, _label in ROWS_MENU]
     assert any(k == "h" and a == "heal" for k, a, _l in TuiPetApp.BINDINGS)
 

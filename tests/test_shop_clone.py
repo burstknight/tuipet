@@ -266,7 +266,10 @@ def test_every_item_wears_its_own_dvpet_art():
     assert shop.ICON_KEYS["grow_capsule"] == "i:78"   # the gear's heir
     for k, ak in shop.ICON_KEYS.items():
         assert ic.get(ak), (k, ak)                    # every mapping resolves
-    assert "i:68" not in shop.ICON_KEYS.values()      # no capsule pods left
+    # (the "no capsule pods" assert retired 2026-07-26: i:68 IS the
+    # Capsule item now, wearing its own pod art -- the placeholder-art
+    # era this line guarded against stays over)
+    assert shop.key_for_icon("i:68") == "capsule_a"
     pan = ShopPanel(_pet())
     for pan.tab in range(len(pan._tabs()) - 1):       # every goods tab
         assert all(any(l.strip() for l in pan._icon(e))

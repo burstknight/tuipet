@@ -227,7 +227,24 @@ _SIDE_CHANNELS = frozenset({"mistake_day", "death_cause", "obedience"})
 # Caffeine Pill pushes bedtime through the grace clock for a line pet and
 # through sleep_lapse for a pressure pet, and no pet is both.  At least one
 # must move.
-_EITHER_OR = {"caffeine_pill"}
+_EITHER_OR = {"caffeine_pill",
+              # the expansion combos (2026-07-26): each half refuses only
+              # when BOTH halves are pointless, so on the permissive pet
+              # one declared leg may legitimately sit still (the fixture
+              # is neither sick nor hurt; effort starts at its floor)
+              "elixir", "vitamin_g", "x_program", "burnt_food"}
+
+# own-door expansion keys: the evolution keys refuse on a pet with no
+# matching road (their landing is pinned in test_item_expansion.py), the
+# med/bandage pair needs an ailment the permissive fixture doesn't carry,
+# and the futon is the sleep family's fourth member
+_EXPANSION_OWN_DOORS = frozenset(
+    {"med", "bandage", "futon"}
+    | {k for k in shop.CATALOG
+       if k.startswith(("human_", "beast_")) or k in
+       ("digitron", "horn_helmet", "grey_claws", "water_bottle",
+        "torn_tatter", "white_wings", "black_wings", "metal_armor",
+        "flaming_wings")})
 
 
 @pytest.mark.parametrize("key", sorted(shop.CATALOG))
@@ -238,9 +255,10 @@ def test_declared_touches_match_what_the_handler_actually_moves(key):
     it never claimed) fails here, which is the drift the whole refactor was
     for."""
     v = shop.CATALOG[key]
-    if v.where == "road" or key in ("poison_mushroom", "revive_floppy",
-                                    "digimemory", "sleeping_pill",
-                                    "music_player", "cold_shower"):
+    if v.where == "road" or key in _EXPANSION_OWN_DOORS \
+            or key in ("poison_mushroom", "revive_floppy",
+                       "digimemory", "sleeping_pill",
+                       "music_player", "cold_shower"):
         # own doors and the sleep family need a pet in a state this fixture
         # cannot hold at the same time (asleep AND awake); they carry their
         # own dedicated pins (test_sleep_system, test_item_heal, C1's
@@ -252,6 +270,7 @@ def test_declared_touches_match_what_the_handler_actually_moves(key):
     p.weight = p._base_weight() + 10
     p.care_mistakes, p.poop, p.poop_sizes = 3, 2, [1, 1]
     p.strength, p.obedience = 0, 50
+    p.vaccine = p.data_power = p.virus = 50   # a bank the converters can trade
     p.sleep_lapse = 100.0        # some bedtime pressure for the Caffeine Pill
     p.dna_owned = {}
     p.field = p.field if p.field not in ("", "None") else "Nature"
@@ -291,6 +310,7 @@ _METERS = {
     "weight": "weight",
     "training": "stage_trainings",
     "obedience": "obedience",
+    "effort": "strength",           # the expansion's word for the 0-4 gauge
     "vaccine power": "vaccine",
     "data power": "data_power",
     "virus power": "virus",
@@ -345,6 +365,7 @@ def test_the_shelf_text_promises_the_number_the_handler_delivers(key):
     p.weight = p._base_weight()
     p.care_mistakes, p.poop, p.poop_sizes = 3, 2, [1, 1]
     p.obedience, p.strength = 50, 0
+    p.vaccine = p.data_power = p.virus = 50   # a bank the converters can trade
     p.dna_owned = {}
     before = {f: (dict(getattr(p, f)) if f == "dna_owned" else getattr(p, f))
               for f in want}

@@ -195,6 +195,54 @@ def _idlist(s):
     return out
 
 @lru_cache(maxsize=1)
+@lru_cache(maxsize=1)
+def load_loot_tables():
+    """The AUTHORED battle-drop economy (item expansion 2026-07-26):
+    enemies.csv LootTableID -> [(icon_key, rate)] rows, resolved through
+    lootTable.csv (table -> dropRate ids) and dropRate.csv (id -> item).
+    Source semantics: rates sum to <=100 per table; the shortfall is the
+    chance nothing drops; rows past a 100 running total are dead."""
+    rates = {}
+    for r in csv.DictReader(_open_data(os.path.join(_DATA, "dropRate.csv"))):
+        try:
+            rid = int(r["DropRateID"])
+            cid = int(r["ConsummableID"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        food = str(r.get("IsFood", "")).strip().upper() == "TRUE"
+        raw = next((v for k, v in r.items()
+                    if k and k.startswith("Rate")), "0")
+        try:
+            rate = int(raw)
+        except (TypeError, ValueError):
+            rate = 0
+        rates[rid] = (("f:" if food else "i:") + str(cid), rate)
+    tables = {}
+    for row in csv.reader(_open_data(os.path.join(_DATA, "lootTable.csv"))):
+        if not row or not row[0] or row[0].startswith("LootTableID"):
+            continue
+        try:
+            tid = int(row[0])
+        except ValueError:
+            continue
+        out, total = [], 0
+        for cell in row[1:]:
+            cell = (cell or "").strip()
+            if not cell:
+                continue
+            hit = rates.get(int(cell)) if cell.isdigit() else None
+            if not hit or hit[1] <= 0:
+                continue
+            if total >= 100:                 # rows past 100 are dead (source)
+                break
+            icon, rate = hit
+            rate = min(rate, 100 - total)
+            total += rate
+            out.append((icon, rate))
+        tables[tid] = out
+    return tables
+
+
 def _load_consumables():
     foods, items = {}, {}
     for r in csv.DictReader(_open_data(os.path.join(_DATA, "foods.csv"))):

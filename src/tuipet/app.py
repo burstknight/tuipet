@@ -144,13 +144,15 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("A RIVAL APPEARS — every generation now has its own named "
-                 "rival: a tamer whose pet grows alongside yours, stage for "
-                 "stage, and answers every 3rd home bout. The feud's score "
-                 "flashes after each clash and lives on the DigiCore PERSON "
-                 "page — until one of you dies. Same fair fight as any "
-                 "matched bout, no purse; only the name changes. Beating a "
-                 "stranger is a stat. Beating THEM is a story.")
+    WHATS_NEW = ("THE GREAT ITEM EXPANSION — the catalog TRIPLES: 44 → 132, "
+                 "every last authored consumable, each wearing its real rip. "
+                 "New foods, toys, meds, and the keys to ~31 dormant "
+                 "evolutions: Spirits wait on the deepest roads, relics "
+                 "answer in cups. Beaten foes now DROP their goods — bosses "
+                 "guard Digimentals. Cups pay their own authored prizes. "
+                 "CAPSULES open into surprises (finer on festivals — and "
+                 "two of the ten boxes bite). Town shelves triple their "
+                 "variety. Even feeding hides a secret now. Go find it all.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the

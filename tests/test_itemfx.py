@@ -383,10 +383,13 @@ def test_the_music_player_borrows_the_musical_show():
 def test_the_override_is_ONLY_the_deliberate_remaps():
     """A guard: the remap must not silently swallow a real ItemEvol path
     (the crest Digimentals, which fire an actual evolution via their own
-    door) or any other item.  Exactly three entries, each ruled by Joel:
-    the two non-evolving chips -> Study, the music player -> the note show."""
+    door) or any other item.  Six entries now, each deliberate: the two
+    non-evolving chips -> Study, the music player -> the note show, and
+    the expansion's three canon-types-without-scripts (2026-07-26):
+    Jump -> Bounce, Toilet -> PortToilet, X_Program -> Study."""
     assert set(itemfx._SCRIPT_OVERRIDE) == {"dna_crystal", "x_antibody",
-                                            "music_player"}
+                                            "music_player", "trampoline",
+                                            "toilet", "x_program"}
 
 
 def test_a_bag_use_fires_the_show_for_all_three():

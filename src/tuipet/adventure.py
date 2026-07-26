@@ -41,6 +41,7 @@ ENCOUNTER_CHANCE = 0.20   # per leg -- ~8 wild fights over a 40-leg zone (the ol
 FIND_CHANCE = 0.12        # per marched step -- a chance to spot loot on the road
 #                           (Zone.checkItem), ~3-4 finds over a zone; the player
 #                           digs it up (into the bag) or walks on
+SKIP_LEGS = 10            # the Zone Transport's safe lift (expansion 2026-07-26)
 HAZARD_CHANCE = 0.06      # per marched step -- an ambush pounce on the road
 #                           (arcade arc, Joel 2026-07-21 "do the hazard dodges"):
 #                           a zone wild telegraphs and lunges; SPACE ducks it,
@@ -188,25 +189,48 @@ _ROAD_KEYS = ("town_transport", "disaster_transport", "life_recovery")
 # objection died with it -- it sits in datatunnel/factorynight below,
 # truthed 2026-07-25.)
 BIOME_FINDS = {
-    "greenhills":   ("fish", "vegetable", "ball", "candy", "cupcake"),
-    "flowerfield":  ("vegetable", "candy", "music_player", "ball", "cookie"),
-    "forestgate":   ("poison_mushroom", "vegetable", "candy", "music_player"),
-    "mountains":    ("dumbbell", "steak", "cold_shower", "grow_capsule"),
-    "frozenpeak":   ("caffeine_pill", "steak", "vitamin", "cold_shower"),
-    "islandsea":    ("tuna", "fish", "skateboard", "ball", "cupcake"),
-    "lakeside":     ("fish", "tuna", "bubble_bath", "vegetable", "cookie"),
-    "underwater":   ("fish", "tuna", "slim_drink", "bubble_bath"),
+    # the expansion rows (2026-07-26) join their fitting biomes: farmland
+    # eggs and meat, forest nuts, mountain cheeses, a pepper by the lava --
+    # the road FEEDS you in that biome's own voice, and two of the shy
+    # capsules hide out where treasure hunters go.
+    "greenhills":   ("fish", "vegetable", "ball", "candy", "cupcake",
+                     "meat", "egg"),
+    "flowerfield":  ("vegetable", "candy", "music_player", "ball", "cookie",
+                     "honey", "fruit"),
+    "forestgate":   ("poison_mushroom", "vegetable", "candy", "music_player",
+                     "nuts", "guava"),
+    "mountains":    ("dumbbell", "steak", "cold_shower", "grow_capsule",
+                     "cheese", "bread", "red_pepper"),
+    "frozenpeak":   ("caffeine_pill", "steak", "vitamin", "cold_shower",
+                     "ice_cream", "chicken_soup"),
+    "islandsea":    ("tuna", "fish", "skateboard", "ball", "cupcake",
+                     "salmon", "orange"),
+    "lakeside":     ("fish", "tuna", "bubble_bath", "vegetable", "cookie",
+                     "salmon", "milk"),
+    "underwater":   ("fish", "tuna", "slim_drink", "bubble_bath",
+                     "salmon", "capsule_b"),
     "city":         ("video_game", "television", "energy_drink",
-                     "cheese_burger", "skateboard"),
+                     "cheese_burger", "skateboard", "toy_car", "balloon",
+                     "computer_game", "capsule_c"),
     "datatunnel":   ("energy_drink", "anti_evo_chip", "video_game",
-                     "caffeine_pill", "digimemory"),
+                     "caffeine_pill", "digimemory", "computer_game",
+                     "capsule_c"),
     "factorynight": ("anti_evo_chip", "dumbbell", "energy_drink",
-                     "sleeping_pill", "digimemory"),
-    "volcano":      ("steak", "energy_drink", "cold_shower", "dumbbell"),
-    "desert":       ("tuna", "energy_drink", "vitamin", "slim_drink"),
+                     "sleeping_pill", "digimemory", "capsule_d",
+                     "supplement"),
+    "volcano":      ("steak", "energy_drink", "cold_shower", "dumbbell",
+                     "red_pepper", "chicken_soup"),
+    "desert":       ("tuna", "energy_drink", "vitamin", "slim_drink",
+                     "yellow_pepper", "orange"),
 }
 FINAL_ZONE_FINDS = ("anti_evo_chip", "x_antibody", "textbook",
-                    "dna_crystal", "steak")
+                    "dna_crystal", "steak", "hp_chip")
+
+# the road's festival present pool: the ten authored capsule boxes -- eight
+# honest, two AngrySurprise pranks, identical until opened (that IS the box)
+_FESTIVAL_CAPSULES = ("capsule_a", "capsule_b", "capsule_c", "capsule_d",
+                      "capsule_e", "capsule_f", "capsule_g", "capsule_h",
+                      "prank_capsule_a", "prank_capsule_b")
 
 
 def _find_keys(scene, is_final):
@@ -379,6 +403,21 @@ for _zi, _z in enumerate(ZONES):
     if _mine and _mine not in _z["find_keys"]:
         _z["find_keys"].append(_mine)
     _z["signature"] = _mine
+
+# THE HUMAN SPIRITS WAIT ON THE DEEP ROADS (item expansion 2026-07-26):
+# the ten hardest zones by PROGRESSION each hide ONE Human spirit in their
+# dig pool -- never sold, legendary-weighted (shop's override), element
+# order matched to depth so the Dark spirit guards the very last road.
+# Their Beast halves are CUP prizes (tournament.py): roads give Human,
+# cups give Beast.
+_HUMAN_SPIRITS = ("human_fire_spirit", "human_light_spirit",
+                  "human_ice_spirit", "human_wind_spirit",
+                  "human_thunder_spirit", "human_earth_spirit",
+                  "human_water_spirit", "human_wood_spirit",
+                  "human_metal_spirit", "human_dark_spirit")
+for _pos, _zi in enumerate(PROGRESSION[-len(_HUMAN_SPIRITS):]):
+    if _HUMAN_SPIRITS[_pos] not in ZONES[_zi]["find_keys"]:
+        ZONES[_zi]["find_keys"].append(_HUMAN_SPIRITS[_pos])
 def zone_index(zone):
     """The index of a zone dict in the ordered ZONES, or None (a test zone)."""
     try:
@@ -467,6 +506,7 @@ class Adventure:
         self.fights = 0                  # fights entered this run (wild + boss)
         self.wins = 0                    # ...of those, won
         self.finds = 0                   # loot dug up this run
+        self.drops = 0                   # battle drops bagged this run (2026-07-26)
         self.streak = 0                  # chained wins alive RIGHT NOW (run-local)
         self.best_streak = 0             # the run's longest chain (the summary line)
         self.holiday = active_holiday()  # a festival today? double bits + more finds
@@ -566,12 +606,16 @@ class Adventure:
 
     # -- transport (in-run warp items) ----------------------------------------
     def _transport_kind(self, key):
-        """'town' (Birdra), 'danger' (Garuda) or 'life' (Life Recovery) --
-        the CATALOG road items that mean something WITHIN a run -- else
-        None.  Zone/Continent warps are obsolete: the zone picker replaced
-        worldmap warping."""
+        """'town' (Birdra), 'danger' (Garuda), 'life' (Life Recovery),
+        'skip' (Zone Transport: a safe lift up the road) or 'camp'
+        (Continent Transport: the Whamon rest) -- the CATALOG road items
+        that mean something WITHIN a run -- else None.  (The expansion
+        2026-07-26 gave the two worldmap warps run-jobs: the zone picker
+        replaced map warping long ago, so their tickets buy road comfort
+        instead -- a lift without an ambush, a rest without a town.)"""
         return {"town_transport": "town", "disaster_transport": "danger",
-                "life_recovery": "life"}.get(key)
+                "life_recovery": "life", "zone_transport": "skip",
+                "continent_transport": "camp"}.get(key)
 
     def held_transports(self):
         """The run-usable road-item keys the pet is carrying, in bag order.
@@ -598,7 +642,14 @@ class Adventure:
                 # ate the ticket and forced a fight on a body the gate may
                 # have just refused (audit 2026-07-25)
                 and not (self._transport_kind(k) == "danger"
-                         and self.loc >= self.total - 3)]
+                         and self.loc >= self.total - 3)
+                # the lift buys legs too: hidden at the gate (2026-07-26)
+                and not (self._transport_kind(k) == "skip"
+                         and self.loc >= self.total - 1)
+                # the camp buys REST: hidden when the tank is already at
+                # the half it restores to (the dead-menu-row rule)
+                and not (self._transport_kind(k) == "camp"
+                         and self.pet.energy >= self.pet.max_energy // 2)]
 
     def use_transport(self, key):
         """Spend a road item.  Town warp -> jump to the town and rest
@@ -628,6 +679,28 @@ class Adventure:
         if kind == "danger" and self.loc >= self.total - 3:
             # defensive: a dash that moves nothing is not for sale
             return None
+        if kind == "skip" and self.loc >= self.total - 1:
+            return None                        # defensive: nothing to skip
+        if kind == "camp" and self.pet.energy >= self.pet.max_energy // 2:
+            return None                        # defensive: nothing to rest
+        if kind == "skip":
+            # the SAFE lift (expansion 2026-07-26): ten legs forward, no
+            # ambush, stopping shy of the gate -- the middle ticket between
+            # walking and the danger dash
+            self.pet.take_item(key)
+            self.loc = min(self.total - 1, self.loc + SKIP_LEGS)
+            self.last = "A Birdramon lift — the road slides by below."
+            return "skip-lift"
+        if kind == "camp":
+            # the Whamon CAMP: a rest without a town -- energy to half the
+            # tank where you stand.  Lives stay Life Recovery's job; the
+            # win streak survives (that is this ticket's premium)
+            self.pet.take_item(key)
+            half = self.pet.max_energy // 2
+            if self.pet.energy < half:
+                self.pet._set_energy(half)
+            self.last = "Camp pitched — rested where you stand."
+            return "camp-rest"
         self.pet.take_item(key)
         if kind == "town":
             # the NEAREST town span, behind included: every zone's span
@@ -668,12 +741,14 @@ class Adventure:
         chance = FIND_CHANCE * (HOLIDAY_FIND_MULT if self.holiday else 1)
         if random.random() >= chance:
             return None
-        # a FESTIVAL road present: a wrapped surprise from the gift pool
-        # (up to rare), dug up like any find but revealed like a gift.  Home
-        # gifts never fire on the road (checkGiftCall is _isHome), so this is
-        # the road's own festival delight (2026-07-24).
+        # a FESTIVAL road present IS A CAPSULE now (item expansion
+        # 2026-07-26, Joel: "rewire christmas presents to basically be
+        # holiday versions of these"): the wrapped box lands in the bag and
+        # is OPENED for its roll -- opened on the festival day, the roll
+        # reaches a tier higher (petcare._capsule); two of the ten boxes
+        # are the authored AngrySurprise pranks.  Home gifts stay home.
         if self.holiday and random.random() < FESTIVAL_PRESENT_CHANCE:
-            return (self.pet._pick_gift(festival=True), True)
+            return (random.choice(_FESTIVAL_CAPSULES), True)
         # TIERED FIND RARITY (D1, 2026-07-24): the pool used to be a flat
         # random.choice, so a zone's legendary signature turned up exactly as
         # often as its cheapest snack.  Weighted by the same tier ladder the
@@ -792,6 +867,40 @@ class Adventure:
             self.pet.bits += amt
             self.bits_earned += amt
         return amt
+
+    def award_drop(self, enemy):
+        """THE BATTLE DROP (item expansion 2026-07-26, Joel: "i even want
+        battle drops in adventure") -- and it was AUTHORED all along:
+        every enemies.csv row carries a LootTableID into dropRate.csv.
+        Wilds shed attribute chips at 2-7%, elites shed the X-Program at
+        100%, and each map's unique story boss drops its DIGIMENTAL.
+
+        Rationing rides the bounty's own rules: a REPLAY boss whose daily
+        veteran purse is spent drops nothing either (the road_bounty
+        ledger, anti-printer) -- wilds stay live, a first conquest is
+        untouched.  Returns the granted CATALOG key, or None."""
+        if enemy.get("boss") and self.replay and self.bounty_spent:
+            return None
+        table = data.load_loot_tables().get(enemy.get("loot_table", -1))
+        if not table:
+            return None
+        from . import shop
+        from .pet import Pet
+        roll, cum = random.random() * 100, 0
+        for icon, rate in table:
+            cum += rate
+            if roll < cum:
+                # a Digimental drop speaks the crest shelf's own key; all
+                # else resolves through the one icon->key door
+                iid = int(icon[2:]) if icon.startswith("i:") else -1
+                crest = {v: k for k, v in Pet._CREST_IDS.items()}.get(iid)
+                key = crest or shop.key_for_icon(icon)
+                if key is None:
+                    return None              # an unshipped row stays dormant
+                self.pet.add_item(key)
+                self.drops += 1
+                return key
+        return None
 
     def resolve(self, won, fled=False):
         """Settle a wild fight.  Every fight grants a grace leg so the next

@@ -186,6 +186,11 @@ SCRIPTS = {
 # beats, the pet bopping to a tune.  Two music goods, one musical show --
 # the xylophone plays its own i:63 icon, the player its i:9, same act.
 _SCRIPT_OVERRIDE = {"dna_crystal": "Study", "x_antibody": "Study",
+                    # the expansion (2026-07-26): canon types with no
+                    # implemented script, remapped to the fitting sibling
+                    "trampoline": "Bounce",       # canon Jump
+                    "toilet": "PortToilet",       # canon Toilet
+                    "x_program": "Study",         # canon X_Program
                     "music_player": "InteractXylophone"}
 
 # AnimationTypes that deliberately have NO item fx: Idling (canon plays

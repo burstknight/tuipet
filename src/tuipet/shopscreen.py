@@ -376,11 +376,12 @@ class ShopPanel:
                 elif e.get("egg_idx") is not None:
                     msg, self.sfx = shop.town_egg_buy(self.pet, e["egg_idx"])
                     self._flash(msg)
-                elif self.town is not None or e.get("deal"):
-                    # a DEAL row is rationed wherever it stands: the town
-                    # counter always was, and the home deal joined it
-                    # (item sweep 2026-07-24) -- one buy path for both,
-                    # so the ledger is written exactly once
+                elif (self.town is not None or e.get("deal")
+                        or e.get("left") is not None):
+                    # a RATIONED row is rationed wherever it stands: town
+                    # counters always were, the home deal joined 2026-07-24,
+                    # and the home capsule ration joined 2026-07-26 -- one
+                    # buy path for all, so the ledger is written exactly once
                     msg, self.sfx = shop.town_buy(self.pet, e)
                     self._flash(msg)
                     if e.get("deal") and self.sfx == "confirm":

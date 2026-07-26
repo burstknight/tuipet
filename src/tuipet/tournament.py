@@ -25,6 +25,7 @@ from __future__ import annotations
 import datetime as _dt
 import random
 from . import data
+from . import shop
 
 
 # ---- the real-calendar cadence (Joel 2026-07-17: "seasonal, daily, weekly,
@@ -426,6 +427,21 @@ def _npc_winner(a, b):
     return a if ahp > bhp else b
 
 
+def _prize_key(kind, cid):
+    """A cup prize id -> its CATALOG key (item expansion 2026-07-26).
+    Digimental ids speak the crest shelf's own egg_of_* identity; anything
+    that somehow fails to resolve pays the old catalog treat rather than
+    nothing (a champion is never stiffed)."""
+    from . import shop
+    from .pet import Pet
+    if kind == "i":
+        crest = {v: k for k, v in Pet._CREST_IDS.items()}.get(cid)
+        if crest:
+            return crest
+    key = shop.key_for_icon(f"{kind}:{cid}")
+    return key or ("energy_drink" if kind == "i" else "cake")
+
+
 class Tournament:
     def __init__(self, pet, trophy, slot=None, featured=False):
         self.pet = pet
@@ -636,11 +652,23 @@ class Tournament:
             persistence.tourney_add(self.trophy["id"])     # gates the tournament egg unlocks
             extras = []
             if self.trophy["item"] >= 0:
-                # the DVPet prize ids retired with the item system: the cup
-                # pays a catalog treat instead
-                self.pet.add_item("energy_drink"); extras.append("item")
+                # THE AUTHORED PRIZE TABLE, ALIVE (item expansion
+                # 2026-07-26): every cup's ItemID/FoodID resolves against
+                # the grown catalog now -- 36 cups hand out their own
+                # authored relic (trampolines, evo items, even a specific
+                # DIGIMENTAL via the crest identity), 25 more pay authored
+                # food hampers.  The flat energy-drink placeholder retires.
+                key = _prize_key("i", self.trophy["item"])
+                self.pet.add_item(key)
+                e = shop.entry(key) or {}
+                extras.append(e.get("name", "a prize"))
             if self.trophy["food_id"] >= 0 and self.trophy["food_amt"] > 0:
-                self.pet.add_item("cake", self.trophy["food_amt"]); extras.append("food")
+                key = _prize_key("f", self.trophy["food_id"])
+                amt = self.trophy["food_amt"]
+                self.pet.add_item(key, amt)
+                e = shop.entry(key) or {}
+                extras.append(f"{e.get('name', 'food')}"
+                              + (f" ×{amt}" if amt > 1 else ""))
             tail = (" + " + "/".join(extras)) if extras else ""
             self.tree.append(["YOU"])                     # the top of the bracket
             self.last = "CHAMPION! +%db%s + trophy!" % (self.reward_bits, tail)

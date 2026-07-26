@@ -83,7 +83,10 @@ def test_the_hurt_call_names_the_key_that_actually_cures_it():
     from tuipet.app import TuiPetApp
     from tuipet import shop
     from tuipet.feedscreen import ROWS_MENU
-    assert "bandage" not in shop.CATALOG            # not an item at all
+    # (the "not an item at all" clause superseded 2026-07-26: the bandage
+    # exists again as a 10b pocket med -- but the CALL still names the
+    # free H key, never the F menu and never the bag)
+    assert shop.CATALOG["bandage"].price == 10
     assert all(k != "bandage" for k, _label in ROWS_MENU)   # not an F row
     msg = TuiPetApp._need_message(None, _pet(injured=True))
     assert "[b]H[/]" in msg and "[b]F[/]" not in msg and "bag" not in msg

@@ -11,7 +11,7 @@ loot, revealed like a gift, capped at rare.
 import collections
 import random
 
-from tuipet import adventure as adv, shop
+from tuipet import adventure as adv
 from tuipet.adventure import ZONES
 from tuipet.adventurescreen import AdventurePanel
 from tuipet.arenafx import _PRESENT
@@ -54,14 +54,15 @@ def test_a_third_of_festival_finds_are_presents():
     assert 0.25 < frac < 0.45, frac
 
 
-def test_road_presents_draw_from_the_festival_gift_pool():
+def test_road_presents_are_capsules_now():
+    """SUPERSEDED (item expansion 2026-07-26, Joel: "rewire christmas
+    presents to basically be holiday versions of these"): the festival
+    road present IS a wrapped capsule -- the box lands in the bag and its
+    roll happens when OPENED (a festival-day open reaches a tier higher;
+    two of the ten boxes are the authored AngrySurprise pranks)."""
     _pres, _norm, keys = _finds("Halloween Festival")
-    assert len(keys) >= 10, "a present is a surprise, not one item"
-    hi = max(shop.TIER_ORDER.index(shop.CATALOG[k].tier or "common") for k in keys)
-    assert shop.TIER_ORDER[hi] == "rare"          # festival cap, same as home
-    banned = {"poison_mushroom", "digimemory", "revive_floppy",
-              "town_transport", "disaster_transport", "life_recovery"}
-    assert not (set(keys) & banned)
+    assert set(keys) <= set(adv._FESTIVAL_CAPSULES)
+    assert len(set(keys)) >= 4, "the box itself should vary"
 
 
 def test_travel_carries_the_present_flag():

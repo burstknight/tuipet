@@ -119,36 +119,48 @@ def test_the_chips_are_eaten_like_every_other_food_sheet_consumable():
 
 # ---- what was deliberately LEFT dark, and why -------------------------------
 
-def test_the_paid_ailment_cures_stayed_out():
-    """f:15 Elixir cures sickness and f:16 Vitamin G cures injury -- both
-    real, both canon.  Adding them would have re-sold what R3 just made
-    free, breaking the symmetry shipped hours earlier."""
-    assert shop.key_for_icon("f:15") is None
-    assert shop.key_for_icon("f:16") is None
+def test_the_paid_ailment_cures_arrived_as_premium_combos():
+    """SUPERSEDED (item expansion 2026-07-26, Joel: "bring them all in...
+    your call"): Elixir and Vitamin G are in -- as premium COMBOS that do
+    strictly more than the free buttons, so nothing basic is paywalled
+    (the free-cure spirit holds; see test_catalog_touches)."""
+    assert shop.key_for_icon("f:15") == "elixir"
+    assert shop.key_for_icon("f:16") == "vitamin_g"
+    assert shop.CATALOG["elixir"].price == 2000
+    assert shop.CATALOG["vitamin_g"].price == 2000
 
 
-def test_the_attribute_TRADE_items_stayed_out():
-    """i:5 Board Game and i:8 Computer Game swap one power for another
-    (vaccine -15 / data +15).  Canon handles the resulting negatives with
-    compensateAttributes -- which is DORMANT here (`_compensate_attrs` is
-    defined and never called).  Adding them would have required reviving
-    a stripped system, which needs a named order."""
-    assert shop.key_for_icon("i:5") is None
-    assert shop.key_for_icon("i:8") is None
+def test_the_attribute_TRADE_items_refuse_an_empty_bank():
+    """SUPERSEDED (item expansion 2026-07-26): the converters are in.
+    The old objection was canon's negative-handling (compensateAttributes,
+    dormant); the shipped answer needs no revival -- a converter REFUSES
+    below its 15-point stake, so a negative can never be minted."""
+    assert shop.key_for_icon("i:5") == "board_game"
+    assert shop.key_for_icon("i:8") == "computer_game"
+    from tuipet.pet import Pet
+    p = Pet(num=100, stage="Rookie", attribute="Vaccine")
+    p.line_id = ""
+    p.vaccine = p.virus = 14                 # one under the stake
+    p.add_item("board_game"); p.add_item("computer_game")
+    assert "Not enough" in str(p.use_item("board_game"))
+    assert "Not enough" in str(p.use_item("computer_game"))
+    assert p.vaccine == 14 and p.virus == 14 and p.data_power == 0
 
 
-def test_the_itemevol_relics_stayed_dormant():
-    """The 29 spirits and evolution relics are dormant DATA: shipped
-    evolutions.csv has no item columns at all, so they could never fire."""
-    for iid in (33, 34, 43, 53, 62):
-        assert shop.key_for_icon("i:%d" % iid) is None
+def test_the_itemevol_relics_are_live_keys():
+    """SUPERSEDED (item expansion 2026-07-26, Joel: "Wire fully"): the
+    spirits and relics are catalog keys now, wired to the evolution
+    graph's own item gates (load_requirements carries evol_item for 33
+    and 43-62; items.csv DigimonID names the direct forms)."""
+    for iid, key in ((33, "digitron"), (34, "horn_helmet"),
+                     (43, "human_fire_spirit"), (53, "beast_fire_spirit"),
+                     (62, "beast_dark_spirit")):
+        assert shop.key_for_icon("i:%d" % iid) == key
 
 
-def test_the_plain_foods_stayed_out():
-    """~20 dark foods are all 'hunger +1' with a different poop load.  The
-    system that would tell them apart -- Taste (`_change_rank`) -- is
-    dormant, so they would ship as filler, and reviving taste needs a
-    named order."""
+def test_the_plain_foods_are_in_but_taste_stays_dormant():
+    """Taste (`_change_rank`) stays dormant -- the foods are told apart by
+    their authored LIVE columns instead (expansion 2026-07-26)."""
     import glob
     import re
     calls = []
@@ -158,11 +170,18 @@ def test_the_plain_foods_stayed_out():
             if re.search(r"\b_change_rank\s*\(", body) and "def " not in body:
                 calls.append(f"{path}:{i}")
     assert not calls, f"taste woke up: {calls}"
+    # SUPERSEDED half (item expansion 2026-07-26): the plain foods ARE in
+    # now -- differentiated by their authored live columns (weight from
+    # calories, obedience, energy), NOT by waking taste; the dormant-taste
+    # assertion above is the half that still stands
     for iid in (24, 29, 45, 46, 47, 48):
-        assert shop.key_for_icon("f:%d" % iid) is None
+        assert shop.key_for_icon("f:%d" % iid) is not None
 
 
-def test_the_catalog_grew_by_exactly_the_chips():
-    assert len(shop.CATALOG) == 44
+def test_the_catalog_holds_the_whole_authored_corpus():
+    """44 -> 132 (item expansion 2026-07-26): every authored consumable is
+    a catalog key except the 11 crest-shelf Digimentals (one door) and
+    i:35 Blue Crystal (its rip is the shipped dna_crystal's)."""
+    assert len(shop.CATALOG) == 132
     assert sum(1 for v in shop.CATALOG.values()
-               if v.category == "Evolution") == 11
+               if v.category == "Evolution") == 43

@@ -123,21 +123,26 @@ def test_the_textbook_is_refused_at_a_full_gauge_and_kept():
     assert p.inventory.get("textbook") == 1
 
 
-def test_the_textbook_is_the_discipline_systems_first_item():
+def test_the_textbook_led_a_whole_manners_economy():
+    """P5 made the textbook discipline's FIRST item; the expansion
+    (2026-07-26) grew the family -- foods and toys move manners now, in
+    both directions.  The textbook stays the heavyweight (+20)."""
     assert shop.CATALOG["textbook"].touches == ("obedience",)
-    obedience_items = [k for k, v in shop.CATALOG.items()
-                       if "obedience" in v.touches]
-    assert obedience_items == ["textbook"]
+    obedience_items = {k for k, v in shop.CATALOG.items()
+                       if "obedience" in v.touches}
+    assert "textbook" in obedience_items and len(obedience_items) > 10
 
 
 # ---- R3: both cures free, symmetric ----------------------------------------
 
-def test_the_bandage_never_returns_to_the_shelf():
-    """The FINAL door (2026-07-26): after one afternoon back as a 300b
-    item (tag-only v0.5.277), the cure settled on the free H hotkey --
-    no shelf entry, ever again."""
-    assert "bandage" not in shop.CATALOG
-    assert "bandage" not in shop.EFFECTS
+def test_the_bandage_returned_as_pocket_change_and_h_stays_free():
+    """SUPERSEDED (item expansion 2026-07-26, Joel on the law rows:
+    "bring them all in... your call"): the bandage is a catalog key again
+    -- at 10 bits, a pocket med for drops and gifts, never a paywall.
+    The H key stays the free cure (asserted below and in
+    test_canon_injury)."""
+    assert shop.CATALOG["bandage"].price == 10
+    assert "injured" in shop.CATALOG["bandage"].touches
 
 
 def test_the_two_ailments_take_two_free_buttons(monkeypatch):

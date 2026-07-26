@@ -139,6 +139,104 @@ _AUTHORED = {
     "town_transport":     ("Town Transport",   "i:29", 500,  "Adventure", "on the road: T-warp to a town + rest", "a Birdramon ride"),
     "disaster_transport": ("Disaster Transp.", "i:30", 250,  "Adventure", "on the road: T-dash to the boss + ambush", "a Garudamon ride"),
     "life_recovery":      ("Life Recovery",    "i:27", 1000, "Adventure", "restore adventure lives on the road", "a second wind"),
+    # ======================= THE EXPANSION (2026-07-26) =====================
+    # Joel: "bring in all 99 unused items ... spread out ... your call".
+    # Every row below is an authored source row (foods.csv / items.csv):
+    # real rip, real name, real DefaultPrice, stats off the authored columns
+    # (weight = Calories // 2 for new rows; Mood/Enthusiasm/Stress stay
+    # dormant).  price None = never sold (source price 0): those rows are
+    # EARNED -- drops, digs, gifts, capsules, cup prizes.  The 11 Digimentals
+    # (i:15-25) are NOT here: they live on the crest shelf (one door), and
+    # i:35 "Blue Crystal" stays out (its rip is the shipped dna_crystal's).
+    # Board file: ITEM_EXPANSION_2026_07_26.md.
+    "meat":            ("Meat",                "f:0",  None,  "Food", "hunger +1 · weight +2", "the classic slab, to go"),
+    "fruit":           ("Fruit",               "f:2",  None,  "Food", "hunger +1 · obedience -1", "sweet, and a little spoiling"),
+    "banana":          ("Banana",              "f:9",  300,   "Food", "hunger +1 · energy +1 · obedience -1 · weight +1", "instant pep in a peel"),
+    "bread":           ("Bread",               "f:24", 100,   "Food", "hunger +1 · weight +1", "a warm honest loaf"),
+    "rice":            ("Rice",                "f:29", 100,   "Food", "hunger +1 · weight +2", "a full bowl, home comfort"),
+    "nuts":            ("Nuts",                "f:45", 50,    "Food", "hunger +1 · weight +1", "trail rations"),
+    "oats":            ("Oats",                "f:46", 75,    "Food", "hunger +1 · weight +1", "slow fuel"),
+    "milk":            ("Milk",                "f:47", 150,   "Food", "hunger +1 · weight +1", "cold and calming"),
+    "egg":             ("Egg",                 "f:48", 100,   "Food", "hunger +1 · weight +1", "sunny side up"),
+    "cheese":          ("Cheese",              "f:49", 200,   "Food", "hunger +1 · weight +2", "aged to please"),
+    "salmon":          ("Salmon",              "f:53", 150,   "Food", "hunger +1 · weight +2", "the river's finest"),
+    "beans":           ("Beans",               "f:52", 150,   "Food", "hunger +1 · obedience +1 · weight +1", "musical, nutritious"),
+    "broccoli":        ("Broccoli",            "f:51", 100,   "Food", "hunger +1 · obedience +2", "eat it. no arguments."),
+    "guava":           ("Guava",               "f:50", 100,   "Food", "hunger +1 · weight +1", "tropic freshness"),
+    "orange":          ("Orange",              "f:42", 300,   "Food", "hunger +1 · obedience -1", "zest for the road"),
+    "honey":           ("Honey",               "f:31", 500,   "Food", "hunger +1 · energy +1 · obedience -5 · weight +1", "spoils them rotten"),
+    "ice_cream":       ("Ice Cream",           "f:39", 150,   "Food", "hunger +1 · obedience -1 · weight +2", "brain-freeze bliss"),
+    "chicken_soup":    ("Chicken Soup",        "f:40", 150,   "Food", "hunger +1 · weight +1", "warms the code"),
+    "chocolate_egg":   ("Chocolate Egg",       "f:58", 300,   "Food", "hunger +1 · weight +1 · a surprise inside", "a toy hides inside"),
+    "burnt_food":      ("Burnt Food",          "f:56", None,  "Food", "hunger +1 · saps effort · obedience +5", "somebody wasn't watching"),
+    "yellow_pepper":   ("Yellow Pepper",       "f:35", 100,   "Food", "hunger +1 · Virus power +1 · obedience +1", "a spark of chaos"),
+    "green_pepper":    ("Green Pepper",        "f:36", 100,   "Food", "hunger +1 · Data power +1 · obedience +1", "a spark of logic"),
+    "red_pepper":      ("Red Pepper",          "f:37", 100,   "Food", "hunger +1 · Vaccine power +1 · obedience +1", "a spark of order"),
+    "med":             ("Med",                 "f:4",  None,  "Medicine", "cures sickness", "the field pill"),
+    "elixir":          ("Elixir",              "f:15", 2000,  "Medicine", "cures sickness · energy to FULL", "the pill, perfected"),
+    "vitamin_g":       ("Vitamin G",           "f:16", 2000,  "Medicine", "heals injury · effort FULL · injury guard", "the golden mend"),
+    "gold_pill":       ("Gold Pill",           "f:19", 10000, "Medicine", "energy +12", "vitality, gilded"),
+    "supplement":      ("Supplement",          "f:25", 100,   "Medicine", "effort FULL · obedience +5 · weight +1", "discipline in a dose"),
+    "bitter_herbs":    ("Bitter Herbs",        "f:30", 750,   "Medicine", "obedience +5", "good for you. tastes it."),
+    "food_pill":       ("Food Pill",           "f:41", 100,   "Medicine", "fills belly · obedience +5 · weight +3", "a meal, compressed"),
+    "ai_supplement":   ("AI Supplement",       "f:43", None,  "Medicine", "effort +1", "the assistant's own blend"),
+    "ai_food_pill":    ("AI Food Pill",        "f:44", None,  "Medicine", "hunger +1", "the assistant's ration"),
+    "hp_chip":         ("HP Chip",             "f:26", 1500,  "Evolution", "all three powers +5", "vitality etched in silicon"),
+    "hp_chip_g":       ("HP Chip G",           "f:27", 3000,  "Evolution", "all three powers +10", "the golden constitution"),
+    "hedonism_101":    ("Hedonism 101",        "i:1",  2000,  "Play", "manners OBLITERATED · DO NOT STUDY", "the forbidden syllabus"),
+    "book":            ("Book",                "i:2",  1000,  "Care", "obedience +5", "a well-thumbed guide"),
+    "stuffed_animal":  ("Stuffed Animal",      "i:4",  1000,  "Play", "snuggle! obedience -1", "a softest friend"),
+    "board_game":      ("Board Game",          "i:5",  2000,  "Play", "Vaccine power -15 · Data power +15 · obedience +5", "logic beats order"),
+    "computer_game":   ("Computer Game",       "i:8",  2000,  "Play", "Virus power -15 · Data power +15", "logic tames chaos"),
+    "toy_car":         ("Toy Car",             "i:11", 500,   "Play", "zoom! obedience -1", "vroom of its own"),
+    "balloon":         ("Balloon",             "i:12", 100,   "Play", "a bobbing delight", "pure uplift"),
+    "trampoline":      ("Trampoline",          "i:13", 2500,  "Training", "bounce! effort +1 · weight -1", "gravity, negotiable"),
+    "x_program":       ("X-Program Sample",    "i:14", None,  "Evolution", "belly + effort emptied · the X takes hold", "survive it, transcend"),
+    "zone_transport":  ("Zone Transport",      "i:28", 750,   "Adventure", "on the road: a safe T-lift up the road", "a Birdramon lift"),
+    "continent_transport":("Continent Transport", "i:31", 1000,  "Adventure", "on the road: rest to half tank, anywhere", "a Whamon camp"),
+    "digitron":        ("Digitron",            "i:33", 6000,  "Evolution", "a dark evolution, if one answers", "a mysterious dark fluid"),
+    "horn_helmet":     ("Horn Helmet",         "i:34", 3000,  "Evolution", "evolve: Kabuterimon, if the body is ready", "the beetle's crown"),
+    "grey_claws":      ("Grey Claws",          "i:36", 3000,  "Evolution", "evolve: Greymon, if the body is ready", "the tyrant's grip"),
+    "water_bottle":    ("Water Bottle",        "i:37", 3000,  "Evolution", "evolve: Seadramon, if the body is ready", "the serpent's sea"),
+    "torn_tatter":     ("Torn Tatter",         "i:38", 3000,  "Evolution", "evolve: Bakemon, if the body is ready", "the ghost's shroud"),
+    "white_wings":     ("White Wings",         "i:39", 3000,  "Evolution", "evolve: Angemon, if the body is ready", "the angel's lift"),
+    "black_wings":     ("Black Wings",         "i:40", 3000,  "Evolution", "evolve: Devimon, if the body is ready", "the fallen's lift"),
+    "metal_armor":     ("Metal Armor",         "i:41", 3000,  "Evolution", "evolve: MetalMamemon, if the body is ready", "the mercenary's shell"),
+    "flaming_wings":   ("Flaming Wings",       "i:42", 3000,  "Evolution", "evolve: Birdramon, if the body is ready", "the firebird's pinions"),
+    "toy_oven":        ("Toy Oven",            "i:66", 500,   "Play", "fresh-baked! hunger -1 (makes room)", "smells like seconds"),
+    "capsule_a":       ("Capsule",             "i:68", 100,   "Play", "open: a surprise item (finer on festivals)", "a random surprise"),
+    "capsule_b":       ("Capsule",             "i:69", None,  "Play", "open: a surprise item (finer on festivals)", "a random surprise"),
+    "capsule_c":       ("Capsule",             "i:70", None,  "Play", "open: a surprise item (finer on festivals)", "a random surprise"),
+    "capsule_d":       ("Capsule",             "i:72", None,  "Play", "open: a surprise item (finer on festivals)", "a random surprise"),
+    "capsule_e":       ("Capsule",             "i:73", None,  "Play", "open: a surprise item (finer on festivals)", "a random surprise"),
+    "capsule_f":       ("Capsule",             "i:74", None,  "Play", "open: a surprise item (finer on festivals)", "a random surprise"),
+    "capsule_g":       ("Capsule",             "i:75", None,  "Play", "open: a surprise item (finer on festivals)", "a random surprise"),
+    "capsule_h":       ("Capsule",             "i:76", None,  "Play", "open: a surprise item (finer on festivals)", "a random surprise"),
+    "prank_capsule_a": ("Capsule",             "i:71", None,  "Play", "open: a surprise item (finer on festivals)", "a random surprise"),
+    "prank_capsule_b": ("Capsule",             "i:77", None,  "Play", "open: a surprise item (finer on festivals)", "a random surprise"),
+    "bandage":         ("Bandage",             "i:80", 10,    "Medicine", "cures a battle injury (H is free at home)", "a pocket mend"),
+    "futon":           ("Futon",               "i:81", 1000,  "Care", "the next daytime doze rests to FULL", "deepest daytime sleep"),
+    "toilet":          ("Toilet",              "i:82", 1000,  "Care", "a clean + a mannerly ritual", "civilisation, delivered"),
+    "human_fire_spirit":("Human Fire Spirit",   "i:43", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "human_light_spirit":("Human Light Spirit",  "i:44", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "human_ice_spirit":("Human Ice Spirit",    "i:45", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "human_wind_spirit":("Human Wind Spirit",   "i:46", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "human_thunder_spirit":("Human Thndr. Spirit", "i:47", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "human_earth_spirit":("Human Earth Spirit",  "i:48", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "human_water_spirit":("Human Water Spirit",  "i:49", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "human_wood_spirit":("Human Wood Spirit",   "i:50", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "human_metal_spirit":("Human Metal Spirit",  "i:51", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "human_dark_spirit":("Human Dark Spirit",   "i:52", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "beast_fire_spirit":("Beast Fire Spirit",   "i:53", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "beast_light_spirit":("Beast Light Spirit",  "i:54", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "beast_ice_spirit":("Beast Ice Spirit",    "i:55", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "beast_wind_spirit":("Beast Wind Spirit",   "i:56", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "beast_thunder_spirit":("Beast Thndr. Spirit", "i:57", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "beast_earth_spirit":("Beast Earth Spirit",  "i:58", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "beast_water_spirit":("Beast Water Spirit",  "i:59", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "beast_wood_spirit":("Beast Wood Spirit",   "i:60", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "beast_metal_spirit":("Beast Metal Spirit",  "i:61", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "beast_dark_spirit":("Beast Dark Spirit",   "i:62", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
 }
 
 # ---------------------------------------------------------------------------
@@ -213,6 +311,95 @@ _TOUCHES = {
     "town_transport": (),
     "disaster_transport": (),
     "life_recovery": (),
+    # ---- THE EXPANSION (2026-07-26): read out of the new handlers ----------
+    "meat": ('hunger', 'weight'),
+    "fruit": ('hunger', 'obedience'),
+    "banana": ('hunger', 'energy', 'obedience', 'weight'),
+    "bread": ('hunger', 'weight'),
+    "rice": ('hunger', 'weight'),
+    "nuts": ('hunger', 'weight'),
+    "oats": ('hunger', 'weight'),
+    "milk": ('hunger', 'weight'),
+    "egg": ('hunger', 'weight'),
+    "cheese": ('hunger', 'weight'),
+    "salmon": ('hunger', 'weight'),
+    "beans": ('hunger', 'obedience', 'weight'),
+    "broccoli": ('hunger', 'obedience'),
+    "guava": ('hunger', 'weight'),
+    "orange": ('hunger', 'obedience'),
+    "honey": ('hunger', 'energy', 'obedience', 'weight'),
+    "ice_cream": ('hunger', 'obedience', 'weight'),
+    "chicken_soup": ('hunger', 'weight'),
+    "chocolate_egg": ('hunger', 'weight'),
+    "burnt_food": ('hunger', 'strength', 'obedience'),
+    "yellow_pepper": ("hunger", "obedience", "virus"),
+    "green_pepper": ("hunger", "obedience", "data_power"),
+    "red_pepper": ("hunger", "obedience", "vaccine"),
+    "med": ('sick',),
+    "elixir": ('sick', 'energy'),
+    "vitamin_g": ('injured', 'strength', 'vitamin_lapse'),
+    "gold_pill": ('energy',),
+    "supplement": ('strength', 'obedience', 'weight'),
+    "bitter_herbs": ('obedience',),
+    "food_pill": ('hunger', 'obedience', 'weight'),
+    "ai_supplement": ('strength',),
+    "ai_food_pill": ('hunger',),
+    "hp_chip": ('vaccine', 'data_power', 'virus'),
+    "hp_chip_g": ('vaccine', 'data_power', 'virus'),
+    "hedonism_101": ('obedience',),
+    "book": ('obedience',),
+    "stuffed_animal": ('obedience',),
+    "board_game": ('vaccine', 'data_power', 'obedience'),
+    "computer_game": ('virus', 'data_power'),
+    "toy_car": ('obedience',),
+    "balloon": (),
+    "trampoline": ('strength', 'weight'),
+    "x_program": ('hunger', 'strength', 'energy', 'x_antibody'),
+    "zone_transport": (),
+    "continent_transport": (),
+    "digitron": ('num',),
+    "horn_helmet": ('num',),
+    "grey_claws": ('num',),
+    "water_bottle": ('num',),
+    "torn_tatter": ('num',),
+    "white_wings": ('num',),
+    "black_wings": ('num',),
+    "metal_armor": ('num',),
+    "flaming_wings": ('num',),
+    "toy_oven": ('hunger',),
+    "capsule_a": (),
+    "capsule_b": (),
+    "capsule_c": (),
+    "capsule_d": (),
+    "capsule_e": (),
+    "capsule_f": (),
+    "capsule_g": (),
+    "capsule_h": (),
+    "prank_capsule_a": (),
+    "prank_capsule_b": (),
+    "bandage": ('injured',),
+    "futon": ('futon_doze',),
+    "toilet": ('poop', 'poop_sizes', 'obedience'),
+    "human_fire_spirit": ('num',),
+    "human_light_spirit": ('num',),
+    "human_ice_spirit": ('num',),
+    "human_wind_spirit": ('num',),
+    "human_thunder_spirit": ('num',),
+    "human_earth_spirit": ('num',),
+    "human_water_spirit": ('num',),
+    "human_wood_spirit": ('num',),
+    "human_metal_spirit": ('num',),
+    "human_dark_spirit": ('num',),
+    "beast_fire_spirit": ('num',),
+    "beast_light_spirit": ('num',),
+    "beast_ice_spirit": ('num',),
+    "beast_wind_spirit": ('num',),
+    "beast_thunder_spirit": ('num',),
+    "beast_earth_spirit": ('num',),
+    "beast_water_spirit": ('num',),
+    "beast_wood_spirit": ('num',),
+    "beast_metal_spirit": ('num',),
+    "beast_dark_spirit": ('num',),
 }
 
 # ---------------------------------------------------------------------------
@@ -248,8 +435,25 @@ TIER_WEIGHT = {"common": 8, "uncommon": 4, "rare": 2, "legendary": 1}
 TIER_STOCK = {"common": 3, "uncommon": 2, "rare": 1, "legendary": 1}
 
 
+# grant-only keys whose rarity is NOT "commonest thing there is" (the
+# birthday-treat default): the endgame spirits and the elite X sample roll
+# at legendary weight wherever a weighted pick sees them (2026-07-26).
+_WEIGHT_OVERRIDE = {k: TIER_WEIGHT["legendary"] for k in (
+    "x_program",
+    "human_fire_spirit", "human_light_spirit", "human_ice_spirit",
+    "human_wind_spirit", "human_thunder_spirit", "human_earth_spirit",
+    "human_water_spirit", "human_wood_spirit", "human_metal_spirit",
+    "human_dark_spirit",
+    "beast_fire_spirit", "beast_light_spirit", "beast_ice_spirit",
+    "beast_wind_spirit", "beast_thunder_spirit", "beast_earth_spirit",
+    "beast_water_spirit", "beast_wood_spirit", "beast_metal_spirit",
+    "beast_dark_spirit")}
+
+
 def tier_weight(key):
     """Roll weight for `key` -- the find pools and any weighted shelf pick."""
+    if key in _WEIGHT_OVERRIDE:
+        return _WEIGHT_OVERRIDE[key]
     v = CATALOG.get(key)
     return TIER_WEIGHT.get((v.tier if v else None) or "common", 1)
 
@@ -260,7 +464,10 @@ def tier_stock(key):
 
 
 _ROAD_ONLY = frozenset({"town_transport", "disaster_transport",
-                        "life_recovery"})
+                        "life_recovery",
+                        # the expansion (2026-07-26): the escape rope and
+                        # the portable camp are road tools like their kin
+                        "zone_transport", "continent_transport"})
 
 # THE catalog: the authored table, field-named.  Everything downstream
 # reads this, never `_AUTHORED`.
@@ -277,6 +484,9 @@ CATALOG = {
 # key -> how many maps must be cleared.  Same earned-access rule as the eggs.
 ADVENTURE_GATES = {
     "town_transport": 1, "disaster_transport": 1, "life_recovery": 2,
+    # the expansion (2026-07-26): the escape rope opens with the first
+    # cleared map; the portable camp is the deepest tool (matches its kin)
+    "zone_transport": 1, "continent_transport": 2,
 }
 
 
@@ -325,7 +535,24 @@ FLAVORS = {k: v.flavor for k, v in CATALOG.items()}   # the dossier taglines
 # pet and the bag is unreachable at the grave, so that show could only
 # ever be wrong or unplayable (item-show audit 2026-07-23).
 _OWN_FLOW = frozenset({"digimemory", "town_transport", "disaster_transport",
-                       "life_recovery", "revive_floppy"})
+                       "life_recovery", "revive_floppy",
+                       # the expansion (2026-07-26): evolution keys play the
+                       # evolution itself; the road tools and the futon run
+                       # their own doors
+                       "zone_transport", "continent_transport", "futon",
+                       "digitron", "horn_helmet", "grey_claws",
+                       "water_bottle", "torn_tatter", "white_wings",
+                       "black_wings", "metal_armor", "flaming_wings",
+                       "human_fire_spirit", "human_light_spirit",
+                       "human_ice_spirit", "human_wind_spirit",
+                       "human_thunder_spirit", "human_earth_spirit",
+                       "human_water_spirit", "human_wood_spirit",
+                       "human_metal_spirit", "human_dark_spirit",
+                       "beast_fire_spirit", "beast_light_spirit",
+                       "beast_ice_spirit", "beast_wind_spirit",
+                       "beast_thunder_spirit", "beast_earth_spirit",
+                       "beast_water_spirit", "beast_wood_spirit",
+                       "beast_metal_spirit", "beast_dark_spirit"})
 
 
 def item_is_eaten(key):
@@ -911,6 +1138,11 @@ def home_deal_key(today=None):
 
 HOME_SHOP_ID = "home"        # the deal ledger's pseudo-town (see home_stock)
 
+# keys whose contents out-value their price BY CONSTRUCTION (the capsule
+# rolls the gift pool), so the always-open home shelf must ration them
+# like a deal row or mint bits (expansion audit 2026-07-26)
+HOME_RATIONED = frozenset({"capsule_a"})
+
 
 def home_stock(today=None, pet=None):
     """The home shelf as ready entries, with the day's deal marked,
@@ -940,6 +1172,18 @@ def home_stock(today=None, pet=None):
     taken = _town_taken(pet, today) if pet is not None else {}
     out = []
     for e in catalog():
+        if e["key"] in HOME_RATIONED and e["key"] != deal:
+            # THE CAPSULE RATION (expansion audit 2026-07-26): a capsule's
+            # CONTENTS carry more resale than its 100b price by construction
+            # (measured EV 123b home / 172b town-demand), so the one shelf
+            # that never runs dry would be a +23b/loop printer.  The box
+            # rides the same daily tier ration a deal row does -- a treat,
+            # not a mint.  Every other home row stays unlimited: at full
+            # price a flip is a loss there, as ever.
+            left = max(0, tier_stock(e["key"])
+                       - int(taken.get(f"{HOME_SHOP_ID}:{e['key']}", 0)))
+            out.append(dict(e, left=left, town_id=HOME_SHOP_ID))
+            continue
         if e["key"] == deal:
             base = e["price"]
             left = max(0, tier_stock(e["key"])

@@ -123,8 +123,10 @@ def test_the_town_panel_serves_the_counter(monkeypatch):
     pan.tab = 0                                        # the Food shelf
     rows = pan._rows()
     # steak (authored) + cake (map 1's regional specialty -- item
-    # diversity audit 2026-07-23); town 4's guest is a non-food
-    assert [e["key"] for e in rows] == ["steak", "cake"]
+    # diversity audit 2026-07-23) + milk (an authored override that came
+    # ALIVE with the item expansion 2026-07-26); town 4's guest is a
+    # non-food, and the family's G-chips sort onto the Items tab
+    assert [e["key"] for e in rows] == ["steak", "cake", "milk"]
     pan.cursor = 0                                     # buy the steak
     bits0 = p.bits
     pan.key("enter")                                   # buy at the LOCAL price

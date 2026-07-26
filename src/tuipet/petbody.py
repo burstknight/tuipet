@@ -221,7 +221,11 @@ class BodyMixin:
             if iw is False:                      # LINES_SPEC §5: 7:00 sharp, no jitter
                 self._wake()
         elif self.awake_lapse >= self.awake_limit:
-            if self.nap and not self.lights and self.energy < self.max_energy // 2:
+            # the FUTON deepens the hold (item expansion 2026-07-26): a
+            # futon-backed doze rests to the FULL tank, not half
+            if self.nap and not self.lights and self.energy < (
+                    self.max_energy if getattr(self, "futon_doze", False)
+                    else self.max_energy // 2):
                 # THE RECOVERY DOZE (Joel 2026-07-23: "nap system is fucked
                 # up. 0 energy... naps after a few seconds, one bar fills,
                 # wakes up... its a care mistake if im not babysitting"):
@@ -813,6 +817,7 @@ class BodyMixin:
         was_nap = self.nap
         self.asleep = False
         self.nap = False
+        self.futon_doze = False          # the futon's deep doze is spent on wake
         self.awake_lapse = 0.0
         self.sleep_limit = DAY_MINUTES - self.awake_limit
         # a MORNING wake lights the room (canon setLights(true)); a NAP wake

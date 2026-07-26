@@ -250,8 +250,11 @@ def test_the_bag_retarget_guard_survives_a_mashed_sell():
 
 @pytest.mark.parametrize("maps,expected", [
     (0, set()),
-    (1, {"town_transport", "disaster_transport"}),
-    (2, {"town_transport", "disaster_transport", "life_recovery"}),
+    # the expansion road tools (2026-07-26): the safe lift opens with the
+    # first cleared map, the camp with the second, like their kin
+    (1, {"town_transport", "disaster_transport", "zone_transport"}),
+    (2, {"town_transport", "disaster_transport", "life_recovery",
+         "zone_transport", "continent_transport"}),
 ])
 def test_the_adventure_gate_opens_exactly_on_its_threshold(monkeypatch, maps,
                                                            expected):

@@ -1,0 +1,342 @@
+"""THE GREAT ITEM EXPANSION (2026-07-26, Joel: "bring in all 99 unused
+items ... spread out ... battle drops ... your call") -- the own-door pins
+the generic sweep skips, and the new distribution channels.  Board:
+ITEM_EXPANSION_2026_07_26.md."""
+import random
+
+from tuipet import adventure as adv
+from tuipet import data, shop, tournament
+from tuipet.pet import Pet
+from tuipet.petcare import _Refused
+
+
+def _pet(stage="Rookie", num=100, **kw):
+    p = Pet(num=num, stage=stage, attribute="Vaccine")
+    p.name, p.line_id = "Testmon", ""
+    for k, v in kw.items():
+        setattr(p, k, v)
+    return p
+
+
+# ---- the ailment doors -------------------------------------------------------
+
+def test_the_med_cures_sickness_and_only_sickness():
+    p = _pet(sick=True)
+    p.add_item("med")
+    assert not isinstance(p.use_item("med"), _Refused)
+    assert not p.sick and p.inventory.get("med", 0) == 0
+    p2 = _pet()
+    p2.add_item("med")
+    assert isinstance(p2.use_item("med"), _Refused)     # kept on refusal
+    assert p2.inventory.get("med") == 1
+
+
+def test_the_bandage_item_mends_and_h_stays_free():
+    p = _pet(injured=True)
+    p.inj_length = 400.0
+    p.add_item("bandage")
+    assert not isinstance(p.use_item("bandage"), _Refused)
+    assert not p.injured and p.inj_length == 0.0
+    # the free button is untouched: a broke, bandage-less pet still heals
+    q = _pet(injured=True, bits=0)
+    q.inj_length = 400.0
+    assert not isinstance(q.heal_bandage(), _Refused)
+    assert not q.injured
+
+
+def test_the_premium_combos_do_strictly_more_than_the_free_buttons():
+    p = _pet(sick=True)
+    p.energy = 0
+    p.add_item("elixir")
+    p.use_item("elixir")
+    assert not p.sick and p.energy == p.max_energy
+    q = _pet(injured=True)
+    q.inj_length, q.strength = 400.0, 0
+    q.add_item("vitamin_g")
+    q.use_item("vitamin_g")
+    assert not q.injured and q.strength == 4 and q.vitamin_lapse > 0
+
+
+# ---- the evolution keys ------------------------------------------------------
+
+def _holder_of(item_id):
+    """A species whose graph carries an evol_item == item_id target."""
+    reqs = data.load_requirements()
+    evs = data.load_evolutions()
+    _, by_num = data.load_sprites()
+    for num, targets in evs.items():
+        for t in targets:
+            if reqs.get(t, {}).get("evol_item", -1) == item_id \
+                    and num in by_num and t in by_num:
+                return num, t
+    return None, None
+
+
+def test_a_spirit_key_opens_its_authored_door_and_wakes_the_beast():
+    """The Frontier chain: the Human spirit evolves its holder, and the
+    BEAST half lands in the bag (roads give Human, the Human gives Beast)."""
+    num, target = _holder_of(43)                 # the Human Fire Spirit
+    assert num is not None, "the corpus lost its fire-spirit road"
+    p = _pet(stage=data.load_sprites()[1][num]["stage"], num=num)
+    p.add_item("human_fire_spirit")
+    out = p.use_item("human_fire_spirit")
+    assert not isinstance(out, _Refused), out
+    assert p.num == target
+    assert p.inventory.get("beast_fire_spirit") == 1
+    assert p.inventory.get("human_fire_spirit", 0) == 0
+
+
+def test_a_spirit_refusal_keeps_the_item():
+    p = _pet()                                   # no spirit road from here
+    p.add_item("human_dark_spirit")
+    assert isinstance(p.use_item("human_dark_spirit"), _Refused)
+    assert p.inventory.get("human_dark_spirit") == 1
+
+
+def test_a_direct_relic_evolves_only_a_graph_neighbour():
+    # Grey Claws names Greymon (93): find a species adjacent to it
+    evs = data.load_evolutions()
+    _, by_num = data.load_sprites()
+    holder = next(n for n, ts in evs.items() if 93 in ts and n in by_num)
+    p = _pet(stage=by_num[holder]["stage"], num=holder)
+    p.add_item("grey_claws")
+    assert not isinstance(p.use_item("grey_claws"), _Refused)
+    assert p.num == 93
+    q = _pet()                                   # not adjacent: refused, kept
+    q.add_item("grey_claws")
+    assert isinstance(q.use_item("grey_claws"), _Refused)
+    assert q.inventory.get("grey_claws") == 1
+
+
+def test_eating_an_orange_can_wake_citramon():
+    """The FOOD evolution door (processFoodEvol) had zero callers; the
+    expansion wired it through the new snack family.  One corpus form
+    gates on evol_food 42 -- the Orange."""
+    reqs = data.load_requirements()
+    target = next(n for n, r in reqs.items() if r.get("evol_food") == 42)
+    evs = data.load_evolutions()
+    holder = next(n for n, ts in evs.items() if target in ts)
+    _, by_num = data.load_sprites()
+    p = _pet(stage=by_num[holder]["stage"], num=holder)
+    p.hunger = 0
+    from tuipet import evolution
+    if evolution.check(p, target, food=42):      # gates pass on this fixture
+        p.add_item("orange")
+        p.use_item("orange")
+        assert p.num == target
+    else:                                        # gates authored tighter: the
+        p.add_item("orange")                     # meal still lands as a meal
+        assert not isinstance(p.use_item("orange"), _Refused)
+
+
+# ---- the capsules ------------------------------------------------------------
+
+def test_a_capsule_grants_a_real_item_and_never_a_box():
+    random.seed(7)
+    p = _pet()
+    for _ in range(40):
+        p.add_item("capsule_a")
+        out = p.use_item("capsule_a")
+        assert not isinstance(out, _Refused)
+    granted = {k for k in p.inventory if k != "capsule_a"}
+    assert granted, "forty boxes granted nothing"
+    for k in granted:
+        assert k in shop.CATALOG
+        assert "capsule" not in k, "a box inside a box"
+
+
+def test_a_prank_capsule_pays_from_the_junk_drawer():
+    random.seed(3)
+    p = _pet()
+    p.add_item("prank_capsule_a", 20)
+    for _ in range(20):
+        p.use_item("prank_capsule_a")
+    granted = {k for k in p.inventory if not k.startswith("prank_")}
+    assert granted <= set(Pet._PRANK_POOL)
+    assert granted, "a prank still grants SOMETHING"
+
+
+def test_a_festival_open_reaches_one_tier_higher(monkeypatch):
+    from tuipet import tournament as t
+    seen = set()
+    monkeypatch.setattr(t, "holiday", lambda today=None: "Christmas Festival")
+    random.seed(11)
+    p = _pet()
+    for _ in range(300):
+        p.add_item("capsule_b")
+        p.use_item("capsule_b")
+    tiers = {shop.CATALOG[k].tier or "common"
+             for k in p.inventory if k != "capsule_b"}
+    seen |= tiers
+    assert "rare" in seen, "a festival open never reached the rare tier"
+
+
+def test_chocolate_egg_eats_and_grants_a_common_toy():
+    random.seed(5)
+    p = _pet()
+    p.hunger = 0
+    p.add_item("chocolate_egg")
+    out = p.use_item("chocolate_egg")
+    assert "toy inside" in str(out)
+    assert p.hunger == 1
+    granted = [k for k in p.inventory if k != "chocolate_egg"]
+    assert len(granted) == 1
+    assert (shop.CATALOG[granted[0]].tier or "common") == "common"
+
+
+# ---- the battle drops --------------------------------------------------------
+
+def test_the_authored_drop_tables_load_and_bound_at_100():
+    lt = data.load_loot_tables()
+    assert len(lt) == 41
+    for tid, rows in lt.items():
+        assert sum(r for _i, r in rows) <= 100, tid
+    assert lt[0] == [("i:15", 100)]              # the courage boss table
+
+
+def test_a_unique_boss_drops_its_digimental():
+    p = _pet()
+    run = adv.Adventure(p, zone=adv.ZONES[0])
+    key = run.award_drop({"loot_table": 0, "boss": True})
+    assert key == "egg_of_courage"
+    assert p.inventory.get("egg_of_courage") == 1
+    assert run.drops == 1
+
+
+def test_replay_boss_drops_ride_the_bounty_ration():
+    p = _pet()
+    run = adv.Adventure(p, zone=adv.ZONES[0])
+    run.replay, run.bounty_spent = True, True
+    assert run.award_drop({"loot_table": 0, "boss": True}) is None
+    # wilds stay live on a veteran road
+    random.seed(1)
+    hits = sum(1 for _ in range(400)
+               if run.award_drop({"loot_table": 11, "boss": False}))
+    assert hits > 0
+
+
+def test_wild_drop_rates_match_the_authored_numbers():
+    p = _pet()
+    run = adv.Adventure(p, zone=adv.ZONES[0])
+    random.seed(9)
+    n = 4000
+    hits = sum(1 for _ in range(n)
+               if run.award_drop({"loot_table": 13, "boss": False}))
+    assert 0.05 <= hits / n <= 0.09              # authored 7%
+
+
+# ---- the cup prizes ----------------------------------------------------------
+
+def test_the_authored_prize_ids_all_resolve():
+    for t in data.load_tournies():
+        if t["item"] >= 0:
+            k = tournament._prize_key("i", t["item"])
+            assert k in shop.CATALOG or k.startswith("egg_of_"), t["item"]
+        if t["food_id"] >= 0 and t["food_amt"] > 0:
+            assert tournament._prize_key("f", t["food_id"]) in shop.CATALOG
+
+
+def test_a_digimental_cup_pays_the_crest_itself():
+    assert tournament._prize_key("i", 24) == "egg_of_miracles"
+
+
+# ---- the futon ---------------------------------------------------------------
+
+def test_the_futon_deepens_the_doze_to_a_full_tank():
+    p = _pet()
+    p.energy = 0
+    p.add_item("futon")
+    out = p.use_item("futon")
+    assert not isinstance(out, _Refused)
+    assert p.asleep and p.futon_doze
+    # the recovery-doze hold now reads the flag: it holds below FULL
+    assert p.energy < p.max_energy
+    p._wake()
+    assert not p.futon_doze                      # spent on wake
+
+
+def test_the_futon_never_disturbs_a_sleeper():
+    p = _pet()
+    p._fall_asleep()
+    d0 = p.disturb
+    p.add_item("futon")
+    out = p.use_item("futon")
+    assert not isinstance(out, _Refused)
+    assert p.disturb == d0                       # the sleep family's 4th member
+    assert p.futon_doze
+
+
+def test_futon_doze_rides_the_save():
+    from dataclasses import asdict
+    p = _pet()
+    p.futon_doze = True
+    assert asdict(p)["futon_doze"] is True
+
+
+# ---- the road tools ----------------------------------------------------------
+
+def test_the_safe_lift_moves_ten_legs_and_no_ambush():
+    p = _pet()
+    p.add_item("zone_transport")
+    run = adv.Adventure(p, zone=adv.ZONES[0])
+    run.loc = 5
+    assert run.use_transport("zone_transport") == "skip-lift"
+    assert run.loc == 15
+    assert p.inventory.get("zone_transport", 0) == 0
+
+
+def test_the_camp_rests_to_half_and_hides_when_pointless():
+    p = _pet()
+    p.energy = 0
+    p.add_item("continent_transport")
+    run = adv.Adventure(p, zone=adv.ZONES[0])
+    assert "continent_transport" in run.held_transports()
+    assert run.use_transport("continent_transport") == "camp-rest"
+    assert p.energy == p.max_energy // 2
+    p.add_item("continent_transport")
+    assert "continent_transport" not in run.held_transports()   # nothing to rest
+
+
+# ---- the spread itself -------------------------------------------------------
+
+def test_the_deep_roads_hide_the_ten_human_spirits():
+    placed = [(zi, k) for zi, z in enumerate(adv.ZONES)
+              for k in z["find_keys"] if k.startswith("human_")]
+    assert len(placed) == 10
+    assert len({k for _zi, k in placed}) == 10   # one each, no twins
+    deep = set(adv.PROGRESSION[-10:])
+    assert {zi for zi, _k in placed} == deep     # only the hardest roads
+    for k in ("human_fire_spirit", "human_dark_spirit"):
+        assert shop.tier_weight(k) == shop.TIER_WEIGHT["legendary"]
+
+
+def test_the_pranks_and_the_boxes_reach_the_road_on_festivals():
+    a = adv.Adventure(_pet(), zone=adv.ZONES[0])
+    a.holiday = "Christmas Festival"
+    random.seed(2)
+    seen = set()
+    for _ in range(600):
+        a.loc = 3                                # stay mid-road
+        f = a._roll_find()
+        if f and f[1]:
+            seen.add(f[0])
+    assert seen and seen <= set(adv._FESTIVAL_CAPSULES)
+
+# ---- the anti-printer ration -------------------------------------------------
+
+def test_the_home_capsule_shelf_is_rationed(isolate_save):
+    """Measured (expansion audit 2026-07-26): a capsule's contents resell
+    for ~123b against its 100b price, so an unlimited home shelf would be
+    a printer.  The box rides the daily tier ration instead -- three a
+    day, then sold out until tomorrow; every other home row stays
+    unlimited as ever."""
+    p = _pet(bits=10_000)
+    row = next(e for e in shop.home_stock(pet=p) if e["key"] == "capsule_a")
+    assert row.get("left") == shop.tier_stock("capsule_a") == 3
+    for i in range(3):
+        msg, sfx = shop.town_buy(p, row)
+        assert sfx == "confirm", (i, msg)
+    msg, sfx = shop.town_buy(p, row)
+    assert sfx == "error" and "Sold out" in msg
+    plain = next(e for e in shop.home_stock(pet=p) if e["key"] == "fish")
+    assert plain.get("left") is None             # the reliable shelf, untouched

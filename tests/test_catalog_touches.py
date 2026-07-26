@@ -71,7 +71,9 @@ def test_no_item_claims_a_no_op_meter():
 
 def test_only_road_items_are_road_scoped():
     road = {k for k, v in shop.CATALOG.items() if v.where == "road"}
-    assert road == {"town_transport", "disaster_transport", "life_recovery"}
+    assert road == {"town_transport", "disaster_transport", "life_recovery",
+                    # the expansion (2026-07-26): the safe lift + the camp
+                    "zone_transport", "continent_transport"}
     for key, v in shop.CATALOG.items():
         assert v.where in ("home", "road"), key
 
@@ -84,11 +86,23 @@ def test_road_items_touch_nothing_from_the_home_bag():
             assert v.touches == (), key
 
 
+# items whose whole effect is a GRANT (the bag moves, not a meter) or a
+# pure SHOW (the balloon: the one authored toy with no live column at all)
+# -- the expansion 2026-07-26.  touches lists METERS by contract, so these
+# legitimately declare none; anything else with an empty tuple is broken.
+_GRANT_OR_SHOW = frozenset({"balloon",
+                            "capsule_a", "capsule_b", "capsule_c",
+                            "capsule_d", "capsule_e", "capsule_f",
+                            "capsule_g", "capsule_h",
+                            "prank_capsule_a", "prank_capsule_b"})
+
+
 def test_every_home_item_does_something():
     """A home item that moves no live stat is either broken or has an
-    undeclared effect.  Both are worth failing over."""
+    undeclared effect.  Both are worth failing over.  (The capsule family
+    GRANTS -- its effect is the bag; the balloon is the one pure show.)"""
     for key, v in shop.CATALOG.items():
-        if v.where == "home":
+        if v.where == "home" and key not in _GRANT_OR_SHOW:
             assert v.touches, f"{key} declares no effect at all"
 
 
@@ -106,11 +120,20 @@ def test_touches_has_no_duplicates(key):
     assert len(t) == len(set(t)), key
 
 
-def test_no_shelf_item_sells_an_ailment_cure():
-    """Both cures are free care BUTTONS (pill on F, the H heal key --
-    final ruling 2026-07-26 after the one-afternoon shop bandage), so no
-    catalog entry may move either flag.  If one ever does, a shelf is
-    selling what a button gives away."""
+def test_the_free_cure_buttons_are_never_paywalled():
+    """SUPERSEDED IN PART (item expansion 2026-07-26, Joel: "bring them
+    all in... your call"): catalog cures exist again, but the ORIGINAL
+    LAW's spirit holds -- basic care is never paywalled.  Every catalog
+    entry that moves an ailment flag must be one of: grant-only (the
+    field Med), pocket change (the 10b Bandage), or a premium COMBO that
+    does strictly more than the free button (Elixir, Vitamin G).  And the
+    free buttons themselves must still exist (pill on F, heal on H)."""
+    allowed = {"med": None, "bandage": 10, "elixir": 2000, "vitamin_g": 2000}
     for key, v in shop.CATALOG.items():
-        assert "sick" not in v.touches, key
-        assert "injured" not in v.touches, key
+        if "sick" in v.touches or "injured" in v.touches:
+            assert key in allowed, f"{key} sells a cure outside the ruling"
+            assert v.price == allowed[key], key
+    from tuipet.app import TuiPetApp
+    assert any(k == "h" and a == "heal" for k, a, _l in TuiPetApp.BINDINGS)
+    from tuipet.feedscreen import ROWS_MENU
+    assert any(k == "pill" for k, _label in ROWS_MENU)
