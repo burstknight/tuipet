@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.274 — THE BANDAGE IS ON THE SHELF (2026-07-26)
+
+THE BANDAGE IS ON THE SHELF — the feed menu now shows all three cures at once: meat and pill in their classic stack, the bandage right beside them, arrow pointing at whichever ENTER will use. The feed card narrates the bandage row truthfully too (it used to describe the Pill), and warns before a pick that would be refused.
+
 ## 0.5.273 — THE ROAD GOT A FULL SHAKEDOWN (2026-07-25)
 
 THE ROAD GOT A FULL SHAKEDOWN — 25 fixes. The big ones: a town REST now patches wounds and cures sickness (your hurt mon was 4x likelier to be refused at the boss gate than to lose to the boss), the town warp reaches the nearest town in EITHER direction so it always buys a real town, an unfit body slips away from wilds instead of grinding, and a conquered boss pays its replay bounty once a day — the road was quietly out-earning every cup and raid combined.
