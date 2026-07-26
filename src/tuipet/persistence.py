@@ -432,12 +432,15 @@ def _heal_bag(inv):
     their TUIPET heirs 1:1 (shop.LEGACY_KEYS; catalog turnover 2026-07-18
     -- nobody loses goods)."""
     from . import shop
-    # "bandage" LEFT the dead list (item expansion 2026-07-26, hotfix
-    # v0.5.284): it is a real 10b catalog key again, and the sweep was
-    # eating every bought one on reload.  The raw-icon keys stay dead --
-    # they are ancient-save cruft (the new items wear snake_case keys:
-    # bandage / futon / toilet / port_potty), so popping them loses nothing.
-    for dead in ("i:80", "i:81", "i:82", "i:83"):
+    # "bandage" is a dead key AGAIN (Joel 2026-07-26, on seeing the
+    # expansion's 10b pocket med: "cut it out, i think its supposed to
+    # just be used for the animations for heal") -- the wrap belongs to
+    # the H heal's Bandaging show, not to a bag row.  It was live for
+    # about an hour of 0.5.283/284, so this heals out at most a couple of
+    # 10b purchases (the R3 precedent).  The raw-icon keys are ancient-
+    # save cruft; the surviving expansion items wear snake_case keys
+    # (futon / toilet / port_potty).
+    for dead in ("i:80", "i:81", "i:82", "i:83", "bandage"):
         inv.pop(dead, None)
     for old, new in shop.LEGACY_KEYS.items():
         n = inv.pop(old, 0)

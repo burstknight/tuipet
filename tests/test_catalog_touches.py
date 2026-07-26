@@ -128,7 +128,9 @@ def test_the_free_cure_buttons_are_never_paywalled():
     field Med), pocket change (the 10b Bandage), or a premium COMBO that
     does strictly more than the free button (Elixir, Vitamin G).  And the
     free buttons themselves must still exist (pill on F, heal on H)."""
-    allowed = {"med": None, "bandage": 10, "elixir": 2000, "vitamin_g": 2000}
+    # (the 10b bandage lasted an hour -- cut 2026-07-26, "its supposed
+    # to just be used for the animations for heal")
+    allowed = {"med": None, "elixir": 2000, "vitamin_g": 2000}
     for key, v in shop.CATALOG.items():
         if "sick" in v.touches or "injured" in v.touches:
             assert key in allowed, f"{key} sells a cure outside the ruling"

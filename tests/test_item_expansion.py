@@ -31,13 +31,12 @@ def test_the_med_cures_sickness_and_only_sickness():
     assert p2.inventory.get("med") == 1
 
 
-def test_the_bandage_item_mends_and_h_stays_free():
-    p = _pet(injured=True)
-    p.inj_length = 400.0
-    p.add_item("bandage")
-    assert not isinstance(p.use_item("bandage"), _Refused)
-    assert not p.injured and p.inj_length == 0.0
-    # the free button is untouched: a broke, bandage-less pet still heals
+def test_the_bandage_stayed_cut_and_h_stays_free():
+    """The expansion revived a 10b bandage item for about an hour; Joel
+    cut it on sight ("its supposed to just be used for the animations
+    for heal").  The wrap = the H show; the key resolves nowhere."""
+    assert "bandage" not in shop.CATALOG
+    assert shop.key_for_icon("i:80") is None
     q = _pet(injured=True, bits=0)
     q.inj_length = 400.0
     assert not isinstance(q.heal_bandage(), _Refused)

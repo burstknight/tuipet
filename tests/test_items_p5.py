@@ -135,14 +135,13 @@ def test_the_textbook_led_a_whole_manners_economy():
 
 # ---- R3: both cures free, symmetric ----------------------------------------
 
-def test_the_bandage_returned_as_pocket_change_and_h_stays_free():
-    """SUPERSEDED (item expansion 2026-07-26, Joel on the law rows:
-    "bring them all in... your call"): the bandage is a catalog key again
-    -- at 10 bits, a pocket med for drops and gifts, never a paywall.
-    The H key stays the free cure (asserted below and in
-    test_canon_injury)."""
-    assert shop.CATALOG["bandage"].price == 10
-    assert "injured" in shop.CATALOG["bandage"].touches
+def test_the_bandage_never_returns_to_the_shelf():
+    """The ban, re-pinned after its THIRD revival died in an hour
+    (2026-07-26: the expansion shipped it at 10b, Joel saw it and ruled
+    "cut it out... its supposed to just be used for the animations for
+    heal").  The wrap is the H show; no catalog key, ever."""
+    assert "bandage" not in shop.CATALOG
+    assert "bandage" not in shop.EFFECTS
 
 
 def test_the_two_ailments_take_two_free_buttons(monkeypatch):
@@ -182,16 +181,14 @@ def test_healing_a_sleeper_disturbs_it_like_the_pill_does():
     assert p.care_mistakes >= before      # the disturb was billed
 
 
-def test_a_held_bandage_survives_the_bag_heal():
-    """SUPERSEDED, then HOTFIXED (v0.5.284): the expansion made the
-    bandage a real 10b catalog key again, but the dead-key sweep still
-    ate every bought one on reload -- shipped for one release (0.5.283)
-    before this pin flipped.  Bought meds must survive a save load; the
-    ancient raw-icon keys stay dead (the real items wear snake_case)."""
+def test_a_held_bandage_is_healed_out_of_an_old_bag():
+    """The item is gone for good (re-ruled 2026-07-26 after the
+    expansion's one-hour revival): a bandage bought in ANY brief shelf
+    era must not linger as an unusable row."""
     from tuipet import persistence
     healed = persistence._heal_bag({"bandage": 2, "fish": 1,
                                     "i:80": 3, "i:82": 1})
-    assert healed == {"bandage": 2, "fish": 1}
+    assert healed == {"fish": 1}
 
 
 def test_the_ancient_eraser_key_now_points_at_the_new_item():

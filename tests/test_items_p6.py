@@ -182,6 +182,6 @@ def test_the_catalog_holds_the_whole_authored_corpus():
     """44 -> 132 (item expansion 2026-07-26): every authored consumable is
     a catalog key except the 11 crest-shelf Digimentals (one door) and
     i:35 Blue Crystal (its rip is the shipped dna_crystal's)."""
-    assert len(shop.CATALOG) == 132
+    assert len(shop.CATALOG) == 131
     assert sum(1 for v in shop.CATALOG.values()
                if v.category == "Evolution") == 43

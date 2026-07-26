@@ -153,7 +153,8 @@ class TuiPetApp(ActionsMixin, App):
                  "CAPSULES open into surprises (finer on festivals — and "
                  "two of the ten boxes bite). Town shelves triple their "
                  "variety. Even feeding hides a secret now. Go find it all. "
-                 "(hotfix: bought Bandages now survive a reload)")
+                 "(the Bandage item is gone again — the wrap belongs to the "
+                 "H heal's animation, which stays free)")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the

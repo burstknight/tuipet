@@ -500,7 +500,6 @@ class CareMixin:
             "futon": self._futon,
             "toilet": self._toilet_item,
             "x_program": self._x_program,
-            "bandage": self._bandage,
             "chocolate_egg": self._chocolate_egg,
             "book": self._textbook_lite,
             "hedonism_101": self._hedonism,

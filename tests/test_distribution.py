@@ -284,6 +284,8 @@ def test_every_authored_town_override_is_live():
             icon = ("f:" if isfood else "i:") + str(int(cid))
             if shop.key_for_icon(icon) is None:
                 dropped.append(icon)
+    # (the Bandage's cut costs nothing here: shopConsumable.csv never
+    # authored an i:80 row -- no town ever sold the wrap)
     assert dropped == [], f"authored town rows went dark: {dropped}"
 
 
@@ -296,4 +298,4 @@ def test_the_cure_combos_honour_the_free_button_law():
     assert shop.key_for_icon("f:16") == "vitamin_g"
     curers = {k for k, v in shop.CATALOG.items()
               if "sick" in v.touches or "injured" in v.touches}
-    assert curers == {"med", "bandage", "elixir", "vitamin_g"}
+    assert curers == {"med", "elixir", "vitamin_g"}

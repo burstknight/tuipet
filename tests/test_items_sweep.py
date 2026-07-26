@@ -239,7 +239,7 @@ _EITHER_OR = {"caffeine_pill",
 # med/bandage pair needs an ailment the permissive fixture doesn't carry,
 # and the futon is the sleep family's fourth member
 _EXPANSION_OWN_DOORS = frozenset(
-    {"med", "bandage", "futon"}
+    {"med", "futon"}
     | {k for k in shop.CATALOG
        if k.startswith(("human_", "beast_")) or k in
        ("digitron", "horn_helmet", "grey_claws", "water_bottle",
