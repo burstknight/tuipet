@@ -141,18 +141,20 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("YOUR MON BLOWS SMOKE WHEN IT LOSES. The happy dance pops "
-                 "the SUN; the smoke puff is its opposite — but it only "
-                 "ever played on a whiffed drill and a scold. A lost battle "
-                 "and a lost cup flashed a SKULL instead, so the two "
-                 "moments you hit most never blew smoke. Now every "
-                 "frustration show does.")
+    WHATS_NEW = ("THE GUIDE GOT A FACT-CHECK — and it caught a real bug: "
+                 "the feed menu's third row (the free Bandage) was "
+                 "INVISIBLE, the arrow sat on the Pill while ENTER "
+                 "bandaged. The stack now slides to show it. The data "
+                 "book can finally say 'hurt', and the guide no longer "
+                 "sends you to the bag for a cure that lives on F.")
 
     BINDINGS = [
-        # battle + jogress are LOBBY-ONLY (Joel 2026-07-07: "battles and
-        # jogress should be online pvp only"); fusion needs a real partner
-        # from the roster.  PvE lives in Adventure (rebuild started
-        # 2026-07-20 -- the flagship EXPLORE feature), raids and the cup.
+        # jogress is LOBBY-ONLY (fusion needs a real partner from the
+        # roster).  m is the HOME PvE bout vs a stage-matched rival --
+        # no purse, training +2 -- and PvE also lives in Adventure, raids
+        # and the cup.  (The 2026-07-07 "battles are online-only" ruling
+        # was superseded by the 0.5 home bout; the old comment here
+        # outlived it -- claims audit 2026-07-25.)
         # Order = the ACTIONS bar / Help-screen reading order (CARE,
         # EXPLORE, GROW, MANAGE) so the Options→Keys page tells the same
         # story (bar tidy 2026-07-18).

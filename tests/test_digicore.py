@@ -668,3 +668,22 @@ def test_the_drills_row_shows_both_training_terms():
     power = dict(digicore.build_pages(p))["POWER"]
     val = next(v for lab, v in power if lab == "Training")
     assert val == "150 · 42 this stage"
+
+
+def test_the_ailing_row_learned_the_injury_door():
+    """Sick->injured sibling-door sweep (claims audit 2026-07-25): INJURY
+    returned with the canon restoration (2026-07-23) but the data book kept
+    the removal-era sick-only read -- it could never say "hurt".  Sick
+    outranks hurt, the feed cursor's own precedence."""
+    from tuipet.digicore import build_pages
+
+    def ailing(p):
+        cond = dict(dict(build_pages(p))["CONDITION"])
+        return cond["Ailing"]
+
+    p = _pet()
+    assert ailing(p) == "no"
+    p.injured, p.inj_length = True, 999.0
+    assert ailing(p) == "hurt"
+    p.sick = True
+    assert ailing(p) == "sick"                        # the older, louder alarm

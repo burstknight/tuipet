@@ -10,9 +10,14 @@ VIS = 8                                   # lines shown at once in the box
 # (text, kind): 2 = section head (bold), 1 = a control line, 0 = prose (dim)
 HELP = [
     ("CARE", 2),
-    ("f feed - meat fills, pill heals", 1),
+    # claims audit 2026-07-25: "pill heals" hid the third row (the Bandage
+    # joined with R3) and "bits/hour" was half the assistant's bill
+    ("f feed - meat fills; pill and", 1),
+    ("  bandage cure, free and infinite", 0),
     ("c clean poop", 1),
-    ("s lights   v assistant (bits/hour)", 1),
+    ("s lights   v assistant - paid help:", 1),
+    ("  a fee per visit + an hourly wage", 0),
+    ("  once it's Rookie or older", 0),
     ("ENTER accepts a found gift", 1),
     # the ✗ counter finally explained (gameplay polish #18, 2026-07-22):
     # it steers every line's CM gates and 20 is lethal -- the single most
@@ -20,18 +25,23 @@ HELP = [
     ("Ignored calls add ✗ care mistakes", 0),
     ("(status card): they pick which form", 0),
     ("comes next and reset each stage.", 0),
-    ("20 is fatal - and a frail Ultimate/", 0),
-    ("Mega elder can go at just 5.", 0),
+    # ("elder" was the wrong axis here -- the 5-mistake death is 2 game-days
+    # INTO an Ultimate/Mega stage, never the age-15 elder; audit 2026-07-25)
+    ("20 is fatal - and 2 days into an", 0),
+    ("Ultimate/Mega stage just 5 can be.", 0),
     # the energy dial explained (gameplay polish #6, 2026-07-22): no
     # passive decay BY DESIGN -- it is the ACTION meter, so the gauge only
     # reads "broken" to a player nobody told what spends it
     ("Energy fuels drills, fights and the", 0),
     ("road; sleep refills it each night.", 0),
     # the two ailments, two meds (canon restoration 2026-07-23)
+    # (the bandage LEFT the bag with R3 2026-07-23 -- it is the F menu's
+    # free third row; "from the bag" outlived the move by two days)
     ("Two ailments: SICKNESS (filth or", 0),
     ("fat) takes the pill; battle INJURY", 0),
-    ("takes a Bandage from the bag. Both", 0),
-    ("block fights and whisper to death.", 0),
+    ("the bandage - both cures are free", 0),
+    ("rows on F. Both block fights and", 0),
+    ("whisper to death.", 0),
     ("p discipline - praise & scold:", 1),
     ("  scold a tantrum (+manners), praise", 0),
     ("  a proud win; ignored tantrums", 0),
@@ -43,10 +53,16 @@ HELP = [
     ("EXPLORE", 2),
     ("m battle - fight a matched rival:", 1),
     ("  a real bout (wins, exp, training)", 0),
-    ("  but no purse; costs 5 energy", 0),
+    # "costs 5" alone implied a bout could start at 5-9 energy; the entry
+    # gate is BATTLE_MIN_ENERGY = 10 (audit 2026-07-25)
+    ("  but no purse; costs 5 energy (10", 0),
+    ("  in the tank to start)", 0),
     ("a adventure - head out on the road", 1),
+    # eggs were never a road FIND -- they are bought at town vendors or
+    # unlocked by clearing a map (audit 2026-07-25)
     ("  cross a zone, fell its boss, then", 0),
-    ("  rest in towns, find loot and eggs", 0),
+    ("  rest in towns, find loot; towns", 0),
+    ("  sell eggs, map clears unlock them", 0),
     ("r raid - the community boss: fight", 1),
     ("  10-round volleys, break the shared", 0),
     ("  pool together, claim the purse", 0),
@@ -59,8 +75,12 @@ HELP = [
     ("Eggs hatch, then evolve by HOW you", 0),
     ("raise them - care, train, battles.", 0),
     ("Each egg has its own line to a Mega.", 0),
-    ("t train - time the strike; a clean", 1),
-    ("  hit saves your battle form", 0),
+    # "a clean hit saves your battle form" read backwards: EVERY grade
+    # saves, only MEGA is worth anything, and home fights lock their own
+    # bar -- the saved form is what LOBBY rivals face (audit 2026-07-25)
+    ("t train - time the strike: PERFECT", 1),
+    ("  locks the power form your lobby", 0),
+    ("  rivals will face", 0),
     # the DNA arc told as ONE story (Joel 2026-07-22: "what does dna even
     # do lol" -- the pages teach the pieces, the guide tells the loop)
     ("x DNA - steer the next evolution:", 1),
@@ -81,8 +101,10 @@ HELP = [
     ("  themes, sound, cloud sync, your", 0),
     ("  account, updates, every key", 0),
     # honest reach (help audit 2026-07-22): with a screen open every key
-    # belongs to that screen -- ? answers from home, and SPACE=ENTER has
-    # its one shipped exception (digicore: SPACE pages, ENTER opens doors)
+    # belongs to that screen -- ? answers from home.  SPACE=ENTER holds on
+    # MOST screens, not all (digicore pages on SPACE; the road prompts
+    # split the pair -- ENTER enters/digs, SPACE walks on; the erase
+    # confirm types) -- hence "most" below (claims audit 2026-07-25)
     ("? this guide, any time you're home", 1),
     ("SPACE doubles ENTER on most screens;", 0),
     ("PgUp/PgDn leap through long lists.", 0),

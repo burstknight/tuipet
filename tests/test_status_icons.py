@@ -46,7 +46,8 @@ ALLOWED_SILENT = {
     "scold": "discipline sprite; the system left (BASIC VPET 2026-07-16)",
     "st_medicine": "badge -> the +med HUD deco",
     "st_injury": "badge -> the +hurt HUD deco",
-    "st_bandage": "badge -> the +bnd HUD deco",
+    # ("st_bandage" left this list 2026-07-25: the feed stack's third row
+    # draws it -- the one bandage glyph in the rips)
     "st_vitamin": "badge -> the +vit HUD deco",
     "st_fatigue": "badge -> the +tired HUD deco",
     # ("unhappy" is THE SMOKE -- the big puff + the small one drifting off --

@@ -358,3 +358,17 @@ def test_a_new_pet_is_not_born_disobedient():
     p = Pet(num=100, stage="Champion")
     assert p.obedience == FRESH_OBEDIENCE >= DISOBEY_BELOW
     assert p.manners_refusal("feed") is False
+
+
+def test_an_ignored_tantrum_pays_the_full_mistake(monkeypatch):
+    """The ignored-call path bumped the bare counter, skipping incMistake --
+    whose one LIVE side effect is the birthday mistake_day tally (the mood
+    sting is an inert citation; _set_mood is a no-op).  Every other mistake
+    pays the tally; this one didn't (claims audit 2026-07-25)."""
+    p = _pet(discipline_call=True)
+    p.scold_window = p.world_seconds - 1.0
+    monkeypatch.setattr(petbody.random, "random", lambda: 0.99)
+    d0, m0 = p.mistake_day, p.care_mistakes
+    p.tick(1.0)
+    assert p.care_mistakes == m0 + 1
+    assert p.mistake_day == d0 + 1                    # the birthday tally

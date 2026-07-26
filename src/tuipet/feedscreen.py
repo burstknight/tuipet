@@ -1,9 +1,10 @@
 """Feed menu — the canon on-LCD icon picker (BASIC VPET 2026-07-16, cloned
 from the v0.4.x rebuild).
 
-The classic two-item feed: MEAT fills a hunger heart (+1 weight, refused at a
+The classic feed stack: MEAT fills a hunger heart (+1 weight, refused at a
 full belly); the PILL cures an active sickness spell, restores a
-strength heart, +7 energy, +5 weight.  Both are free and infinite — the
+strength heart, +7 energy, +5 weight; the BANDAGE (R3) patches a battle
+injury.  All are free and infinite — the
 richer consumables (fruits, premium meat, junk food) live in the BAG as
 shop items.  The whole DVPet food catalog left with the item system.
 
@@ -146,9 +147,25 @@ class FeedPanel:
         return None
 
     def text(self):
-        """The LCD scene: meat over pill, cursor on the selected row."""
-        overlay = render.blit(MEAT, ICON_X, grid.TOP + 0)
-        overlay += render.blit(PILL, ICON_X, grid.TOP + 8)
-        overlay += render.blit(CURSOR, CURSOR_X, grid.TOP + (0 if self.cursor == 0 else 9))
+        """The LCD scene: canon's two-glyph stack, now a WINDOW on the three
+        rows -- the 16px band fits exactly two 8px glyphs, so the stack
+        shows the pair around the cursor (meat/pill, or pill/bandage once
+        the cursor drops) and the arrow always points at the row ENTER
+        will act on.  (R3 added the third row to key() but never taught
+        this painter: the bandage was invisible and the arrow sat on the
+        PILL while ENTER bandaged -- an injured pet's DEFAULT open.  Found
+        by the help claims audit 2026-07-25.)  The bandage glyph is
+        DVPet's own st_bandage badge, the one bandage in the rips."""
+        from . import data
+        icons = {"meat": MEAT, "pill": PILL,
+                 "bandage": data.load_effects()["st_bandage"][0]}
+        top = max(0, self.cursor - 1)   # window start: the classic meat/pill
+        #                                 stack until the cursor drops to the
+        #                                 bandage, then it slides one
+        overlay = []
+        for slot, (kind, _label) in enumerate(ROWS_MENU[top:top + 2]):
+            overlay += render.blit(icons[kind], ICON_X, grid.TOP + slot * 8)
+        overlay += render.blit(CURSOR, CURSOR_X,
+                               grid.TOP + (0 if self.cursor == top else 9))
         return menu.paint([], self.pet.background(), rows=grid.ROWS,
                           cols=grid.COLS, overlay=overlay, clip=grid.WINDOW)

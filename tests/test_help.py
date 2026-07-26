@@ -215,13 +215,15 @@ def test_the_guides_reach_claims_stay_honest():
 
 def test_help_teaches_the_care_mistake_counter():
     """Gameplay polish #18 (2026-07-22): ✗N steers every line's CM gates,
-    resets each stage, 20 is fatal (5 for a frail late-stage elder) --
+    resets each stage, 20 is fatal (5 two days into a late stage) --
     and its meaning appeared NOWHERE.  Help CARE carries it now."""
     text = " ".join(t for t, _k in HELP)
     assert "care mistakes" in text
     assert "reset each stage" in text
     assert "20 is fatal" in text and "5" in text
-    assert "bits/hour" in text        # the assistant's retainer named (#22)
+    assert "fee per visit" in text    # the assistant's BOTH prices named
+    #                                   ("bits/hour" was half the bill --
+    #                                   claims audit 2026-07-25)
 
 
 def test_every_need_call_names_its_key():
@@ -256,6 +258,26 @@ def test_every_need_call_names_its_key():
     assert "I" not in msgs["sick"]
     assert "C" in msgs["clean"]
     assert "T" in msgs["effort"]
+
+
+def test_the_help_claims_match_the_shipped_mechanics():
+    """The claims audit (2026-07-25) found five lines that had drifted from
+    the code -- each ban below pins one of them OUT:
+    - the Bandage left the bag for the F menu (R3 2026-07-23),
+    - eggs are town-bought / map-unlocked, never a road find,
+    - every grade saves a form (only MEGA matters, and only LOBBY rivals
+      ever see it -- home fights lock their own bar),
+    - the assistant bills a visit fee AND an hourly wage,
+    - the 5-mistake death is stage-tenure, not elder age."""
+    text = "\n".join(t for t, _k in HELP)
+    assert "from the bag" not in text
+    assert "bandage" in text.lower()
+    assert "find loot and eggs" not in text
+    assert "sell eggs" in text and "map clears" in text
+    assert "hit saves your battle form" not in text
+    assert "power form your lobby" in text            # the form's real reach
+    assert "bits/hour" not in text
+    assert "elder can go" not in text
 
 
 def test_help_teaches_the_energy_dial_and_the_alarm_legend():

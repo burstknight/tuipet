@@ -394,9 +394,12 @@ def build_pages(pet):
         ("CONDITION", [
             ("Hunger", f"{pet.hunger}/4"), ("Energy", f"{int(pet.energy)}/{pet.max_energy}"),
             ("Weight", f"{pet.weight}g"),
-            # (the injury fragment left: is_injured() is hard False since the
-            # injury system was removed 2026-07-16 -- sick is the one ailment)
-            ("Ailing", "sick" if pet.sick else "no"),
+            # two ailments, two words: INJURY returned with the canon
+            # restoration (2026-07-23) but this row kept the removal-era
+            # sick-only read -- the data book could never say "hurt".
+            # Sick outranks hurt, same as the feed cursor (audit 2026-07-25)
+            ("Ailing", "sick" if pet.sick else
+             ("hurt" if pet.is_injured() else "no")),
             # (no nutrition row: the macro system was REMOVED 2026-07-16 --
             # its fields are frozen starter values; cards only show LIVE data)
             ("Poop", str(pet.poop)),

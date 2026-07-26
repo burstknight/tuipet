@@ -662,7 +662,10 @@ class BodyMixin:
                 if self.world_seconds > getattr(self, "scold_window", 0.0):
                     self.discipline_call = False
                     self.scold_window = 0.0
-                    self.care_mistakes += 1
+                    # through the front door: the bare += here skipped the
+                    # mood sting + the birthday mistake_day tally every
+                    # other mistake pays (incMistake; audit 2026-07-25)
+                    self._inc_mistake()
                     self._set_obedience(self.obedience - 5)
             elif random.random() < dt / (60.0 * 90.0):
                 self.discipline_call = True

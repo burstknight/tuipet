@@ -172,3 +172,48 @@ def test_the_feed_card_discloses_weight_on_both_rows():
     app.mode.cursor = 1
     statusbox.feed(app)
     assert "weight +5" in lines["txt"]
+
+
+def test_the_stack_windows_to_show_the_bandage_row(monkeypatch):
+    """R3 grew a third row but the painter still drew the fixed meat/pill
+    stack: the bandage was INVISIBLE and the arrow sat on the PILL while
+    ENTER bandaged -- an injured pet's DEFAULT open (help claims audit
+    2026-07-25).  The stack is now a 2-slot window around the cursor, so
+    the arrow always points at the row ENTER will act on."""
+    from tuipet import data, feedscreen, grid
+    calls = []
+    real = feedscreen.render.blit
+
+    def spy(rows, x, y):
+        calls.append((tuple(rows), y))
+        return real(rows, x, y)
+
+    monkeypatch.setattr(feedscreen.render, "blit", spy)
+    bandage = tuple(data.load_effects()["st_bandage"][0])
+    meat, pill = tuple(feedscreen.MEAT), tuple(feedscreen.PILL)
+
+    hurt = _pet(injured=True, inj_length=999.0)
+    pan = FeedPanel(hurt)
+    assert pan.cursor == 2                            # opens on its own cure
+    pan.text()
+    glyphs = {g: y for g, y in calls}
+    assert glyphs.get(pill) == grid.TOP               # window slid to pill/bandage
+    assert glyphs.get(bandage) == grid.TOP + 8        # the bandage is VISIBLE
+    assert meat not in glyphs
+    assert glyphs[tuple(feedscreen.CURSOR)] == grid.TOP + 9   # arrow on the bandage
+    # ...and ENTER acts on the row the arrow points at
+    r = pan.key("enter")
+    assert r[1][0] == "bandaged" and r[1][1]["name"] == "Bandage"
+
+    calls.clear()
+    FeedPanel(_pet()).text()                          # healthy: the classic stack
+    glyphs = {g: y for g, y in calls}
+    assert glyphs.get(meat) == grid.TOP and glyphs.get(pill) == grid.TOP + 8
+    assert glyphs[tuple(feedscreen.CURSOR)] == grid.TOP
+
+    calls.clear()
+    sick = _pet(sick=True)
+    FeedPanel(sick).text()                            # cursor 1: same stack, arrow low
+    glyphs = {g: y for g, y in calls}
+    assert glyphs.get(meat) == grid.TOP and glyphs.get(pill) == grid.TOP + 8
+    assert glyphs[tuple(feedscreen.CURSOR)] == grid.TOP + 9
