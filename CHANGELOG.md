@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.275 — THE BANDAGE GOT ITS OWN COLUMN (2026-07-26)
+
+THE BANDAGE GOT ITS OWN COLUMN — press RIGHT in the feed menu to reach it: the real bandage roll (the one the bandaging animation applies) sits directly right of the meat, top-aligned, with the cursor clear of the food sprites. LEFT returns to the row you came from.
+
 ## 0.5.274 — THE BANDAGE IS ON THE SHELF (2026-07-26)
 
 THE BANDAGE IS ON THE SHELF — the feed menu now shows all three cures at once: meat and pill in their classic stack, the bandage right beside them, arrow pointing at whichever ENTER will use. The feed card narrates the bandage row truthfully too (it used to describe the Pill), and warns before a pick that would be refused.
