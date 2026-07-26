@@ -87,7 +87,10 @@ def keys_markup():
     guide wraps onto line 3: the line only holds 71 cells."""
     k = f"b {theme.KEY}"
     return (
-        f"[{k}]f[/] feed [dim](meat·pill)[/]  [{k}]c[/] clean  [{k}]s[/] lights  [{k}]v[/] assist  [{k}]p[/] discipline  [{k}]m[/] battle\n"
+        # "(meat·pill)" left 2026-07-26 (Joel: "save rome by removing (meat
+        # pill)") -- the old line sat at the 71-cell cap exactly, and its
+        # room is what the H key rides in on
+        f"[{k}]f[/] feed  [{k}]h[/] heal  [{k}]c[/] clean  [{k}]s[/] lights  [{k}]v[/] assist  [{k}]p[/] discipline  [{k}]m[/] battle\n"
         f"[{k}]a[/] adventure  [{k}]r[/] raid  [{k}]u[/] cup  [{k}]l[/] lobby [dim](pvp)[/]  [{k}]t[/] train  [{k}]x[/] DNA  [{k}]d[/] digicore\n"
         f"[{k}]n[/] eggs  [{k}]o[/] shop  [{k}]i[/] bag  [{k}]e[/] scenes  [{k}]g[/] options  [{k}]b[/] bug  [{k}]?[/] help  [{k}]q[/] quit"
     )
@@ -141,12 +144,12 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("INJURIES TAKE TIME NOW — the feed menu is the classic "
-                 "meat-and-pill LCD again, and the BANDAGE is a 300b shop "
-                 "item: a battle wound heals on its own clock (or a town "
-                 "rest), and the bought bandage skips the wait. Untreated "
-                 "wounds still bench you from fights and whisper to death, "
-                 "so keep one in the bag.")
+    WHATS_NEW = ("PRESS H TO HEAL — a battle injury has its own care key "
+                 "now: H patches the wound free, with the full bandaging "
+                 "animation. The feed menu is the classic meat-and-pill "
+                 "LCD again, and a wound left alone still closes on its "
+                 "own clock. Untreated wounds bench you from fights and "
+                 "whisper to death, so don't sit on them.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the
@@ -158,7 +161,7 @@ class TuiPetApp(ActionsMixin, App):
         # Order = the ACTIONS bar / Help-screen reading order (CARE,
         # EXPLORE, GROW, MANAGE) so the Options→Keys page tells the same
         # story (bar tidy 2026-07-18).
-        ("f", "feed", "Feed"), ("c", "clean", "Clean"),
+        ("f", "feed", "Feed"), ("h", "heal", "Heal"), ("c", "clean", "Clean"),
         ("s", "sleep", "Lights"), ("v", "assist", "Assistant"),
         ("p", "discipline", "Discipline"),
         ("m", "battle", "Battle"),
@@ -1376,13 +1379,11 @@ class TuiPetApp(ActionsMixin, App):
         # canon meat/pill picker), NOT a bag item; the v0.5.169 hint sent a
         # panicked player to the bag (Joel caught it 2026-07-22)
         elif p.sick:          msg = f"{name} is sick! ([b]F[/] — feed it the pill)"
-        # ...and the BANDAGE is a SHOP item again (2026-07-26, superseding
-        # R3's free care button: "shop bandage, injuries heal over time").
-        # The call names BOTH true doors -- the bag's bandage if one is
-        # held, and the wait if not -- because sending a tamer to a door
-        # the cure isn't behind is exactly the v0.5.169/178 bug, twice
-        # re-learned on these lines.
-        elif p.is_injured():  msg = f"{name} is hurt! ([b]I[/] Bandage — or it heals with time)"
+        # ...and the injury cure is the H KEY (2026-07-26 final ruling:
+        # "remove bandage as an item alltogether and just add an h heal
+        # hotkey") -- name the door that actually cures, the v0.5.169/178
+        # lesson these lines keep re-learning.
+        elif p.is_injured():  msg = f"{name} is hurt! ([b]H[/] — patch it up)"
         elif p.hunger == 0:   msg = f"{name} is hungry! ([b]F[/])"
         elif p.strength == 0: msg = f"{name}'s effort gauge is empty — train it! ([b]T[/])"
         elif p.poop >= 3:     msg = f"{name} needs cleaning! ([b]C[/])"

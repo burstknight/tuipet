@@ -132,35 +132,38 @@ def test_the_textbook_is_the_discipline_systems_first_item():
 
 # ---- R3: both cures free, symmetric ----------------------------------------
 
-def test_the_bandage_is_back_on_the_shelf():
-    """SUPERSEDES the R3 removal pin (2026-07-26, Joel: "shop bandage,
-    injuries heal over time")."""
-    assert "bandage" in shop.CATALOG
-    assert "bandage" in shop.EFFECTS
+def test_the_bandage_never_returns_to_the_shelf():
+    """The FINAL door (2026-07-26): after one afternoon back as a 300b
+    item (tag-only v0.5.277), the cure settled on the free H hotkey --
+    no shelf entry, ever again."""
+    assert "bandage" not in shop.CATALOG
+    assert "bandage" not in shop.EFFECTS
 
 
-def test_the_two_ailments_take_two_doors(monkeypatch):
-    """SUPERSEDES R3's free-symmetry pin (2026-07-26): sickness cures free
-    on F; an injury takes the SHOP bandage -- and a broke tamer still has
-    the free path, because the wound closes on its own canon clock
-    (injLapse, _tick_mortality)."""
+def test_the_two_ailments_take_two_free_buttons(monkeypatch):
+    """The final symmetry (2026-07-26): pill on F cures sickness, H heals
+    injury -- both free -- and the canon time-heal (injLapse) stays
+    underneath as the do-nothing path."""
     import tuipet.petbody as petbody
     from tuipet.feedscreen import ROWS_MENU
     kinds = [k for k, _label in ROWS_MENU]
     assert kinds == ["meat", "pill"]
-    monkeypatch.setattr(petbody.random, "random", lambda: 0.99)  # no hazard
     p = _pet()
-    p.bits = 0                      # broke: the wait still heals
+    p.bits = 0                      # broke, and it must not matter
     p.injured = True
     p.inj_length = 400.0
-    p._tick_mortality(400.0)
+    assert not isinstance(p.heal_bandage(), _Refused)
     assert p.injured is False and p.inj_length == 0.0
+    monkeypatch.setattr(petbody.random, "random", lambda: 0.99)  # no hazard
+    p2 = _pet()
+    p2.injured, p2.inj_length = True, 400.0
+    p2._tick_mortality(400.0)       # the untouched wound closes by itself
+    assert p2.injured is False and p2.inj_length == 0.0
 
 
 def test_the_bandage_is_refused_on_a_whole_pet():
     p = _pet()
-    p.add_item("bandage")
-    assert isinstance(p.use_item("bandage"), _Refused)
+    assert isinstance(p.heal_bandage(), _Refused)
 
 
 def test_healing_a_sleeper_disturbs_it_like_the_pill_does():
@@ -169,18 +172,16 @@ def test_healing_a_sleeper_disturbs_it_like_the_pill_does():
     p.inj_length = 400.0
     p.asleep = True
     before = p.care_mistakes
-    p.add_item("bandage")
-    p.use_item("bandage")
+    p.heal_bandage()
     assert p.injured is False
     assert p.care_mistakes >= before      # the disturb was billed
 
 
-def test_a_held_bandage_survives_the_bag_heal():
-    """SUPERSEDES the R3 heal-out pin (2026-07-26): the shelf entry is
-    back, so a held bandage is a live good the load path must NOT eat."""
+def test_a_held_bandage_is_healed_out_of_an_old_bag():
+    """The item is gone for good (final ruling 2026-07-26): a bandage
+    bought in either brief shelf era must not linger as an unusable row."""
     from tuipet import persistence
-    assert persistence._heal_bag({"bandage": 2, "fish": 1}) == {"bandage": 2,
-                                                               "fish": 1}
+    assert persistence._heal_bag({"bandage": 2, "fish": 1}) == {"fish": 1}
 
 
 def test_the_ancient_eraser_key_now_points_at_the_new_item():
@@ -215,15 +216,34 @@ def test_every_feed_row_is_reachable_in_both_directions():
         assert seen == set(range(len(ROWS_MENU))), key
 
 
-def test_the_bandage_item_plays_its_own_canon_show():
+def test_the_h_heal_plays_the_canon_bandaging_show():
     """WORN, not eaten -- the Bandaging script (items.csv i:80), fired by
-    the BAG's generic show route (item_script) now that the cure is a
-    shelf item again."""
+    the H action on a cure and by nothing on a refusal."""
     from tuipet import data, itemfx
+    from tuipet.app import TuiPetApp
     assert (data.consumable_by_key("i:80") or {}).get("action") == "Bandaging"
     assert "Bandaging" in itemfx.SCRIPTS
-    assert shop.item_script("bandage") == "Bandaging"
-    assert not shop.item_is_eaten("bandage")          # never the eat fx
+
+    class _Scr:
+        fx = None
+        calls = []
+        def start_fx(self, kind, **kw):
+            self.calls.append((kind, kw))
+
+    class _App:
+        def _do(self, msg):
+            self.said = msg
+
+    app = _App()
+    app.screen_w = _Scr()
+    app.pet = _pet()
+    TuiPetApp.action_heal(app)                        # healthy: refusal,
+    assert app.screen_w.calls == []                   # no show
+    app.pet.injured, app.pet.inj_length = True, 300.0
+    TuiPetApp.action_heal(app)
+    assert app.screen_w.calls == [("item", {"icon": "i:80",
+                                            "script": "Bandaging"})]
+    assert not app.pet.injured
 
 
 def test_the_care_menu_keeps_its_lcd_geometry():

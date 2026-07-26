@@ -65,8 +65,7 @@ def test_the_bandage_cures_and_the_pill_does_not():
     p = _pet(injured=True, injuries=1)
     assert p.battle_condition() == "Too hurt to fight."        # the gate
     assert p.status_word() == "injured"                        # the word
-    p.add_item("bandage")
-    assert "patched" in str(p.use_item("bandage"))    # the SHOP cure (2026-07-26)
+    assert "patched" in str(p.heal_bandage())  # the H key's verb (2026-07-26)
     assert not p.injured and p.injuries == 1                   # cured; the count keeps
     # the pill stays sick-only: it cannot have been the cure
     p2 = _pet(injured=True)
@@ -77,11 +76,8 @@ def test_the_bandage_cures_and_the_pill_does_not():
 
 
 def test_the_bandage_refuses_a_healthy_pet():
-    """...and the refusal KEEPS the item (the 'consume on refusal' law)."""
     p = _pet()
-    p.add_item("bandage")
-    assert "Nothing" in str(p.use_item("bandage"))
-    assert p.inventory.get("bandage") == 1
+    assert "Nothing" in str(p.heal_bandage())
 
 
 def test_an_injured_pet_still_eats():
@@ -89,19 +85,16 @@ def test_an_injured_pet_still_eats():
     assert "sick" not in str(p.feed_meat())                    # only SICK blocks meat
 
 
-def test_the_bandage_is_a_shelf_item_and_the_wait_is_the_free_path():
-    """SUPERSEDES R3 (2026-07-26, Joel: "shop bandage, injuries heal over
-    time"): the cure is a 300b common-tier shelf item again, the F menu is
-    meat/pill only, and the free path is the canon injLapse wait (plus the
-    road's town rest)."""
+def test_the_injury_cure_is_the_h_key_not_an_item_or_a_feed_row():
+    """The FINAL door (2026-07-26, Joel: "remove bandage as an item
+    alltogether and just add an h heal hotkey"): no shelf entry, no feed
+    row -- a free care BUTTON on H, with the canon time-heal underneath."""
     from tuipet import shop
+    from tuipet.app import TuiPetApp
     from tuipet.feedscreen import ROWS_MENU
-    e = shop.entry("bandage")
-    assert e is not None and e["price"] == 300
-    assert shop.CATALOG["bandage"].tier == "common"   # stocked wide: the wait
-    #                                                   must never be walled
-    #                                                   behind a rare shelf
+    assert shop.entry("bandage") is None
     assert "bandage" not in [k for k, _label in ROWS_MENU]
+    assert any(k == "h" and a == "heal" for k, a, _l in TuiPetApp.BINDINGS)
 
 
 def test_the_vitamin_guard_burns_at_one_per_game_minute(monkeypatch):
@@ -144,6 +137,5 @@ def test_a_wound_heals_on_its_own_clock(monkeypatch):
 
 def test_the_bandage_buys_off_the_wait():
     p = _pet(injured=True, inj_length=999.0)
-    p.add_item("bandage")
-    p.use_item("bandage")
+    p.heal_bandage()
     assert not p.injured and p.inj_length == 0.0

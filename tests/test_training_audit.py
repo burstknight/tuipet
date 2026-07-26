@@ -64,8 +64,7 @@ def test_being_hurt_CALLS_for_you():
     p = _pet(injured=True)
     assert p.needs_care() is True
     assert p.status_word() == "injured"
-    p.add_item("bandage")                  # the shop cure (2026-07-26)
-    p.use_item("bandage")
+    p.heal_bandage()                       # the H key's cure (2026-07-26)
     assert p.needs_care() is False
 
 
@@ -78,17 +77,16 @@ def test_every_ailment_is_lethal_adjacent_and_rings_at_full_urgency():
 
 
 def test_the_hurt_call_names_the_key_that_actually_cures_it():
-    """v0.5.178's lesson, third application: the Bandage is a SHOP item
-    again (2026-07-26 "shop bandage, injuries heal over time"), so the
-    call must name the BAG door (and the wait), never the F menu -- the
-    F rows are meat and pill only now."""
+    """v0.5.178's lesson, final application: the injury cure is the H
+    hotkey (2026-07-26), so the call names H -- never the F menu (meat
+    and pill only) and never the bag (no item exists)."""
     from tuipet.app import TuiPetApp
     from tuipet import shop
     from tuipet.feedscreen import ROWS_MENU
-    assert "bandage" in shop.CATALOG                # a bag item once more
+    assert "bandage" not in shop.CATALOG            # not an item at all
     assert all(k != "bandage" for k, _label in ROWS_MENU)   # not an F row
     msg = TuiPetApp._need_message(None, _pet(injured=True))
-    assert "[b]I[/]" in msg and "[b]F[/]" not in msg
+    assert "[b]H[/]" in msg and "[b]F[/]" not in msg and "bag" not in msg
 
 
 # ---- the drill itself, measured ----------------------------------------

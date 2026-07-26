@@ -425,12 +425,6 @@ class CareMixin:
             "poison_mushroom": self._deadly,
             # ---- MEDICINE ---------------------------------------------------
             "vitamin": self._vitamin,
-            # the bandage RETURNS to the bag (2026-07-26, Joel: "shop
-            # bandage, injuries heal over time" -- superseding R3's free
-            # care button): use_item's sleeper-disturb wrap and _bandage's
-            # own not-injured refusal both apply, and item_script() fires
-            # its canon Bandaging show off items.csv i:80
-            "bandage": self._bandage,
             "miracle_drink": self._miracle_drink,
             # ---- CARE -------------------------------------------------------
             "sleeping_pill": self._sleep_pill,
@@ -633,6 +627,25 @@ class CareMixin:
         before = self.obedience
         self._set_obedience(self.obedience + TEXTBOOK_OBEDIENCE)  # noqa: F405
         return f"Studied hard. (+{self.obedience - before} obedience)"
+
+    def heal_bandage(self):
+        """THE H KEY's verb: patch the battle injury, free (the bandage's
+        FINAL door -- Joel 2026-07-26: "remove bandage as an item
+        alltogether and just add an h heal hotkey".  It spent one day as a
+        300b shop item (v0.5.277, tag-only, never on PyPI) and before that
+        one era as the F menu's third row; a care action on this device is
+        a BUTTON, and now it has its own).  The canon time-heal (injLapse)
+        stays underneath as background truth.
+
+        Mirrors feed_pill's shape: guarded, and healing a sleeper
+        DISTURBS it first."""
+        if (_g := self._guard(asleep_blocks=False)) is not None:
+            return _g
+        if not self.injured:
+            return _Refused("Nothing to bandage.")            # noqa: F405
+        if self.asleep:
+            self._disturbed()
+        return self._bandage()
 
     _ATTR_FIELDS = ("vaccine", "data_power", "virus")
     _ATTR_WORD = {"vaccine": "Vaccine", "data_power": "Data", "virus": "Virus"}

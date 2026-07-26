@@ -307,24 +307,15 @@ def test_the_bandage_keeps_its_canon_animation_name():
 
 
 def test_the_bandage_show_only_plays_when_it_treats_something():
-    """A refused bandage plays nothing (and is KEPT); a real cure rides the
-    bag's item_use route and plays Bandaging.  (The bag door replaced the
-    feed row 2026-07-26: "shop bandage, injuries heal over time".)"""
+    """A refused heal plays nothing; a real cure plays Bandaging (the H
+    key's verb -- final door 2026-07-26)."""
     from tuipet.pet import Pet
-    from tuipet.shopscreen import ShopPanel
     p = Pet(num=100, stage="Champion", attribute="Vaccine", obedience=500)
     p.world_seconds = 600.0
-    p.add_item("bandage")
-    pan = ShopPanel(p, start_mode="bag")
-    entry = {"key": "bandage", "name": "Bandage"}
-    assert pan._use(entry) is None                    # healthy: no show,
-    assert p.inventory.get("bandage") == 1            # item kept
+    assert "Nothing" in str(p.heal_bandage())         # healthy: refusal
     p.injured = True
     p.inj_length = 300.0
-    r = pan._use(entry)
-    assert r[0] == "done"
-    outcome, icon, script, _msg = r[1]
-    assert outcome == "item_use" and icon == "i:80" and script == "Bandaging"
+    assert "patched" in str(p.heal_bandage())
     assert not p.injured
 
 

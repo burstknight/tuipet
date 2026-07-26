@@ -10,10 +10,12 @@ VIS = 8                                   # lines shown at once in the box
 # (text, kind): 2 = section head (bold), 1 = a control line, 0 = prose (dim)
 HELP = [
     ("CARE", 2),
-    # claims audit 2026-07-25; re-truthed 2026-07-26 when the bandage
-    # returned to the shop ("bits/hour" was half the assistant's bill)
+    # claims audit 2026-07-25; re-truthed 2026-07-26 with the bandage's
+    # final door, the H key ("bits/hour" was half the assistant's bill)
     ("f feed - meat fills; the pill", 1),
     ("  cures sickness, free and infinite", 0),
+    ("h heal - bandage a battle injury,", 1),
+    ("  free (a wound also mends with time)", 0),
     ("c clean poop", 1),
     ("s lights   v assistant - paid help:", 1),
     ("  a fee per visit + an hourly wage", 0),
@@ -35,11 +37,11 @@ HELP = [
     ("Energy fuels drills, fights and the", 0),
     ("road; sleep refills it each night.", 0),
     # the two ailments, two meds (canon restoration 2026-07-23; the
-    # bandage's shop return + time-heal truth 2026-07-26)
+    # bandage's final door, the H key -- 2026-07-26)
     ("Two ailments: SICKNESS (filth or", 0),
     ("fat) takes the pill, free on F.", 0),
-    ("Battle INJURY heals with time, or", 0),
-    ("a shop Bandage treats it now. Both", 0),
+    ("Battle INJURY takes H - free; a", 0),
+    ("wound also closes with time. Both", 0),
     ("block fights and whisper to death.", 0),
     ("p discipline - praise & scold:", 1),
     ("  scold a tantrum (+manners), praise", 0),

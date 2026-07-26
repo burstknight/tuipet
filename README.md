@@ -111,7 +111,8 @@ explore, then grow, then manage:
 
 | key | screen | key | screen |
 |-----|--------|-----|--------|
-| **f** | feed | **d** | DigiCore |
+| **f** | feed | **x** | DNA |
+| **h** | heal an injury | **d** | DigiCore |
 | **c** | clean | **n** | digitama guide |
 | **s** | lights | **o** | shop |
 | **v** | AI assistant | **i** | bag |
@@ -121,7 +122,7 @@ explore, then grow, then manage:
 | **u** | tournament cup | **?** | help |
 | **l** | online lobby | **q** | quit |
 | **t** | train | **ENTER** | accept a found gift |
-| **x** | DNA | **p** | discipline (praise·scold) |
+| **p** | discipline (praise·scold) | | |
 
 SPACE works wherever ENTER does, and PageUp/PageDown leap through every
 long list.

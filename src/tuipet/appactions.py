@@ -446,6 +446,17 @@ class ActionsMixin:
             self._pending_gift_reveal = msg
             self._do("A present! Let's see what it is…")
 
+    def action_heal(self):
+        """The H key: patch a battle injury -- a free care BUTTON like C
+        clean (the bandage's final door, Joel 2026-07-26).  A cure plays
+        the canon Bandaging show (items.csv i:80); a refusal just speaks."""
+        if self.screen_w.fx is not None:        # let the current care animation finish before acting again
+            return
+        msg = self.pet.heal_bandage()
+        if "patched" in str(msg):
+            self.screen_w.start_fx("item", icon="i:80", script="Bandaging")
+        self._do(str(msg))
+
     def action_clean(self):
         if self.screen_w.fx is not None:        # let the current care animation finish before acting again
             return

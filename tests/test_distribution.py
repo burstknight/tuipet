@@ -269,11 +269,9 @@ def test_the_ten_dropped_overrides_stay_dropped():
 
 def test_the_forbidden_cures_are_the_reason_two_must_stay_dropped():
     """f:15 Elixir (cures sickness) and f:16 Vitamin G (cures injury) must
-    never gain a sellable catalog key: the sickness cure stays FREE on F,
-    and the injury cure is the Bandage's shelf job alone (2026-07-26 --
-    a second injury item would shadow-price the first).  Load-bearing D7."""
+    never gain a sellable catalog key: both cures are free care buttons
+    (pill on F, heal on H -- final ruling 2026-07-26).  Load-bearing D7."""
     assert shop.key_for_icon("f:15") is None      # Elixir
     assert shop.key_for_icon("f:16") is None      # Vitamin G
     for key, v in shop.CATALOG.items():
-        assert "sick" not in v.touches, key
-        assert "injured" not in v.touches or key == "bandage", key
+        assert "sick" not in v.touches and "injured" not in v.touches, key

@@ -253,7 +253,6 @@ def test_declared_touches_match_what_the_handler_actually_moves(key):
     p.care_mistakes, p.poop, p.poop_sizes = 3, 2, [1, 1]
     p.strength, p.obedience = 0, 50
     p.sleep_lapse = 100.0        # some bedtime pressure for the Caffeine Pill
-    p.injured, p.inj_length = True, 600.0   # a live wound for the Bandage
     p.dna_owned = {}
     p.field = p.field if p.field not in ("", "None") else "Nature"
     # deep-copied: the DNA bank and the poop list are MUTATED in place, and
