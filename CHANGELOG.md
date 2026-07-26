@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.278 — PRESS H TO HEAL (2026-07-26)
+
+PRESS H TO HEAL — a battle injury has its own care key now: H patches the wound free, with the full bandaging animation. The feed menu is the classic meat-and-pill LCD again, and a wound left alone still closes on its own clock. Untreated wounds bench you from fights and whisper to death, so don't sit on them.
+
 ## 0.5.277 — INJURIES TAKE TIME NOW (2026-07-26)
 
 INJURIES TAKE TIME NOW — the feed menu is the classic meat-and-pill LCD again, and the BANDAGE is a 300b shop item: a battle wound heals on its own clock (or a town rest), and the bought bandage skips the wait. Untreated wounds still bench you from fights and whisper to death, so keep one in the bag.
