@@ -144,10 +144,10 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE POOL BREAK HAS A FANFARE — when the community shatters "
-                 "a raid boss's shared HP pool, the raid screen now plays the "
-                 "victory chime and calls the fall by name. An escaped boss "
-                 "still slinks off in silence; only a kill earns the horn.")
+    WHATS_NEW = ("SOUND SHELF DUSTED — a full audio audit confirmed every "
+                 "chirp in the game is wired to a real chiptune, and the one "
+                 "sound nothing could ever play (an old weather loop) has "
+                 "left the package. Smaller install, same beeps.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the

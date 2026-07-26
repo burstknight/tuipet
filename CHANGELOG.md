@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.280 — SOUND SHELF DUSTED (2026-07-26)
+
+SOUND SHELF DUSTED — a full audio audit confirmed every chirp in the game is wired to a real chiptune, and the one sound nothing could ever play (an old weather loop) has left the package. Smaller install, same beeps.
+
 ## 0.5.279 — THE POOL BREAK HAS A FANFARE (2026-07-26)
 
 THE POOL BREAK HAS A FANFARE — when the community shatters a raid boss's shared HP pool, the raid screen now plays the victory chime and calls the fall by name. An escaped boss still slinks off in silence; only a kill earns the horn.
