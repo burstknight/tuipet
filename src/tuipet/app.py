@@ -144,13 +144,13 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE HALL OF MEMORY — your lineage has a room now. ENTER "
-                 "on the DigiCore's LEGACY page walks the hall: every elder "
-                 "you've ever raised stands there with its portrait and an "
-                 "epitaph — generation, form, lifespan, what took it, cups "
-                 "and fights. From tonight on, every death is remembered by "
-                 "name. Elders from before this update rest behind the "
-                 "grave marker; the game never guesses what it didn't see.")
+    WHATS_NEW = ("A RIVAL APPEARS — every generation now has its own named "
+                 "rival: a tamer whose pet grows alongside yours, stage for "
+                 "stage, and answers every 3rd home bout. The feud's score "
+                 "flashes after each clash and lives on the DigiCore PERSON "
+                 "page — until one of you dies. Same fair fight as any "
+                 "matched bout, no purse; only the name changes. Beating a "
+                 "stranger is a stat. Beating THEM is a story.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the
