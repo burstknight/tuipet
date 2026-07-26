@@ -209,10 +209,12 @@ def test_the_feed_card_narrates_the_bandage_row():
 
 
 def test_all_three_cures_are_always_on_screen(monkeypatch):
-    """The bandage sits to the RIGHT of the canon meat/pill stack, visible
-    in every cursor state (Joel 2026-07-26 -- the earlier 2-slot window
-    still hid it until the cursor dropped onto it), and the arrow always
-    points at the row ENTER will act on."""
+    """The bandage is a second COLUMN directly right of the canon meat/pill
+    stack -- top-aligned, its glyph the i:80 roll the Bandaging show
+    applies, visible in every cursor state (Joel 2026-07-26 x2: the 2-slot
+    window hid it; the centred st_bandage badge redo 'looks like shit').
+    The arrow always points at the row ENTER will act on, and its bandage
+    position clears the food ink (the x23 arrow sat flush on the pill)."""
     from tuipet import data, feedscreen, grid
     calls = []
     real = feedscreen.render.blit
@@ -222,9 +224,11 @@ def test_all_three_cures_are_always_on_screen(monkeypatch):
         return real(rows, x, y)
 
     monkeypatch.setattr(feedscreen.render, "blit", spy)
-    bandage = tuple(data.load_effects()["st_bandage"][0])
+    bandage = tuple(data.load_icons()["i:80"][0])
     meat, pill = tuple(feedscreen.MEAT), tuple(feedscreen.PILL)
     cursor = tuple(feedscreen.CURSOR)
+    assert feedscreen.BAND_Y == grid.TOP              # top-aligned, NOT centred
+    assert feedscreen.BAND_CURSOR_X >= 24             # off the food ink (x<=22)
 
     def paint(pet):
         calls.clear()
@@ -251,3 +255,25 @@ def test_all_three_cures_are_always_on_screen(monkeypatch):
     pan, arrow = paint(_pet(sick=True))               # sick: arrow on the pill
     assert pan.cursor == 1
     assert arrow == (feedscreen.CURSOR_X, grid.TOP + 9)
+
+
+def test_the_bandage_column_is_reached_by_pressing_right():
+    """The 2-column grid (Joel 2026-07-26: 'let me actually press right'):
+    up/down works the meat/pill stack, RIGHT crosses to the bandage, LEFT
+    returns to the stack row you left, and up/down from the bandage
+    re-enters the stack -- the cursor is never trapped."""
+    pan = FeedPanel(_pet())
+    assert pan.cursor == 0
+    pan.key("down");  assert pan.cursor == 1          # stack toggle
+    pan.key("down");  assert pan.cursor == 0
+    pan.key("right"); assert pan.cursor == 2          # cross to the bandage
+    pan.key("right"); assert pan.cursor == 2          # right again: stays
+    pan.key("left");  assert pan.cursor == 0          # back to the row left
+    pan.key("down")
+    pan.key("right"); assert pan.cursor == 2
+    pan.key("left");  assert pan.cursor == 1          # remembers PILL too
+    pan.key("left");  assert pan.cursor == 1          # left in the stack: no-op
+    pan.key("right")
+    pan.key("up");    assert pan.cursor == 0          # bandage + up -> meat
+    pan.key("right")
+    pan.key("down");  assert pan.cursor == 1          # bandage + down -> pill

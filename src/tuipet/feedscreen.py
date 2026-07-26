@@ -73,14 +73,23 @@ CURSOR = ["1000",
 
 # layout (decompile Rn coords, LCD-absolute): icons at x15, cursor at the
 # left margin; the two 8px icons stack to fill the 16px band.  The bandage
-# (R3) sits to the RIGHT of that stack, vertically centred in the band, so
-# all three cures are on screen at once (Joel 2026-07-26: "should be to the
-# right of the meat and pill sprites" -- the 2-slot window still hid it).
+# (R3) is a second COLUMN directly to the RIGHT of that stack -- reached by
+# pressing RIGHT -- top-aligned with the meat row, NOT vertically centred
+# (Joel 2026-07-26 x2: first "to the right of the meat and pill sprites",
+# then "dont center it... let me actually press right, and stop the cursor
+# from clipping over the food sprites" -- the centred badge straddled both
+# stack rows and its arrow sat flush against the pill's widest row).  Its
+# glyph is the i:80 bandage roll itself (8x8, the icon the Bandaging show
+# applies), so the picked bandage IS the worn bandage -- the pill's own
+# picker-identity law; the st_bandage 7x7 was the STATUS badge, not the
+# item.
 ICON_X = 15
 CURSOR_X = grid.X0
-BAND_X = 28               # 7px glyph -> x28..34, inside the x36 window edge
-BAND_Y = grid.TOP + 4     # (16 - 7) // 2: centred between the two stack rows
-BAND_CURSOR_X = BAND_X - 5  # the same arrow, slid over to point at it
+BAND_X = 28               # 8px glyph -> x28..35, inside the x36 window edge
+BAND_Y = grid.TOP         # top-aligned: the meat's row, second column
+BAND_CURSOR_X = 24        # arrow x24..27: tip touches the bandage it picks,
+#                           clear of the meat's widest rows (x22) -- the old
+#                           x23 arrow sat flush against the pill ink
 
 # (the third, description field was dead data -- displayed nowhere; the
 # status card carries the real disclosure.  Trimmed, feed audit 2026-07-19.)
@@ -99,20 +108,32 @@ class FeedPanel:
         # joined with R3).  Sick outranks hurt when both are true: sickness
         # is the older, louder alarm.
         self.cursor = 1 if pet.sick else (2 if pet.is_injured() else 0)
+        self._stack_row = 1 if pet.sick else 0   # where LEFT lands from the bandage
         self.frame_i = 0
 
     def anim(self):
         self.frame_i += 1
 
     def strip(self):
-        return menu.hints(("↑↓", "pick"), ("ENTER", "feed"), ("ESC", "out"))
+        return menu.hints(("↑↓→", "pick"), ("ENTER", "feed"), ("ESC", "out"))
 
     def key(self, k):
+        # a 2-COLUMN grid (feed redo 2026-07-26): up/down works the meat/pill
+        # stack, RIGHT crosses to the bandage column, LEFT comes back to the
+        # stack row you left.  From the bandage, up/down also re-enters the
+        # stack (up = meat, down = pill) -- never a trapped cursor.
         if k in ("up", "k", "down", "j"):
-            # a THIRD row retired the old two-row toggle (1 - cursor), which
-            # silently ignored direction and could never reach row 2
-            step = -1 if k in ("up", "k") else 1
-            self.cursor = (self.cursor + step) % len(ROWS_MENU)
+            if self.cursor == 2:
+                self.cursor = 0 if k in ("up", "k") else 1
+            else:
+                self.cursor = 1 - self.cursor
+            self._stack_row = self.cursor
+        elif k in ("right", "l"):
+            if self.cursor != 2:
+                self._stack_row, self.cursor = self.cursor, 2
+        elif k in ("left", "h"):
+            if self.cursor == 2:
+                self.cursor = self._stack_row
         elif k in ("enter", "space"):
             kind, label = ROWS_MENU[self.cursor]
             if kind == "meat":
@@ -153,18 +174,14 @@ class FeedPanel:
         return None
 
     def text(self):
-        """The LCD scene: canon's meat/pill stack, with the bandage BESIDE
-        it -- all three cures on screen at once, and the arrow points at the
-        row ENTER will act on (left margin for the stack, sliding right for
-        the bandage).  (The 2026-07-25 fix windowed the stack instead, which
-        still hid the bandage until the cursor dropped onto it -- Joel
-        2026-07-26: put it to the right.)  The bandage glyph is DVPet's own
-        st_bandage badge, the one bandage in the rips."""
+        """The LCD scene: canon's meat/pill stack, the bandage column to its
+        right (the i:80 roll, top-aligned with the meat), and the arrow
+        pointing at whatever ENTER will act on -- left margin for the stack,
+        beside the bandage for the bandage, always clear of the food ink."""
         from . import data
         overlay = render.blit(MEAT, ICON_X, grid.TOP)
         overlay += render.blit(PILL, ICON_X, grid.TOP + 8)
-        overlay += render.blit(data.load_effects()["st_bandage"][0],
-                               BAND_X, BAND_Y)
+        overlay += render.blit(data.load_icons()["i:80"][0], BAND_X, BAND_Y)
         if self.cursor == 2:
             overlay += render.blit(CURSOR, BAND_CURSOR_X, BAND_Y)
         else:
