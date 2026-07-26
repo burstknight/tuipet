@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.272 — THE GUIDE GOT A FACT-CHECK (2026-07-25)
+
+THE GUIDE GOT A FACT-CHECK — and it caught a real bug: the feed menu's third row (the free Bandage) was INVISIBLE, the arrow sat on the Pill while ENTER bandaged. The stack now slides to show it. The data book can finally say 'hurt', and the guide no longer sends you to the bag for a cure that lives on F.
+
 ## 0.5.271 — YOUR MON BLOWS SMOKE WHEN IT LOSES. The happy dance pops the (2026-07-25)
 
 YOUR MON BLOWS SMOKE WHEN IT LOSES. The happy dance pops the SUN; the smoke puff is its opposite — but it only ever played on a whiffed drill and a scold. A lost battle and a lost cup flashed a SKULL instead, so the two moments you hit most never blew smoke. Now every frustration show does.
