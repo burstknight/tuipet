@@ -122,6 +122,10 @@ class DigiCorePanel:
             # the album count's book (2026-07-21): ENTER opens it, SPACE
             # keeps paging — the EVOLVES enter-picks/space-pages split
             return ("done", ("album",))
+        if k == "enter" and self.pages[self.i][0] == "LEGACY":
+            # the headstones' room (Joel 2026-07-26): ENTER opens the HALL
+            # OF MEMORY — the TROPHIES→ALBUM door's exact grammar
+            return ("done", ("hall",))
         if k in ("right", "l") or (k == "space" and self.i > 0):
             self.i = (self.i + 1) % len(self.pages)
         elif k in ("left", "h"):
@@ -339,6 +343,11 @@ class DigiCorePanel:
             out.append_text(menu.blanks(9 - len(rows) - 1))
             out.append_text(menu.note("ENTER: the album"))
             out.append_text(menu.footer("ENTER album  ←→ page  ESC out"))
+        elif title == "LEGACY":
+            # the headstones front their room now too (2026-07-26)
+            out.append_text(menu.blanks(9 - len(rows) - 1))
+            out.append_text(menu.note("ENTER: the hall of memory"))
+            out.append_text(menu.footer("ENTER hall  ←→ page  ESC out"))
         else:
             out.append_text(menu.blanks(9 - len(rows)))
             out.append_text(menu.footer("←→ page    ESC out"))

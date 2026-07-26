@@ -91,6 +91,9 @@ HELP = [
     ("d digicore - the pet's data book", 1),
     ("  ENTER on its trophy page opens the", 0),
     ("  ALBUM - every species, in dex order", 0),
+    # the lineage's own book (Joel 2026-07-26: "build the hall of memory")
+    ("  on its LEGACY page, the HALL OF", 0),
+    ("  MEMORY - every elder, remembered", 0),
     ("n egg guide - every digitama + what", 1),
     ("  earns it, with live progress", 0),
     ("", 0),

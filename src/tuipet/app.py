@@ -144,10 +144,13 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("SOUND SHELF DUSTED — a full audio audit confirmed every "
-                 "chirp in the game is wired to a real chiptune, and the one "
-                 "sound nothing could ever play (an old weather loop) has "
-                 "left the package. Smaller install, same beeps.")
+    WHATS_NEW = ("THE HALL OF MEMORY — your lineage has a room now. ENTER "
+                 "on the DigiCore's LEGACY page walks the hall: every elder "
+                 "you've ever raised stands there with its portrait and an "
+                 "epitaph — generation, form, lifespan, what took it, cups "
+                 "and fights. From tonight on, every death is remembered by "
+                 "name. Elders from before this update rest behind the "
+                 "grave marker; the game never guesses what it didn't see.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the

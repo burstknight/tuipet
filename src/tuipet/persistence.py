@@ -411,6 +411,15 @@ def snapshot_prev_gen(pet):
         "age": float(getattr(pet, "age_seconds", 0.0)),
         "cups": int(getattr(pet, "trophies", 0)),
         "dead": bool(getattr(pet, "dead", False)),
+        # the HALL OF MEMORY fields (Joel 2026-07-26 "build the hall of
+        # memory"): the individual, not just the count -- its form for the
+        # portrait, what took it, and its fight record.  Headstones from
+        # before this date miss them; the hall shows the grave and says
+        # only what it knows.
+        "num": int(getattr(pet, "num", 0)),
+        "cause": getattr(pet, "death_cause", "") or "",
+        "wins": int(getattr(pet, "wins", 0)),
+        "battles": int(getattr(pet, "battles", 0)),
     })
     del legacy[:-30]                 # the book keeps the 30 most recent elders
     save_settings(d)

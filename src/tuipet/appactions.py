@@ -19,6 +19,7 @@ from . import egg as egg_mod  # noqa: F401
 from . import eggguidescreen  # noqa: F401
 from . import eggselectscreen  # noqa: F401
 from . import feedscreen  # noqa: F401
+from . import hallscreen  # noqa: F401
 from . import helpscreen  # noqa: F401
 from . import lobbyscreen  # noqa: F401
 from . import net  # noqa: F401
@@ -354,6 +355,14 @@ class ActionsMixin:
             self._open_mode(albumscreen.AlbumPanel(self.pet),
                             lambda _=None: self._open_mode(
                                 digicorescreen.DigiCorePanel(self.pet, start="TROPHIES"),
+                                self._after_digicore))
+            return
+        if isinstance(msg, tuple) and msg and msg[0] == "hall":
+            # LEGACY's ENTER: walk the hall of memory, then back to the
+            # headstone shelf (the album round-trip's exact shape)
+            self._open_mode(hallscreen.HallPanel(self.pet),
+                            lambda _=None: self._open_mode(
+                                digicorescreen.DigiCorePanel(self.pet, start="LEGACY"),
                                 self._after_digicore))
             return
         if isinstance(msg, tuple) and msg and msg[0] == "evolve":
