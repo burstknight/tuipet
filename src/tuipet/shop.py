@@ -923,12 +923,15 @@ def _town_maps():
 
 
 # P4 (item diversity audit 2026-07-23, Joel: "do it all"): each MAP's
-# towns carry ONE regional specialty beyond the 2-variant authored base,
-# so the five maps read differently before the guest good even lands.
-# Late maps sell the premium tier -- map 4 (the hardest region) is where
-# the Revive Floppy waits.
-_MAP_SPECIALTY = {1: "cake", 2: "xylophone", 3: "x_antibody",
-                  4: "revive_floppy", 5: "vitamin"}
+# towns carry ONE regional specialty beyond the authored base, so the
+# five maps read differently before the guest good even lands.  REDEALT
+# from the grown catalog (Joel 2026-07-26: "yeah redeal the specialties
+# too") -- same depth logic, new faces: the starter map sells the toy
+# surprise, the mid maps comfort and cunning, and the deep maps keep the
+# premium-tier slots (the old map-4 Revive Floppy rule): map 4 deals the
+# dark fluid, map 5 the gilded pill.
+_MAP_SPECIALTY = {1: "chocolate_egg", 2: "futon", 3: "board_game",
+                  4: "digitron", 5: "gold_pill"}
 
 
 def _econ_stub(key):

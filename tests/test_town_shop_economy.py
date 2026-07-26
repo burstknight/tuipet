@@ -122,11 +122,11 @@ def test_the_town_panel_serves_the_counter(monkeypatch):
     assert pan._tabs() == ["Food", "Items", "Eggs"]
     pan.tab = 0                                        # the Food shelf
     rows = pan._rows()
-    # steak (authored) + cake (map 1's regional specialty -- item
-    # diversity audit 2026-07-23) + milk (an authored override that came
-    # ALIVE with the item expansion 2026-07-26); town 4's guest is a
-    # non-food, and the family's G-chips sort onto the Items tab
-    assert [e["key"] for e in rows] == ["steak", "cake", "milk"]
+    # steak (authored) + the Chocolate Egg (map 1's regional specialty --
+    # REDEALT from the grown catalog, Joel 2026-07-26 "redeal the
+    # specialties too"); the family's G-chips sort onto the Items tab and
+    # town 4's guest is a non-food this deal
+    assert [e["key"] for e in rows] == ["steak", "chocolate_egg"]
     pan.cursor = 0                                     # buy the steak
     bits0 = p.bits
     pan.key("enter")                                   # buy at the LOCAL price
@@ -175,9 +175,10 @@ def test_every_town_keeps_one_standing_guest_good():
 
 def test_the_regional_specialty_marks_every_map():
     """P4 (item diversity audit 2026-07-23): each map's towns carry ONE
-    regional SKU beyond the 2-variant authored base -- the five maps read
-    differently before the guest good even lands.  Map 4 (the hardest
-    region) is where the Revive Floppy waits."""
+    regional SKU beyond the authored base -- the five maps read
+    differently before the guest good even lands.  REDEALT 2026-07-26
+    from the grown catalog; the deep maps keep the premium slots -- map 4
+    (the hardest region) is where the Digitron waits."""
     tm = shop._town_maps()
     for tid in data.load_towns():
         want = shop._MAP_SPECIALTY[tm[tid]]
@@ -185,7 +186,7 @@ def test_the_regional_specialty_marks_every_map():
         assert want in keys, (tid, want)
         # ...and the guest is never a duplicate of anything on the shelf
         assert len(keys) == len(set(keys)), tid
-    assert shop._MAP_SPECIALTY[4] == "revive_floppy"
+    assert shop._MAP_SPECIALTY[4] == "digitron"
     assert len(set(shop._MAP_SPECIALTY.values())) == 5   # five distinct
 
 

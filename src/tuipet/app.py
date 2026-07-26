@@ -153,8 +153,9 @@ class TuiPetApp(ActionsMixin, App):
                  "CAPSULES open into surprises (finer on festivals — and "
                  "two of the ten boxes bite). Town shelves triple their "
                  "variety. Even feeding hides a secret now. Go find it all. "
-                 "(the Bandage item is gone again — the wrap belongs to the "
-                 "H heal's animation, which stays free)")
+                 "The five regional specialties redealt too: the starter "
+                 "map sells a toy surprise, the deep maps deal the Digitron "
+                 "and the Gold Pill.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the
