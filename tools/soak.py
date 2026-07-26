@@ -28,7 +28,8 @@ from tuipet import persistence                         # noqa: E402
 
 STAGE_ORDER = {"Egg": 0, "Fresh": 1, "InTraining": 2, "Rookie": 3,
                "Champion": 4, "Ultimate": 5, "Mega": 6}
-FLOAT_FIELDS = ("age_seconds", "stage_seconds", "world_seconds", "lifespan",
+# lifespan left with the DSprite mortality rework (death = hazard roll)
+FLOAT_FIELDS = ("age_seconds", "stage_seconds", "world_seconds",
                 "energy", "weight")
 
 findings = []
@@ -70,7 +71,8 @@ def check_invariants(p, policy, seed, t, prev_age, prev_stage):
 def roundtrip(p, policy, seed, t):
     """to_save_dict -> pet_from_save must reproduce a live pet, no heals."""
     d = persistence.to_save_dict(p)
-    p2, msg = persistence.pet_from_save(d, catch_up=False)
+    # catch_up left with the TIME LAW (no offline catch-up exists to disable)
+    p2, msg = persistence.pet_from_save(d)
     if p2 is None:
         note(policy, seed, t, f"save round-trip REJECTED a live pet: "
                               f"stage={p.stage} name={p.name!r} msg={msg!r}")
@@ -149,8 +151,7 @@ def run(policy, seed, max_gens=3, max_ticks=3_000_000):
             roundtrip(p, policy, seed, t)
         if p.dead:
             deaths.append((p.stage, p.death_cause,
-                           round(p.age_seconds / 86400, 2),      # REAL days
-                           round(p.lifespan / 86400, 2)))
+                           round(p.age_seconds / 86400, 2)))     # REAL days
             roundtrip(p, policy, seed, t)
             gens += 1
             g = p.generation
