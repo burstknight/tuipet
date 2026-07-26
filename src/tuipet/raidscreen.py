@@ -43,6 +43,7 @@ class RaidPanel(menu.SubHost):
         self.frame_i = 0
         self.sfx = None
         self.msg = "Calling the raid gate…"
+        self._pool_seen = None        # (start, hp, end, name) of the last-seen boss
         self._dealt = 0
         self._credited = 0            # the gate's acked board damage this session
         name, pw = persistence.get_account()
@@ -126,6 +127,22 @@ class RaidPanel(menu.SubHost):
         if reward is not None:
             self.client.raid_reward = None
             self._apply_reward(reward)
+        # the POOL BREAK gets its fanfare (Joel 2026-07-26: "wire win.wav to
+        # the raid pool break").  A view never shows hp 0 -- the kill archives
+        # immediately (_raid_hit rotates on the felling blow) -- so the break
+        # is an EDGE: the boss changed while the old window still had time.
+        # A rotation before `end` can only be a kill; past `end` it's the
+        # escape, which stays quiet (the claim's consolation speaks for it).
+        b = self._boss()
+        if b:
+            prev = getattr(self, "_pool_seen", None)
+            now = (self.view or {}).get("now", 0)
+            if (prev is not None and b.get("start") != prev[0]
+                    and prev[1] > 0 and now <= prev[2]):
+                self.msg = f"{prev[3]} falls — the pool is broken!"
+                self.sfx = "win"
+            self._pool_seen = (b.get("start"), b.get("hp", 0),
+                               b.get("end", 0), b.get("name", "The boss"))
 
     def _apply_reward(self, reward):
         if not reward.get("ok"):

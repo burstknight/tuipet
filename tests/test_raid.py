@@ -294,6 +294,36 @@ def test_the_raid_bout_reports_its_dealt_damage():
         assert ("hit", bout.dealt) in pan.client.calls
 
 
+def test_the_pool_break_plays_the_win_fanfare():
+    """The break is an EDGE, never a state: a felled boss archives on the
+    felling hit (_raid_hit rotates immediately), so no view ever shows hp 0.
+    The panel reads the kill as boss-changed-with-time-left; an escape
+    (rotation past `end`) stays quiet (Joel 2026-07-26: win.wav -> the
+    pool break)."""
+    pan = _panel()
+    pan.client.raid = _view(_mega(), hp=700, start=0.0, now=100.0)
+    pan.anim()                                              # record the standing boss
+    pan.sfx = None
+    # the kill: a NEW boss (different start) while the old window had time
+    pan.client.raid = _view(_mega(), hp=1000, start=5000.0, now=200.0)
+    pan.anim()
+    assert pan.sfx == "win" and "broken" in pan.msg
+    pan.sfx = None
+    pan.anim()                                              # same boss again: one fanfare only
+    assert pan.sfx is None
+
+
+def test_an_escape_rotation_stays_quiet():
+    pan = _panel()
+    pan.client.raid = _view(_mega(), hp=700, start=0.0, now=100.0)
+    pan.anim()                                              # end = start + 604800
+    pan.sfx = None
+    # the escape: the new boss arrives only AFTER the old window closed
+    pan.client.raid = _view(_mega(), hp=1000, start=700000.0, now=650000.0)
+    pan.anim()
+    assert pan.sfx is None and "broken" not in pan.msg
+
+
 def test_a_raid_bout_writes_nothing_on_the_pet():
     from tuipet import battle as battle_mod
     import random

@@ -144,12 +144,10 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("PRESS H TO HEAL — a battle injury has its own care key "
-                 "now: H patches the wound free, with the full bandaging "
-                 "animation. The feed menu is the classic meat-and-pill "
-                 "LCD again, and a wound left alone still closes on its "
-                 "own clock. Untreated wounds bench you from fights and "
-                 "whisper to death, so don't sit on them.")
+    WHATS_NEW = ("THE POOL BREAK HAS A FANFARE — when the community shatters "
+                 "a raid boss's shared HP pool, the raid screen now plays the "
+                 "victory chime and calls the fall by name. An escaped boss "
+                 "still slinks off in silence; only a kill earns the horn.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the
