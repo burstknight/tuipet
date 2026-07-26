@@ -187,9 +187,11 @@ class Pet(CareMixin, DnaMixin, BattleMixin, BodyMixin):
     perfect_wins: int = 0           # _perfectWins: HP-drill wins toward the next +1 HP
     # (the old adventure fields -- adv_map/adv_zone/adv_seek/adv_loc -- left
     # with the world layer; BASIC VPET 2026-07-16.  The adventure REBUILD
-    # 2026-07-20 tracks progression with ONE field: the number of zones
-    # conquered = the index of the current frontier zone in adventure.ZONES.
-    # Auto-persisted (asdict / fields(Pet)); old saves default to 0.)
+    # 2026-07-20 tracks progression with ONE field: the COUNT of zones
+    # conquered -- a ROAD position under the difficulty sort, not a ZONES
+    # index (the frontier zone is PROGRESSION[adv_progress]; truthed
+    # 2026-07-25).  Auto-persisted (asdict / fields(Pet)); old saves
+    # default to 0.)
     adv_progress: int = 0
     # THE RIVAL (cup fun arc 2026-07-21): the mon that last ELIMINATED you
     # from a cup bracket -- it re-seeds into future brackets its tier fits,
@@ -220,6 +222,12 @@ class Pet(CareMixin, DnaMixin, BattleMixin, BodyMixin):
     # DVPet's 375b town steak vs the 2000b catalog would otherwise be a
     # money printer through the demand resale)
     town_bought: dict = _dcf(default_factory=dict)
+    # the day's claimed REPLAY boss bounties {"day": ordinal, "<zi>": 1} --
+    # a conquered zone's boss pays its veteran bounty once per real day
+    # (anti-printer, adventure audit 2026-07-25: the road was the one
+    # unrationed earner -- the festival x streak x veteran stack paid
+    # ~18,000b per repeatable 8-minute run, ten times the hour-gated cup)
+    road_bounty: dict = _dcf(default_factory=dict)
     # transient animation request, consumed by the UI
     anim: str = "idle"
     anim_ttl: float = 0.0

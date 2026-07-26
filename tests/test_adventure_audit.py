@@ -41,9 +41,12 @@ def _zone_with_town():
 # ---- F2: the Town Transport --------------------------------------------
 
 def test_a_town_warp_lands_in_the_town_it_promises():
+    """From ANY off-town leg -- before the span, past it, or the boss gate
+    itself (audit 2026-07-25: forward-only left the back half and the gate
+    with a ticket that bought nothing)."""
     z = _zone_with_town()
     a, b, _t = z["town_legs"][0]
-    for start in (0, a, b):
+    for start in (0, b + 1, A.INTERACTIVE_STEPS):
         p = _pet()
         p.add_item("town_transport")
         adv = A.Adventure(p, zone=z)
@@ -54,23 +57,27 @@ def test_a_town_warp_lands_in_the_town_it_promises():
         assert p.inventory.get("town_transport", 0) == 0     # the ticket is spent
 
 
-def test_past_the_last_town_the_ticket_is_not_offered_or_spent():
+def test_on_town_ground_the_ticket_is_not_offered_or_spent():
+    """The dead-menu-row rule kept its teeth, aimed at the real dead buy
+    (audit 2026-07-25): standing IN the span, a ticket would buy a rest
+    you already have."""
     z = _zone_with_town()
-    _a, b, _t = z["town_legs"][0]
+    a, _b, _t = z["town_legs"][0]
     p = _pet()
     p.add_item("town_transport")
     adv = A.Adventure(p, zone=z)
-    adv.loc = b + 1
+    adv.loc = a
     assert "town_transport" not in adv.held_transports()      # hidden, like the
     #                                                           full-hearts life warp
     assert adv.use_transport("town_transport") is None        # and refused if forced
     assert p.inventory.get("town_transport", 0) == 1          # ticket KEPT
-    assert adv.loc == b + 1                                   # and no silent rest
+    assert adv.loc == a                                       # and no silent rest
 
 
-def test_the_planted_feet_strip_only_offers_a_warp_that_exists():
-    """The honest-outs rule (energy audit 2026-07-23) meets F2: a spent pet
-    past the town must not be told to warp."""
+def test_the_planted_feet_strip_offers_the_warp_everywhere_off_town_ground():
+    """The honest-outs rule (energy audit 2026-07-23), completed 2026-07-25:
+    the warp doubles back now, so a spent pet PAST the town is told the
+    truth -- the out exists."""
     z = _zone_with_town()
     _a, b, _t = z["town_legs"][0]
 
@@ -84,7 +91,7 @@ def test_the_planted_feet_strip_only_offers_a_warp_that_exists():
         return pan.strip()
 
     assert "T warp" in strip_at(0)
-    assert "T warp" not in strip_at(b + 1)
+    assert "T warp" in strip_at(b + 1)                # the back half has the out now
     assert "ESC home" in strip_at(b + 1)
 
 
@@ -198,3 +205,283 @@ def test_every_road_state_renders_inside_the_arena(state):
     assert len(rows) <= 12, f"{state}: {len(rows)} rows"
     assert max(len(r) for r in rows) <= 40, f"{state}: too wide"
     pan.strip()                                   # the hint line renders too
+
+
+# ==== THE 2026-07-25 FULL GAMEPLAY AUDIT — the batch pins =================
+# Six parallel sweeps (engine / panel / town / cross-system / balance sim /
+# live-play); every fix below verified failing on the pre-fix tree.
+
+from rich.cells import cell_len as _cl
+import re as _re
+
+
+def _plain(s):
+    return _re.sub(r"\[[^]]*]", "", s)
+
+
+def _frontier_replay(p):
+    """A pet standing on a conquered road position 0 (replay=True there)."""
+    p.adv_progress = 1
+    return A.Adventure(p, zone=A.ZONES[A.PROGRESSION[0]])
+
+
+def test_the_warp_ambusher_is_a_veteran_on_a_conquered_road():
+    p = _pet(bits=0)
+    p.add_item("disaster_transport")
+    adv = _frontier_replay(p)
+    assert adv.replay
+    random.seed(7)
+    r = adv.use_transport("disaster_transport")
+    assert isinstance(r, tuple) and r[0] == "encounter"
+    assert r[1].get("veteran"), "the warp ambush slipped the veteran wrap"
+
+
+def test_the_dash_is_not_for_sale_at_the_gate():
+    p = _pet()
+    p.add_item("disaster_transport")
+    adv = A.Adventure(p, zone=A.ZONES[A.PROGRESSION[0]])
+    adv.loc = adv.total                     # standing at the gate
+    assert "disaster_transport" not in adv.held_transports()
+    assert adv.use_transport("disaster_transport") is None
+    assert p.inventory.get("disaster_transport", 0) == 1    # ticket KEPT
+
+
+def test_danger_rolls_before_treasure(monkeypatch):
+    """A festival doubles finds; finds must not shadow hazards -- the old
+    order made the road ~14% SAFER on a holiday."""
+    p = _pet()
+    adv = A.Adventure(p, zone=A.ZONES[A.PROGRESSION[0]])
+    monkeypatch.setattr(A, "ENCOUNTER_CHANCE", 0.0)
+    monkeypatch.setattr(adv, "_roll_hazard", lambda: {"name": "X"})
+    monkeypatch.setattr(adv, "_roll_find", lambda: ("fish", False))
+    out = adv.travel()
+    assert out[0] == "hazard"
+
+
+def test_the_towns_safe_ground_covers_the_walk_in_not_the_walk_out(monkeypatch):
+    z = next(x for x in A.ZONES if x.get("town_legs"))
+    a, b, _t = z["town_legs"][0]
+    p = _pet()
+    adv = A.Adventure(p, zone=z)
+    monkeypatch.setattr(A, "ENCOUNTER_CHANCE", 1.0)   # every off-town leg rolls
+    monkeypatch.setattr(A, "FIND_CHANCE", 0.0)
+    monkeypatch.setattr(A, "HAZARD_CHANCE", 0.0)
+    adv.loc = a - 1                          # destination a: town ground
+    assert adv._roll_encounter() is None     # no ambush on the doorstep
+    adv._immunity = 0
+    adv.loc = b                              # destination b+1: outside
+    assert adv._roll_encounter() is not None  # the walk OUT rolls again
+
+
+def test_grace_spends_on_town_legs_too():
+    z = next(x for x in A.ZONES if x.get("town_legs"))
+    a, _b, _t = z["town_legs"][0]
+    p = _pet()
+    adv = A.Adventure(p, zone=z)
+    adv.loc, adv._immunity = a, 3
+    adv._roll_encounter()
+    assert adv._immunity == 2                # legs, not fights dodged
+
+
+def test_zone_6_wears_its_gate_boss_biome():
+    """The one multi-boss zone: the biome must stand where the FOUGHT boss
+    stands (Piedmon), not where the unreachable second one does."""
+    z = A.ZONES[6]
+    assert len(z.get("bosses", ())) == 2     # the data oddity this pins
+    bl = z["bosses"][0].get("location", 0)
+    hid = next((h for lo, hi, h in sorted(z.get("bgs", ()))
+                if lo <= bl <= hi), None)
+    if hid is not None:
+        assert A._boss_biome_hid(z) == hid
+
+
+def test_the_replay_bounty_pays_once_a_day_per_zone():
+    boss = {"name": "B", "bits": (100, 100), "boss": True}
+    wild = {"name": "w", "bits": (10, 10)}
+    p = _pet(bits=0)
+    adv = _frontier_replay(p)
+    assert adv.award_bits(boss) > 0          # first replay bounty of the day
+    adv2 = _frontier_replay(p)               # the back-to-back loop
+    assert adv2.award_bits(boss) == 0        # rationed
+    assert adv2.bounty_spent
+    assert adv2.award_bits(wild) > 0         # wilds still pay
+    q = _pet(bits=0, adv_progress=0)
+    fresh = A.Adventure(q, zone=A.ZONES[A.PROGRESSION[0]])
+    assert not fresh.replay
+    assert fresh.award_bits(boss) > 0        # a FIRST conquest is untouched
+
+
+def test_the_front_door_refuses_what_the_road_cannot_cure():
+    assert "hungry" in _pet(hunger=0).can_adventure()
+    assert "Clean" in _pet(poop=3).can_adventure()
+    assert _pet(sick=True).can_adventure() is None      # the pilgrimage embarks
+    hurt = _pet()
+    hurt.injured, hurt.inj_length = True, 999.0
+    assert hurt.can_adventure() is None
+
+
+def test_the_town_rest_is_the_roads_sickbed():
+    p = _pet(sick=True)
+    p.injured, p.inj_length = True, 999.0
+    adv = A.Adventure(p, zone=A.ZONES[A.PROGRESSION[0]])
+    adv._rest_up()
+    assert not p.sick and not p.injured and p.inj_length == 0.0
+
+
+def test_an_unfit_body_balks_at_a_wild(monkeypatch):
+    p = _pet()
+    p.injured, p.inj_length = True, 999.0
+    pan = AdventurePanel(p, zone=A.ZONES[A.PROGRESSION[0]])
+    pan._trans = None
+    pan.travelling = True
+    pan._start_battle({"name": "w", "bits": (1, 1)})
+    assert pan.sub is None                   # no bout with a hurt body
+    assert pan.travelling                    # the march keeps flowing
+    assert "slipped away" in pan._note
+    assert pan.adv.fights == 0               # nothing recorded
+
+
+def test_the_second_wind_works_on_the_knocked_back_gate():
+    """The retry arm (no body refusal) left a held Life Recovery inert at
+    the exact moment it exists for."""
+    p = _pet()
+    p.add_item("life_recovery")
+    pan = AdventurePanel(p, zone=A.ZONES[A.PROGRESSION[0]])
+    pan._trans = None
+    pan.travelling = False
+    pan._at_gate, pan._gate_refusal = True, None
+    pan.adv.lives = 1
+    pan.key("t")
+    assert pan._transport                    # the menu opens on the retry arm
+    pan.key("enter")
+    assert pan.adv.lives == A.MAX_LIVES
+    assert pan._heal_t > 0
+    s = _plain(pan.strip())
+    assert "second wind" in s                # the beat SPEAKS at the gate
+    for _ in range(200):
+        pan.anim()                           # ...and DRAINS at the gate
+    assert pan._heal_t == 0
+
+
+def test_the_rest_beat_swallows_the_march_keys():
+    p = _pet()
+    pan = AdventurePanel(p, zone=A.ZONES[A.PROGRESSION[0]])
+    pan._trans = None
+    pan.travelling, pan._rest_t = True, 5
+    before = pan.adv.loc
+    for _ in range(5):
+        pan.key("space")
+    assert pan.adv.loc == before             # no silent legs behind the rest
+
+
+def test_a_road_death_ends_the_run_now():
+    p = _pet()
+    pan = AdventurePanel(p, zone=A.ZONES[A.PROGRESSION[0]])
+    pan._trans = None
+    pan.travelling = True
+    p.dead = True
+    pan.anim()
+    assert pan._trans is not None            # straight to the homecoming
+    assert pan._summary_shown                # a grave outranks a score card
+
+
+def test_the_town_hub_speaks_the_item_verdicts_and_closes_over_a_corpse():
+    from tuipet.townscreen import TownPanel
+    p = _pet()
+    t = TownPanel(p, 0)
+    t._sub_done(("eat", "f:13", "...it was DELICIOUS. And fatal."))
+    assert "fatal" in t.msg                  # the verdict SPEAKS
+    t._sub_done(("evolve", 100))
+    assert "evolved" in t.msg
+    p.dead = True
+    assert t.key("enter") == ("done", None)  # any key closes over a corpse
+
+
+@pytest.mark.parametrize("zi", range(len(A.ZONES)))
+def test_every_gate_strip_fits_the_box(zi):
+    """Ten boss names ran 41-45 cells and marqueed the REQUIRED keys; the
+    pulse line ran to 71.  Cells, not chars (bug-#32 law)."""
+    p = _pet()
+    p.add_item("life_recovery")
+    pan = AdventurePanel(p, zone=A.ZONES[zi])
+    pan._trans = None
+    pan.travelling = False
+    pan._at_gate = True
+    pan.adv.lives = 1                        # life recovery held -> T shown
+    assert _cl(_plain(pan.strip())) <= 40
+    pan._gate_refusal = "Too hungry to fight."   # the widest refusal clause
+    assert _cl(_plain(pan.strip())) <= 40
+    pan._gate_refusal = None
+    pan._pulse = {"t": 0, "parade": [], "msg": None,
+                  "line": f"{pan.adv.boss_name} — conquered!"}
+    assert _cl(_plain(pan.strip())) <= 40
+
+
+def test_the_zone_picker_holds_its_shape_and_trims_with_ellipsis(monkeypatch):
+    from tuipet.adventurescreen import ZonePickPanel
+    from tuipet import persistence
+    p = _pet()
+    p.adv_progress = len(A.PROGRESSION)          # the whole road: the longest
+    long_zi = max(A.PROGRESSION, key=lambda i: len(A.ZONES[i]["name"]))
+    monkeypatch.setattr(persistence, "zone_bests", lambda: {long_zi: 123})
+    pan = ZonePickPanel(p)
+    rows = []
+    for cur in range(len(pan.indices)):
+        pan.cursor = cur
+        rows.append(len(pan.text().plain.rstrip("\n").split("\n")))
+    assert len(set(rows)) == 1               # the footer never hops a row
+    pan.cursor = pan.indices.index(long_zi)
+    body = pan.text().plain
+    assert "…" in body                       # ellipsis, not the silent cut
+
+
+def test_the_picker_tells_you_the_bounty_is_claimed():
+    from tuipet.adventurescreen import ZonePickPanel
+    p = _pet()
+    p.adv_progress = 1
+    p.road_bounty = {"day": shop._today_ordinal(), str(A.PROGRESSION[0]): 1}
+    pan = ZonePickPanel(p)
+    pan.cursor = pan.indices.index(A.PROGRESSION[0])
+    assert "bounty claimed today" in pan.text().plain
+
+
+def test_the_area_atom_reads_the_device_lifetime(monkeypatch):
+    from tuipet import lines, persistence
+    p = _pet()
+    p.adv_progress = 0
+    monkeypatch.setattr(persistence, "get_progress",
+                        lambda: {"maps": {3}, "raids": 0})
+    assert lines.check_rule(p, lines.parse_rule("AREA 3"))   # lifetime maps open it
+    met, txt = lines._atom_row(p, ("area", "3", None))
+    assert "map 4" in txt                    # the row speaks the road door
+
+
+def test_the_vitals_stay_live_on_the_road():
+    import inspect
+    from tuipet.app import TuiPetApp
+    src = inspect.getsource(TuiPetApp.on_frame)
+    assert "self.stats_w.paint(self.pet)" in src   # the liveness fallback
+
+
+def test_the_bug_report_wears_the_running_version():
+    import inspect
+    from tuipet.app import TuiPetApp
+    assert "_boot_version" in inspect.getsource(TuiPetApp._bug_meta)
+    assert "_boot_version" in inspect.getsource(TuiPetApp.__init__)
+
+
+def test_the_repick_carries_the_antiprinter_ledgers():
+    import inspect
+    from tuipet.app import TuiPetApp
+    src = inspect.getsource(TuiPetApp._hatch_new)   # the re-pick estate copy
+    assert "town_bought" in src and "road_bounty" in src
+
+
+def test_the_town_cup_door_rolls_the_day_and_shares_the_stake_source():
+    import inspect
+    from tuipet import townscreen
+    src = inspect.getsource(townscreen.TownPanel._start_cup)
+    assert "tournament.schedule" in src      # the day rolls at THIS door too
+    assert "_stake_check" in src             # ONE stake gate, no hand copy
+    with pytest.raises(TypeError):
+        townscreen.TownPanel(_pet())         # town_id is REQUIRED now

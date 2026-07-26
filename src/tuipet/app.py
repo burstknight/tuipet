@@ -141,12 +141,15 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE GUIDE GOT A FACT-CHECK — and it caught a real bug: "
-                 "the feed menu's third row (the free Bandage) was "
-                 "INVISIBLE, the arrow sat on the Pill while ENTER "
-                 "bandaged. The stack now slides to show it. The data "
-                 "book can finally say 'hurt', and the guide no longer "
-                 "sends you to the bag for a cure that lives on F.")
+    WHATS_NEW = ("THE ROAD GOT A FULL SHAKEDOWN — 25 fixes. The big ones: "
+                 "a town REST now patches wounds and cures sickness (your "
+                 "hurt mon was 4x likelier to be refused at the boss gate "
+                 "than to lose to the boss), the town warp reaches the "
+                 "nearest town in EITHER direction so it always buys a "
+                 "real town, an unfit body slips away from wilds instead "
+                 "of grinding, and a conquered boss pays its replay "
+                 "bounty once a day — the road was quietly out-earning "
+                 "every cup and raid combined.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the
@@ -178,6 +181,11 @@ class TuiPetApp(ActionsMixin, App):
 
     def __init__(self, pet: Pet | None = None):
         super().__init__()
+        try:                       # the version THIS process runs (see _bug_meta)
+            from importlib.metadata import version as _v
+            self._boot_version = _v("tuipet")
+        except Exception:
+            self._boot_version = ""
         self._welcome = "Welcome! Raise your pet."
         self._new_game = False
         if pet is None:
@@ -711,11 +719,11 @@ class TuiPetApp(ActionsMixin, App):
 
     def _bug_meta(self):
         import platform as _pf
-        try:
-            from importlib.metadata import version as _v
-            ver = _v("tuipet")
-        except Exception:
-            ver = ""
+        # the RUNNING build's version, captured at boot (audit 2026-07-25):
+        # the in-session updater pip-installs the NEW release into this
+        # environment, so a send-time metadata read attributed a bug to a
+        # build that never touched the player's screen
+        ver = self._boot_version
         p = self.pet
         return {"version": ver,
                 "platform": "%s py%s" % (host_platform(), _pf.python_version()),
@@ -975,6 +983,13 @@ class TuiPetApp(ActionsMixin, App):
                 painter = self._status_painter()
                 if painter is not None:
                     painter()
+                else:
+                    # the LIVENESS LAW reaches the road (audit 2026-07-25):
+                    # panels outside the statusbox registry -- the adventure
+                    # march above all -- left the vitals card frozen between
+                    # keypresses while energy, bits and hearts moved.  Same
+                    # fallback repaint() has always used.
+                    self.stats_w.paint(self.pet)
                 ac = getattr(self.mode, "auto_close", None)
                 if ac is not None:
                     # a panel finished its own exit beat (the adventure
@@ -1446,6 +1461,12 @@ class TuiPetApp(ActionsMixin, App):
             self.pet.trophies_won = dict(old.trophies_won or {})
             self.pet.dna_owned = dict(old.dna_owned or {})
             self.pet.evol_bonus = old.evol_bonus
+            # the anti-printer ledgers ride along (audit 2026-07-25): a
+            # re-pick that dropped them refilled every town ration, the
+            # home deal AND the road bounty per re-roll -- an estate carry
+            # must never mint a fresh shopping day
+            self.pet.town_bought = dict(old.town_bought or {})
+            self.pet.road_bounty = dict(getattr(old, "road_bounty", None) or {})
             if getattr(old, "digimemory", None):
                 self.pet.digimemory = dict(old.digimemory)
                 if self.pet.inventory.get("digimemory", 0) <= 0:

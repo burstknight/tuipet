@@ -171,17 +171,21 @@ def test_a_town_warp_opens_the_town_doors():
     assert pan.sub.town_id == pan.adv.town_at(pan.adv.loc)
 
 
-def test_a_warp_from_past_the_town_rests_in_place_without_doors():
-    """Forward-only warping means a pet already PAST the span rests where
-    it stands -- there is no town ground under it, so no prompt."""
+def test_a_warp_from_past_the_town_doubles_back_to_it():
+    """The ticket buys the NEAREST town, behind included (audit 2026-07-25):
+    forward-only warping left the whole back half -- and the boss gate --
+    with a ticket that bought nothing.  Past the span it now doubles back,
+    rests on real town ground, and opens the hub doors."""
     p = _pet()
     p.add_item("town_transport")
     z = _zone()
     pan = AdventurePanel(p, zone=z)
     _to_travelling(pan)
-    pan.adv.loc = z["town_legs"][-1][1] + 1       # beyond the last span
+    a, b, _tid = z["town_legs"][-1]
+    pan.adv.loc = b + 5                           # beyond the last span
     pan.key("t")
     pan.key("enter")
+    assert pan.adv.loc == a                       # doubled back to the span
     while pan._rest_t > 0:
         pan.anim()
-    assert not pan._town_prompt                   # rested in place, march on
+    assert pan._town_prompt                       # ...and the doors open

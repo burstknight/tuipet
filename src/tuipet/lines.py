@@ -226,9 +226,17 @@ def _atom_met(pet, atom):
         # gate the eggs took in the rebuild; nobody who earned the gate
         # through raids loses the road they walked.
         n = int(a) if str(a).lstrip("-").isdigit() else 0
-        from . import adventure            # late: adventure imports data/pet
+        # DEVICE-LIFETIME first (audit 2026-07-25): the eggs and the shop
+        # read the profile `maps` set, and this atom's own raid arm reads
+        # the lifetime raid tally -- but the map arm read the per-life
+        # adv_progress, so Alphamon's road had to be re-walked every
+        # generation while its raid door stayed open.  The per-life check
+        # stays as the OR (pre-profile saves earned their road too).
+        from . import adventure, persistence   # late: adventure imports data/pet
         try:
-            cleared = adventure.is_map_cleared(pet, n + 1)
+            prog = persistence.get_progress()
+            cleared = (n in (prog.get("maps", ()) or ())
+                       or adventure.is_map_cleared(pet, n + 1))
         except Exception:
             cleared = False
         return cleared or _felled_raids() >= n + 1
@@ -395,11 +403,12 @@ def _atom_row(pet, atom):
         pname = (by_num.get(a) or {}).get("name", f"#{a}")
         return None, f"jogress with {pname} (lobby)"     # informational: a door, not a counter
     if kind == "area":
-        # speak the raid re-gate, not the departed adventure maps ("clear
-        # map N" survived the re-gate; the gate is N+1 felled raid bosses)
+        # BOTH doors speak (audit 2026-07-25: "the departed adventure maps"
+        # came back 2026-07-21 -- the row still described only the raid arm,
+        # so a met gate read "(now 0)"); same phrasing as the egg guide
         n = int(a) if str(a).lstrip("-").isdigit() else 0
-        return _atom_met(pet, atom), (f"{n + 1} raid boss{'es' if n else ''} felled"
-                                      f"  (now {_felled_raids()})")
+        return _atom_met(pet, atom), (f"clear map {n + 1} (or fell {n + 1} "
+                                      f"raid boss{'es' if n else ''})")
     span = f"{a}+" if b is None else (f"{a}" if a == b else f"{a}-{b}")
     return _atom_met(pet, atom), f"{_TXT[kind]} {span}  (now {_actual(pet, kind)})"
 

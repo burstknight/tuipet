@@ -365,15 +365,26 @@ def test_a_healthy_pet_still_gets_its_raid_volley():
     assert pan.sub is not None
 
 
-def test_a_wayside_AMBUSH_still_cannot_be_declined():
-    """The one carve-out, and it stays one: a pounce is not a choice, and
-    the energy grammar has always had the same exception."""
+def test_the_carve_out_sits_on_the_true_pounce_and_the_wild_balks():
+    """RE-RULED by the full gameplay audit (2026-07-25, same principle):
+    "the gate holds on every fight you CHOOSE."  The old carve-out said a
+    wayside wild "cannot be declined" -- factually wrong: wild=True has
+    always given the free pre-bell flee, so it IS a chosen fight, and a
+    sick pet ground recorded bouts the home key refuses.  An unfit body
+    BALKS now (slips away, no bout, no life).  The TRUE undeclinable beat
+    -- the hazard pounce, which never opens a bout -- keeps the carve-out
+    its rationale actually describes."""
     p = _pet(injured=True, sick=True)
     pan = _road(p)
     enemy = {"num": 120, "name": "Kuwagamon", "stage": "Champion",
              "attribute": "Virus"}
     pan._start_battle(enemy)
-    assert pan.sub is not None                     # the fight happens
+    assert pan.sub is None                         # the unfit body balks
+    assert "slipped away" in pan._note
+    fit = _pet()
+    pan2 = _road(fit)
+    pan2._start_battle(dict(enemy))
+    assert pan2.sub is not None                    # a fit body still fights
 
 
 def test_fighting_moves_the_lifetime_training_term_too():

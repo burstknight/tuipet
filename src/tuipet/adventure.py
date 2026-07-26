@@ -53,7 +53,9 @@ HAZARD_ENERGY = 2         # the toll for eating a pounce (a SMALL hit -- the
 # here, record_battle in petbattle.py).  A hazard pounce is DAMAGE -- being
 # blindsided can knock the pet past empty (hazard_hit, unfloored), and only
 # that: negative energy is what plants its feet (check_stop_travel) and
-# strands the run on the refuse strip's outs (T warp / ESC home).
+# strands the run on the refuse strip's outs (T warp / ESC home -- and the
+# warp reaches the nearest town in EITHER direction since 2026-07-25, so
+# the out is real anywhere on the road, not just before the span).
 # REPLAY DIFFICULTY (Joel 2026-07-21 "do the replay difficulty scaling"): a
 # CONQUERED zone re-run is a VETERAN ROAD -- the same species fight TRAINED,
 # through the real hit-formula terms (Side.hit_chance's trainings + winning-
@@ -78,8 +80,10 @@ STREAK_STEP = 0.25        # WIN STREAK (arcade arc, Joel 2026-07-21 "do the win
 #                           adds +25% to bounties...
 STREAK_CAP = 2.0          # ...capped at DOUBLE (the festival double's scale).
 #                           A loss or a flee breaks the chain; so does any town
-#                           rest -- the push-on gamble: rest for safety, pay
-#                           with the chain.
+#                           rest -- and the mid-zone waypoint rests on ARRIVAL,
+#                           so every crossing's chain resets there by design
+#                           (truthed 2026-07-25: there is no push-on choice at
+#                           the waypoint; the cap is earned on the far side).
 HOLIDAY_BITS_MULT = 2     # festival purse: bounties pay double on a holiday
 HOLIDAY_FIND_MULT = 2     # more loot spills on the road during a festival
 FESTIVAL_PRESENT_CHANCE = 0.34   # ...and a third of festival finds are a
@@ -137,7 +141,11 @@ def _boss_biome_hid(zone):
         return None
     bosses = zone.get("bosses", ())
     if bosses:
-        bl = max(b.get("location", 0) for b in bosses)
+        # the GATE boss (bosses[0] -- the one Adventure.boss actually
+        # fights), NOT max(location): zone 6 carries a second, unreachable
+        # boss (Apocalymon) whose span sat past Piedmon's, so the run wore
+        # a biome its own gate boss never stands in (audit 2026-07-25)
+        bl = bosses[0].get("location", 0)
         for lo, hi, hid in spans:
             if lo <= bl <= hi:
                 return hid
@@ -174,10 +182,11 @@ _ROAD_KEYS = ("town_transport", "disaster_transport", "life_recovery")
 # D5 (2026-07-24, Joel "make them findable"): cookie + cupcake join the
 # gentle biomes alongside candy, the third grant-only treat -- which has
 # ALWAYS been a road find here, so this only brings its two siblings in
-# line.  (digimemory, the third never-found item, deliberately stays
-# unfindable: a WILD chip carries no ancestor payload, so a found one does
-# nothing -- "The chip is silent" -- and a dud in the loot pool is exactly
-# what the no-traps rule forbids.  It is inheritance-only BY DESIGN.)
+# line.  (digimemory joined the data biomes the SAME day: the later wild-
+# payload ruling gave a found chip a real 5-15 point payload
+# (petcare.stash_wild_memory), so the old "a wild chip is a silent dud"
+# objection died with it -- it sits in datatunnel/factorynight below,
+# truthed 2026-07-25.)
 BIOME_FINDS = {
     "greenhills":   ("fish", "vegetable", "ball", "candy", "cupcake"),
     "flowerfield":  ("vegetable", "candy", "music_player", "ball", "cookie"),
@@ -454,6 +463,7 @@ class Adventure:
         self._drain_acc = 0              # marched-legs accumulator toward a drain tick
         self._resting = False            # currently standing inside a town span
         self.bits_earned = 0             # bits won this run (wild bounties + the boss)
+        self.bounty_spent = False        # the replay boss bounty was already claimed today
         self.fights = 0                  # fights entered this run (wild + boss)
         self.wins = 0                    # ...of those, won
         self.finds = 0                   # loot dug up this run
@@ -532,11 +542,19 @@ class Adventure:
         """A wild enemy this leg, or None.  A town is safe ground (no roll);
         immunity after a fight is spent first; then a per-leg roll, the pick
         weighted by AppearanceChance."""
-        if self._in_town(self.loc):
-            return None                     # town ground: no wilds
+        # grace is LEGS, not fights dodged: it spends on town ground too,
+        # else a pre-town fight banked a bonus free leg on the far side
+        # (audit 2026-07-25)
         if self._immunity > 0:
             self._immunity -= 1
             return None
+        # the roll guards the leg being WALKED (the destination) -- the
+        # same leg find/hazard test after the step.  The old pre-step read
+        # made the walk OUT of town encounter-free and the walk IN
+        # ambushable on the doorstep, the town's safe ground off by one in
+        # one direction only (audit 2026-07-25)
+        if self._in_town(self.loc + 1):
+            return None                     # town ground: no wilds
         if random.random() >= ENCOUNTER_CHANCE:
             return None
         pool = self._wild_pool()
@@ -555,29 +573,32 @@ class Adventure:
         return {"town_transport": "town", "disaster_transport": "danger",
                 "life_recovery": "life"}.get(key)
 
-    def _town_ahead(self):
-        """Is there a town waypoint at or ahead of this leg?  (A warp only
-        ever runs FORWARD -- the road does not double back.)"""
-        return any(b >= self.loc for _a, b, _t in self.zone.get("town_legs", ()))
-
     def held_transports(self):
         """The run-usable road-item keys the pet is carrying, in bag order.
-        Life Recovery only lists when a life is actually missing -- a
-        full-hearts entry would be a dead menu row.
-
-        The Town Transport follows the same rule past the last town
-        (adventure audit 2026-07-25).  Every zone carries exactly ONE town
-        span, so once you walk past it the warp had nothing to warp to: it
-        spent a 500b ticket, rested you where you stood and still announced
-        "Warped to a town", with no hub, no shop and no visit-or-walk-on
-        choice -- and LATE, DRAINED and past the town is exactly when a
-        tamer reaches for it."""
+        Each row lists only when it BUYS something (the dead-menu-row rule,
+        audit 2026-07-25): Life Recovery hides at full hearts, the Town
+        Transport hides on town ground (the rest is already yours), and
+        the Danger Warp hides within dash range of the gate (a dash that
+        moves nothing).  The town warp reaches the NEAREST span in either
+        direction, so late, drained and past the town -- exactly when a
+        tamer reaches for it -- the ticket still buys a real town."""
         inv = getattr(self.pet, "inventory", {}) or {}
         return [k for k, n in inv.items() if n > 0 and self._transport_kind(k)
                 and not (self._transport_kind(k) == "life"
                          and self.lives >= MAX_LIVES)
+                # the ticket buys a TOWN: hidden only when you already
+                # stand on town ground (audit 2026-07-25 -- the old
+                # forward-only filter hid it at the gate in 26/26 zones,
+                # so the gate refusal's promised warp-out never existed;
+                # the road CAN double back for a rest)
                 and not (self._transport_kind(k) == "town"
-                         and not self._town_ahead())]
+                         and (self._in_town(self.loc)
+                              or not self.zone.get("town_legs")))
+                # the dash buys DISTANCE: at the gate it moved nothing,
+                # ate the ticket and forced a fight on a body the gate may
+                # have just refused (audit 2026-07-25)
+                and not (self._transport_kind(k) == "danger"
+                         and self.loc >= self.total - 3)]
 
     def use_transport(self, key):
         """Spend a road item.  Town warp -> jump to the town and rest
@@ -598,19 +619,28 @@ class Adventure:
             self.lives = MAX_LIVES
             self.last = "A second wind — lives restored!"
             return "life-recovery"
-        if kind == "town" and not self._town_ahead():
+        if kind == "town" and (self._in_town(self.loc)
+                               or not self.zone.get("town_legs")):
             # defensive, like the life warp's full-hearts guard: the menu
-            # already hides it, and a ticket must never buy a rest that
-            # calls itself a town (adventure audit 2026-07-25)
+            # already hides it, and a ticket must never buy a rest you
+            # already have (adventure audit 2026-07-25)
+            return None
+        if kind == "danger" and self.loc >= self.total - 3:
+            # defensive: a dash that moves nothing is not for sale
             return None
         self.pet.take_item(key)
         if kind == "town":
-            legs = [lg for lg in (self.zone.get("town_legs") or ())
-                    if lg[1] >= self.loc]              # the town AHEAD of you
-            if legs:
-                self.loc = max(self.loc, legs[0][0])   # forward only, never backward
+            # the NEAREST town span, behind included: every zone's span
+            # ends mid-road, so a forward-only jump left the whole back
+            # half (and the gate) with a ticket that bought nothing.
+            # Doubling back re-walks real legs -- the ticket's price on
+            # top of its price (audit 2026-07-25).
+            legs = list(self.zone.get("town_legs") or ())
+            tgt = min(legs, key=lambda lg: min(abs(self.loc - lg[0]),
+                                               abs(self.loc - lg[1])))
+            self.loc = tgt[0]
             self._rest_up()
-            self._resting = self._in_town(self.loc)
+            self._resting = True
             self.last = "Warped to a town — rested up."
             return "town-warp"
         # danger: dash to just shy of the boss gate, then an ambush
@@ -619,6 +649,11 @@ class Adventure:
         if pool:
             weights = [max(1, e.get("chance", 100)) for e in pool]
             enemy = random.choices(pool, weights=weights, k=1)[0]
+            if self.replay:
+                # the warp's ambusher is a VETERAN like every other wild on
+                # a conquered road -- the raw entry slipped the wrap while
+                # award_bits still paid the trained bounty (audit 2026-07-25)
+                enemy = _veteran(enemy)
             self.last = f"Warped ahead — ambushed by {enemy['name']}!"
             return ("encounter", enemy)
         self.last = "Warped ahead."
@@ -658,7 +693,10 @@ class Adventure:
         pool = self._wild_pool()
         if not pool:
             return None
-        return random.choice(pool)
+        # the zone's authored AppearanceChance weights, same as the walk
+        # and warp picks -- this was the one unweighted draw (audit 2026-07-25)
+        weights = [max(1, e.get("chance", 100)) for e in pool]
+        return random.choices(pool, weights=weights, k=1)[0]
 
     def score(self):
         """The run's arcade score, from the tallies the card already shows."""
@@ -672,14 +710,26 @@ class Adventure:
     def _rest_up(self):
         """A town rest, wherever it comes from (waypoint or warp): lives back,
         energy rested to at least HALF the tank (topped by TOWN_REST_ENERGY
-        when already above it) -- and the WIN STREAK breaks.  The push-on
-        gamble in one place: rest for safety, pay with the chain.  (D1 ruling
+        when already above it) -- and the WIN STREAK breaks.  One rest, one
+        price, both doors (the waypoint rests on arrival -- there is no
+        push-on choice there; truthed 2026-07-25).  (D1 ruling
         2026-07-23: the old flat +6 was one battle's worth -- "rested up" that
         a single fight erased; half a tank makes the words true, and a pet
         KNOCKED past empty warping in comes back standing.)"""
         self.lives = MAX_LIVES
         self.pet._set_energy(max(self.pet.energy + TOWN_REST_ENERGY,
                                  self.pet.max_energy // 2))
+        # THE TOWN IS THE ROAD'S SICKBED (audit 2026-07-25): injury is the
+        # one ailment a run itself inflicts (fight rolls), and with the
+        # clock parked it could never heal -- measured, an ideal pet was 4x
+        # likelier to be turned back hurt at the gate than to lose the
+        # boss.  A rest patches it, and cures a sickness carried in (the
+        # sick trudge's pilgrimage; the home cures are free too, so the
+        # town gives away nothing the F menu doesn't).  Mirrors the cure
+        # verbs' own writes (petcare pill/bandage) exactly.
+        self.pet.sick = False
+        self.pet.injured = False
+        self.pet.inj_length = 0.0
         self.streak = 0
 
     def chain(self, won):
@@ -717,6 +767,27 @@ class Adventure:
             amt = round(amt * self.streak_mult())   # the chained-win bonus
         if amt and self.replay:
             amt = amt * REPLAY_BITS_NUM // REPLAY_BITS_DEN   # veteran bounty
+            if enemy.get("boss"):
+                # THE REPLAY BOUNTY IS RATIONED (anti-printer, audit
+                # 2026-07-25): a conquered boss pays its veteran purse once
+                # per real day per zone -- the town_bought idiom.  Unbounded,
+                # the festival x streak x veteran stack paid ~18,000b per
+                # repeatable 8-minute run against a 51,677b whole-catalog;
+                # every other earner is rationed (cup: the hour; town rows:
+                # the daily cap; raid: attempts).  Wilds still pay, and a
+                # FIRST conquest is untouched.
+                from . import shop
+                zi = zone_index(self.zone)
+                if zi is not None:
+                    day = shop._today_ordinal()
+                    led = dict(getattr(self.pet, "road_bounty", None) or {})
+                    if led.get("day") != day:
+                        led = {"day": day}
+                    if led.get(str(zi)):
+                        amt, self.bounty_spent = 0, True
+                    else:
+                        led[str(zi)] = 1
+                    self.pet.road_bounty = led
         if amt:
             self.pet.bits += amt
             self.bits_earned += amt
@@ -800,16 +871,19 @@ class Adventure:
             self.done = True             # a bossless zone: the crossing is the win
             self.last = f"{self.name} crossed!"
             return "arrived"
+        # DANGER ROLLS BEFORE TREASURE (audit 2026-07-25): the find used to
+        # shadow the hazard, so doubling FIND_CHANCE on a festival quietly
+        # cut ambushes ~14% -- a festival must never make the road SAFER
+        haz = self._roll_hazard()
+        if haz is not None:
+            self.last = "Something rustles ahead!"
+            return ("hazard", haz)
         find = self._roll_find()
         if find is not None:
             key, present = find
             self.last = ("A present sits on the road!" if present
                          else "Something glints on the road.")
             return ("find", key, present)
-        haz = self._roll_hazard()
-        if haz is not None:
-            self.last = "Something rustles ahead!"
-            return ("hazard", haz)
         self.last = f"{self.name} — {self.pct}%"
         return "step"
 

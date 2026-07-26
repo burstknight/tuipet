@@ -245,4 +245,9 @@ def test_the_pulse_flash_says_what_it_celebrates(monkeypatch):
     pan._battle_done(_Win())
     assert pan._pulse is not None
     s = pan.strip()
-    assert "felled" in s and "conquered" in s
+    # ...and FITS while saying it (audit 2026-07-25: naming the boss twice
+    # ran to 71 cells and was cut mid-scroll on the biggest wins)
+    assert "conquered" in s and pan.adv.boss_name in s
+    from rich.cells import cell_len
+    import re
+    assert cell_len(re.sub(r"\[[^]]*]", "", s)) <= 40

@@ -97,6 +97,18 @@ TRAVEL_TICKS = 8              # auto-march pace: ticks per travel step (~0.8s a 
 TOWN_HOLD = 14                # ticks the pet rests at a town before marching on
 NOTE_HOLD = 30                # ticks a road-item verdict rides the strip
 
+_cells = cell_len             # budgets are CELLS, not chars (bug-#32 law)
+
+
+def _fit(name, budget):
+    """Ellipsis-trim a name to a cell budget: a strip's REQUIRED keys never
+    ride the marquee for a long boss name (audit 2026-07-25)."""
+    if _cells(name) <= budget:
+        return name
+    while name and _cells(name) + 1 > budget:
+        name = name[:-1]
+    return name + "…"
+
 # the habitat transition (canon Enum.State.Teleport_Leave/Teleport_Arrive --
 # SpriteAnim.teleportLeave()/teleportArrive()): the striped CURTAIN
 # (resources/evol.png: 2-on/1-off black stripes) flashes over the standing pet
@@ -212,8 +224,9 @@ class AdventurePanel(menu.SubHost):
                     # home: the flag the body sim gates on (assistant billing,
                     # filth, gift call -- canon _isHome) comes back down.  The
                     # SETTER died with the old adventure and was never rewired
-                    # (found 2026-07-21 via Joel's @-line question); the app's
-                    # death path already cleared it, waiting for this.
+                    # (found 2026-07-21 via Joel's @-line question);
+                    # _after_adventure is the one safety net (truthed
+                    # 2026-07-25: no app-side death path clears it).
                     self.pet.away = False
                     self.pet.away_where = ""
                     self.auto_close = ("done", self._home_msg)   # home: close + verdict
@@ -243,6 +256,19 @@ class AdventurePanel(menu.SubHost):
             if self._parade["t"] >= PARADE_T * len(self._parade["nums"]):
                 self._parade = None
                 self._go_home()
+            return
+        if (self.pet.dead and self._trans is None and not self._summary
+                and self.sub is None):
+            # A ROAD DEATH ENDS THE RUN NOW (audit 2026-07-25: the one
+            # source is a lethal town-bag item; the corpse used to keep
+            # marching, fighting and winning bits until homecoming, and
+            # the memorial only spoke at the door).  Straight to the
+            # teleport -- a grave outranks a score card.
+            self._summary_shown = True
+            self._go_home()
+            return
+        if self._at_gate and self._heal_t > 0:
+            self._heal_t -= 1             # the second wind plays at the gate too
             return
         if self.travelling:
             if self.pet.asleep:           # the roadside nap: the journey waits
@@ -336,12 +362,12 @@ class AdventurePanel(menu.SubHost):
             # the v0.5.164 heal was nothing but the heart glyphs ticking --
             # a happy beat + the verdict on the strip, the rest-beat grammar
             self._heal_t = TOWN_HOLD
-            self._note, self._note_t = self.adv.last, NOTE_HOLD
+            self._note, self._note_t = "⚡ " + self.adv.last, NOTE_HOLD
             self.sfx = "confirm"
         elif r == "danger-warp":
             # empty wild pool: the dash still happened -- say so instead of
             # silently eating the ticket (anim audit A12)
-            self._note, self._note_t = self.adv.last, NOTE_HOLD
+            self._note, self._note_t = "⚡ " + self.adv.last, NOTE_HOLD
 
     def _dig(self):
         """ENTER on a glint: the OUTCOME lands now -- the bag gets the loot,
@@ -454,7 +480,19 @@ class AdventurePanel(menu.SubHost):
 
     def _start_battle(self, enemy):
         """A wild fight rides BattlePanel as a child (SubHost): the road's biome
-        is the fight's scene, wild=True gives the pre-bell flee."""
+        is the fight's scene, wild=True gives the pre-bell flee.
+
+        THE UNFIT BODY BALKS (audit 2026-07-25): the boss gate asks the
+        device's question on every chosen fight -- but a wayside wild never
+        did, so a sick or hurt walker could grind recorded bouts the home
+        key refuses.  It slips away instead: no bout, no life, a grace leg
+        -- the pilgrimage to the town's sickbed stays walkable."""
+        if (cond := self.pet.battle_condition(check_energy=False)) is not None:
+            self.adv.resolve(False, fled=True)
+            self._note = f"{cond.rstrip('.!')} — slipped away."
+            self._note_t = NOTE_HOLD
+            self.travelling = True
+            return
         from .battlescreen import BattlePanel
         self.travelling = False               # the march pauses during the fight
         self._fighting_enemy = enemy
@@ -534,11 +572,13 @@ class AdventurePanel(menu.SubHost):
                 self._pulse = {"t": 0, "parade": paraders,
                                "msg": (enemy or {}).get("parade_msg"),
                                # the flash must SAY what it celebrates
-                               # (Joel 2026-07-25 "flashing for what?"): the
-                               # conquest line rides the strip for the whole
-                               # pulse, not just the homecoming verdict
-                               "line": (f"{self.adv.boss_name} felled — "
-                                        f"{self.adv.name} conquered!")}
+                               # (Joel 2026-07-25 "flashing for what?") --
+                               # and FIT while saying it: the old line named
+                               # the boss twice (the zone embeds it) and ran
+                               # to 71 cells, cut mid-scroll on the biggest
+                               # wins (audit 2026-07-25).  The homecoming
+                               # verdict keeps the full sentence.
+                               "line": f"{self.adv.boss_name} — conquered!"}
             elif out == "fled":
                 self._home_msg = f"Turned back from {self.adv.boss_name}.{self._bits_tail()}"
                 self._go_home()
@@ -554,6 +594,9 @@ class AdventurePanel(menu.SubHost):
             self._home_msg = f"Driven back from {self.adv.name}.{self._bits_tail()}"
             self._go_home()
         else:
+            # (defensive: a wayside settle never belongs to the gate -- the
+            # danger warp that once started one FROM the gate is hidden now)
+            self._at_gate, self._gate_refusal = False, None
             self.travelling = True            # resume the march (a grace leg follows)
 
     def _bits_tail(self):
@@ -564,6 +607,9 @@ class AdventurePanel(menu.SubHost):
         """Left the town hub -- back onto the road, the march resumes."""
         self._town_sub = False
         self._town_prompt = False
+        if self.pet.dead:                     # a lethal town-bag item: the run
+            self._summary_shown = True        # ends at the door, not 20 legs on
+            self._go_home()
 
     def _go_home(self):
         """Conclude the run: show the results card first (a key rides the
@@ -603,6 +649,11 @@ class AdventurePanel(menu.SubHost):
             if (s is not None and s.get("meter") and s["grade"] is None
                     and s["t"] >= INV_WALK_T and k in ("space", "enter")):
                 self._lock_dig()
+            return None
+        if self._rest_t > 0 or self._heal_t > 0:
+            # the rest / second-wind beat plays out -- keys used to fall
+            # through to the march and SPACE walked 5 silent legs behind a
+            # motionless rested pet (audit 2026-07-25)
             return None
         if self._town_prompt:                 # at a town: visit the hub or walk on
             if k in ("enter",):
@@ -670,10 +721,13 @@ class AdventurePanel(menu.SubHost):
             if k == "space":
                 self._start_boss(self.adv.boss)   # face it again (the gate
                 #                                   asks the body first now)
-            elif k == "t" and self._gate_refusal:
+            elif k == "t":
                 # the same honest out the planted-on-the-road refusal offers
                 # (energy audit 2026-07-23): a town rest is a real answer to
-                # a drained or filthy body, so the warp menu opens here too
+                # a drained, sick or hurt body.  BOTH gate arms take it now
+                # -- the retry arm (knocked back, lives short) used to leave
+                # a held Life Recovery inert at the exact moment it exists
+                # for (audit 2026-07-25)
                 held = self.adv.held_transports()
                 if held:
                     self._transport, self._transport_cursor = held, 0
@@ -709,10 +763,21 @@ class AdventurePanel(menu.SubHost):
             return menu.hints(("any key", "home"))
         if self._at_gate:                      # knocked back before the boss
             hearts = "♥" * self.adv.lives + "[dim]♡[/]" * (MAX_LIVES - self.adv.lives)
+            if self._heal_t > 0 and self._note:
+                return f"[b]{self._note}[/] {hearts}"   # the second wind speaks here too
             if self._gate_refusal:             # the body said no: SAY WHICH
+                # single spacing: the hungriest clause + a held warp ran 41
+                # cells and put the outs on the marquee (audit 2026-07-25)
                 out = "T warp · " if self.adv.held_transports() else ""
-                return f"[b]{self._gate_refusal}[/]  [dim]· {out}ESC home[/]"
-            return f"{self.adv.boss_name} {hearts}  [dim]· SPACE fight  ESC home[/]"
+                return f"[b]{self._gate_refusal}[/] [dim]· {out}ESC home[/]"
+            # CELL BUDGET (audit 2026-07-25: ten boss names ran 41-45 cells
+            # and scrolled the required keys off the box): the hints + hearts
+            # are fixed, the NAME takes what remains, ellipsis-trimmed
+            held = "T " if self.adv.held_transports() else ""
+            tail = f" {hearts} [dim]· SPACE fight {held}ESC home[/]"
+            plain = f" {'♥' * self.adv.lives}{'♡' * (MAX_LIVES - self.adv.lives)}" \
+                    f" · SPACE fight {held}ESC home"
+            return f"{_fit(self.adv.boss_name, 40 - _cells(plain))}{tail}"
         if self.travelling:
             lost = MAX_LIVES - self.adv.lives
             hearts = "♥" * self.adv.lives + "[dim]♡[/]" * lost
@@ -725,7 +790,10 @@ class AdventurePanel(menu.SubHost):
             if self._town_prompt:
                 return "[b]⌂ A town[/]  [dim]ENTER visit · SPACE walk on[/]"
             if self.pet.asleep:
-                return "[dim]zzZ — a roadside nap[/]"
+                # unreachable today (the door disturbs sleepers, the pill
+                # refuses on the road) -- but a waiting state must name its
+                # key if it ever becomes reachable (SHOW-FLOW, audit 2026-07-25)
+                return "[dim]zzZ — a roadside nap · ESC home[/]"
             if self._refuse_t > 0 or self._refused:
                 # the refusal only ever fires PAST EMPTY (stop_travel_prob:
                 # negative energy only) -- say so, or the bare "SPACE urge"
@@ -765,8 +833,9 @@ class AdventurePanel(menu.SubHost):
             if self._rest_t > 0:
                 return f"[b]⌂ Town — rested up[/]  ⚡{self.pet.energy} {hearts}"
             if self._heal_t > 0 or self._note_t > 0:
-                # the road-item verdict (audit A3/A12): second wind / bare dash
-                return f"[b]⚡ {self._note}[/] {hearts}" if self._note else ""
+                # the road-item / balk verdict (A3/A12; the ⚡ moved into the
+                # transport notes -- a balk's verdict is not an energy event)
+                return f"[b]{self._note}[/] {hearts}" if self._note else ""
             # the key hint CYCLES (Joel 2026-07-24 "anchor + rotate labels,
             # ~2s"): the bare key SET is the anchor, and between each one
             # labelled key rotates in -- so the full labels reach the player
@@ -1274,8 +1343,16 @@ class ZonePickPanel:
         mark = "✓" if adventure.is_conquered(self.pet, zi) else "★"   # conquered vs the frontier
         best = self.bests.get(zi)
         if best:                               # the standing score: chase it
-            return f"{mark} {z['name']}"[:27].ljust(27) + f"{best:>6}"
-        return f"{mark} {z['name']}"[:34]
+            # ellipsis, not the silent mid-word cut (audit 2026-07-25:
+            # "MasterTyrannomon's Factory Nig" the moment it had a best)
+            return _fit(f"{mark} {z['name']}", 27).ljust(27) + f"{best:>6}"
+        return _fit(f"{mark} {z['name']}", 34)
+
+    def _bounty_claimed(self, zi):
+        """Today's replay bounty already paid for this zone (the ration)."""
+        from . import shop
+        led = getattr(self.pet, "road_bounty", None) or {}
+        return led.get("day") == shop._today_ordinal() and led.get(str(zi))
 
     def text(self):
         right = "★ FESTIVAL" if self.holiday else f"{len(self.indices)}/{len(ZONES)}"
@@ -1285,8 +1362,19 @@ class ZonePickPanel:
             out.append_text(menu.note(f"★ {self.holiday}: 2× bits · more loot!"))
         elif adventure.is_conquered(self.pet, self.indices[self.cursor]):
             # the VETERAN ROAD tease (replay scaling 2026-07-21) -- the
-            # festival note owns the slot on the rarer festival days
-            out.append_text(menu.note("✓ veteran road: foes fight trained "
-                                      "· bounties +50%"))
+            # festival note owns the slot on the rarer festival days; the
+            # rationed bounty says so up front (audit 2026-07-25)
+            if self._bounty_claimed(self.indices[self.cursor]):
+                # <= 38 so it HOLDS STILL (a marqueeing ration notice reads
+                # as decoration)
+                out.append_text(menu.note("✓ veteran — bounty claimed today"))
+            else:
+                out.append_text(menu.note("✓ veteran road: foes fight trained "
+                                          "· bounties +50%"))
+        else:
+            # a steady card: the note row never blinks in and out as the
+            # cursor crosses a conquered row (audit 2026-07-25: the footer
+            # hopped a row)
+            out.append_text(menu.note(""))
         out.append_text(menu.footer("↑↓ pick   ENTER go   ESC back"))
         return out

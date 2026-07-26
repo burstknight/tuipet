@@ -151,16 +151,25 @@ class BattleMixin:
         return None
 
     def can_adventure(self):
-        """The adventure gate (foundation 2026-07-20): the same shape as the
-        raid gate -- dead/egg refused, a Fresh baby is too young for the road,
-        a sleeper is disturbed rather than served.  The engine phase can
-        tighten this (energy/sickness) once the road carries real risk."""
+        """The adventure gate (foundation 2026-07-20; tightened per its own
+        note, audit 2026-07-25): dead/egg refused, a Fresh baby is too young,
+        a sleeper is disturbed rather than served -- and the two body states
+        the road can never answer gate HERE, because the world clock is
+        parked mid-run: the pile or empty belly you leave with is exactly
+        what the boss gate will refuse 40 legs later, with no road cure
+        (measured: a guaranteed dead-end run).  SICK and HURT still embark
+        -- the sick trudge is the authored road walk, and a town rest is
+        their cure -- so their run is a pilgrimage, not a trap."""
         if (g := self._guard(asleep_blocks=False)) is not None:
             return g
         if self.stage == "Fresh":
             return "Too young for the road."
         if self.asleep:
             return self._disturbed()
+        if self.hunger <= 0:
+            return "Too hungry for the road — eat first."
+        if self.poop:
+            return "Clean up before you go!"
         return None
 
     def max_health(self):

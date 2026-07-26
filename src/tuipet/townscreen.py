@@ -23,7 +23,10 @@ _LAST_CURSOR = [0]
 
 
 class TownPanel(menu.SubHost):
-    def __init__(self, pet, town_id=None):
+    def __init__(self, pet, town_id):
+        # town_id is REQUIRED (audit 2026-07-25): None silently meant the
+        # HOME counter -- full unrationed catalog, Honors tab, and town 0's
+        # trophy -- in a constructor whose whole job is "this town"
         self.pet = pet
         self.town_id = town_id
         self.cursor = _LAST_CURSOR[0] % len(_MENU)
@@ -46,6 +49,11 @@ class TownPanel(menu.SubHost):
         if self.sub_key(k, self._cup_match_done if self.tourney is not None
                         else self._sub_done):
             return None
+        if self.pet.dead:
+            # a lethal bag item (the poison mushroom is a real road find):
+            # the verdict has spoken on the strip; any key closes the hub
+            # so the run can end and the memorial take over (audit 2026-07-25)
+            return ("done", None)
         if k in ("up", "k"):
             self.cursor = (self.cursor - 1) % len(_MENU)
             _LAST_CURSOR[0] = self.cursor
@@ -82,8 +90,24 @@ class TownPanel(menu.SubHost):
             return ("done", None)
         return None
 
-    def _sub_done(self, _result):
-        self.msg = "Anything else?"              # the shop closed -> back to the menu
+    def _sub_done(self, result):
+        """The shop/bag closed.  The payloads _after_shop PLAYS at home (eat
+        fx, evolution strobe, item scripts) have no LCD here, so the town
+        SPEAKS them -- SHOW-FLOW: a show plays or speaks (audit 2026-07-25:
+        a road-town poison mushroom killed with the strip reading 'Anything
+        else?', and a crest egg swapped the species in silence)."""
+        r = result if isinstance(result, tuple) else ()
+        kind = r[0] if r else None
+        if kind == "eat" and len(r) > 2 and r[2]:
+            self.msg = str(r[2])
+        elif kind == "item_use" and len(r) > 3 and r[3]:
+            self.msg = str(r[3])
+        elif kind == "evolve":
+            self.msg = f"...evolved into {self.pet.name}!"
+        elif kind == "inherit":
+            self.msg = "The memory settles in."
+        else:
+            self.msg = "Anything else?"          # a plain browse -> back to the menu
 
     # -- the town cup ---------------------------------------------------------
     def _start_cup(self):
@@ -108,13 +132,20 @@ class TownPanel(menu.SubHost):
         # minute" farm the hour rule exists to close -- measured: 100 cups,
         # +47,632 bits, 0.0 game-seconds), and each entry silently killed
         # that hour's HOME cup.  One slot, both doors.
+        # ROLL THE DAY FIRST (audit 2026-07-25): schedule() is the one
+        # place fought_hours resets on a game-day rollover, and only the
+        # HOME board called it -- so yesterday's burned hours held this
+        # door shut until the player happened to open the home cup screen
+        tournament.schedule(self.pet)
         if tournament._hour(self.pet) in (getattr(self.pet, "fought_hours", None) or []):
             self.msg = "The cup hour is spent — the next starts on the hour."
             return
         cup = tournament.town_cup(self.pet, self.town_id)
-        fee = tournament.entry_fee(self.pet, cup)
-        if self.pet.bits < fee:
-            self.msg = f"Stake {fee}b — you can't cover it."
+        if (stake := tournament._stake_check(self.pet, cup)):
+            # the ONE stake gate (audit 2026-07-25: this door hand-copied
+            # the rule with its own wording -- the drift the 2026-07-18
+            # review collapsed at home)
+            self.msg = stake
             return
         self._cup_done = True                    # your cup for this visit, win or lose
         # THE FIGHT SCENE (the cups arc's parked item, ruled 2026-07-22):
