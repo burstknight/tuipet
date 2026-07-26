@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.277 — INJURIES TAKE TIME NOW (2026-07-26)
+
+INJURIES TAKE TIME NOW — the feed menu is the classic meat-and-pill LCD again, and the BANDAGE is a 300b shop item: a battle wound heals on its own clock (or a town rest), and the bought bandage skips the wait. Untreated wounds still bench you from fights and whisper to death, so keep one in the bag.
+
 ## 0.5.276 — THE FEED MENU LOOKS LIKE THE SHOP NOW (2026-07-26)
 
 THE FEED MENU LOOKS LIKE THE SHOP NOW — same layout as every other menu: pick a row and its sprite shows in the box with its true effects, free tag, and a warning when it would be refused. Meat, Pill and Bandage, one list.
