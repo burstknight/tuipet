@@ -189,9 +189,11 @@ def test_the_menu_opens_on_the_ailment_that_is_live():
         assert ROWS_MENU[FeedPanel(p).cursor][0] == want, (sick, hurt)
 
 
-def test_the_third_row_is_reachable_in_both_directions():
-    """The old two-row toggle was `1 - cursor`: it ignored direction and
-    could never reach a third row at all."""
+def test_every_feed_row_is_reachable():
+    """SUPERSEDED PIN (2026-07-26): the third row is no longer on the
+    up/down cycle -- it is a COLUMN, reached by RIGHT (Joel: "let me
+    actually press right").  up/down owns the meat/pill stack only;
+    every row stays reachable."""
     from tuipet.feedscreen import FeedPanel, ROWS_MENU
     p = _pet()
     for key in ("down", "up"):
@@ -200,7 +202,10 @@ def test_the_third_row_is_reachable_in_both_directions():
         for _ in range(len(ROWS_MENU) * 2):
             pan.key(key)
             seen.add(pan.cursor)
-        assert seen == set(range(len(ROWS_MENU))), key
+        assert seen == {0, 1}, key                    # the stack, both ways
+    pan = FeedPanel(p)
+    pan.key("right")
+    assert pan.cursor == 2                            # the bandage column
 
 
 def test_the_bandage_row_plays_its_own_canon_show():
