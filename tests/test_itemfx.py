@@ -250,8 +250,14 @@ def test_the_bag_returns_the_eat_show_for_a_consumable():
 
 
 def test_the_sleeping_pill_eats_first_then_sleeps():
-    """The one risky interaction: the pill's show must still be an EAT
-    (the fx owns the whole arena paint, so the sleep lands after it)."""
+    """The one risky interaction: the pill's show must still be an EAT, and
+    the room must still be LIT when the bag hands it over.
+
+    This test used to assume "the fx owns the whole arena paint, so the
+    sleep lands after it" -- it does not.  arenafx keeps DVPet's opaque
+    lightsOff cover up through a care fx, so the pill's own lights-out
+    blanked all 35 beats of its bite strip (bug report 2026-07-26,
+    v0.5.287).  The switch is deferred to the end of the show now."""
     from tuipet.pet import Pet
     p = Pet(num=100, stage="Champion", attribute="Vaccine", obedience=500)
     p.world_seconds = 600.0
@@ -260,6 +266,49 @@ def test_the_sleeping_pill_eats_first_then_sleeps():
     res = pan.key("enter")
     assert res[1][0] == "eat"
     assert p.asleep                            # ...and it did go to sleep
+    assert p.lights                            # ...but the show plays LIT
+    assert p.pending_lights_out                # ...with the room owed
+
+
+def test_the_sleeping_pills_room_drops_only_when_its_show_ends():
+    """The REAL app, headless: the pill's eat show runs lit beat for beat,
+    and on_frame drops the room on the frame the show ends.  Driven through
+    the live app because the switch lives in on_frame's fx-end hook -- the
+    one layer a panel test cannot reach."""
+    import asyncio
+
+    from tuipet.app import TuiPetApp
+    from tuipet.pet import Pet
+
+    async def scenario():
+        p = Pet(num=100, stage="Champion", attribute="Vaccine", obedience=500)
+        p.world_seconds = 600.0
+        p.sleep_limit = 9e9
+        p.add_item("sleeping_pill")
+        app = TuiPetApp(pet=p)
+        async with app.run_test(size=(100, 40)) as pilot:
+            await pilot.pause(0.3)
+            await pilot.press("enter")                 # off the title screen:
+            await pilot.pause(0.2)                     # on_frame only runs here
+            assert app.mode is None
+            out = p.use_item("sleeping_pill")          # the bag's own call
+            assert p.asleep and p.lights and p.pending_lights_out, out
+            app._after_shop(("eat", "f:34", out))      # the bag hands over
+            assert app.screen_w.fx, "the pill never got its show"
+            lit_beats = 0
+            for _ in range(200):
+                if not app.screen_w.fx:
+                    break
+                assert p.lights, f"the room went dark at beat {lit_beats}"
+                lit_beats += 1
+                await pilot.pause(0.12)                # one on_frame beat
+            assert not app.screen_w.fx, "the show never ended"
+            assert lit_beats > 10, lit_beats           # a real strip, lit
+            await pilot.pause(0.12)                    # the fx-end frame
+            assert not p.lights, "the room never dropped"
+            assert not p.pending_lights_out
+
+    asyncio.run(scenario())
 
 
 # ---- the Bandage's show, restored (2026-07-23, Joel: "do the bandage

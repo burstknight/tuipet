@@ -834,7 +834,15 @@ class CareMixin:
         if self.asleep:
             return _Refused("It's already asleep.")
         self._fall_asleep()
-        self.lights = False
+        # the room drops AFTER the pill's own eat show, never before (bug
+        # report 2026-07-26, v0.5.287: "sleep pill is shutting off lights
+        # before eating animation, istead of after").  Lights-off is not a
+        # dimmer: arenafx keeps DVPet's fully-opaque lightsOff cover up
+        # through a care fx, so flipping it here blanked the whole arena --
+        # pet, pill and bite strip -- for all 35 beats of the show the pill
+        # was bought for.  Same shape as the Assistant_Lights visit, which
+        # DVPet also toggles on its FINAL beat; the app flips it at fx end.
+        self.pending_lights_out = True
         self._bed_postpone_t = 0.0      # "no argument" overrides a disturb grace
         if self._in_sleep_window() is False:
             self.nap = True

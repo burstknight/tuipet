@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.288 — THE SLEEP PILL SWALLOWS IN THE LIGHT (2026-07-26)
+
+THE SLEEP PILL SWALLOWS IN THE LIGHT: the 300-bit pill killed the lights the instant you picked it, and the lights-out cover is opaque — so its whole eating animation played behind a black screen you never saw. The pill goes down lit now, and the room drops on the beat the show ends.
+
 ## 0.5.287 — THE GREAT ITEM EXPANSION (2026-07-26)
 
 THE GREAT ITEM EXPANSION — the catalog TRIPLES: 44 → 132, every last authored consumable, each wearing its real rip. New foods, toys, meds, and the keys to ~31 dormant evolutions: Spirits wait on the deepest roads, relics answer in cups. Beaten foes now DROP their goods — bosses guard Digimentals. Cups pay their own authored prizes. CAPSULES open into surprises (finer on festivals — and two of the ten boxes bite). Town shelves triple their variety. Even feeding hides a secret now. Go find it all. Also fixed: a pet sleeping off its exhaustion is no longer nagged to rest — the doze IS the rest.

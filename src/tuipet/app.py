@@ -144,17 +144,12 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE GREAT ITEM EXPANSION — the catalog TRIPLES: 44 → 132, "
-                 "every last authored consumable, each wearing its real rip. "
-                 "New foods, toys, meds, and the keys to ~31 dormant "
-                 "evolutions: Spirits wait on the deepest roads, relics "
-                 "answer in cups. Beaten foes now DROP their goods — bosses "
-                 "guard Digimentals. Cups pay their own authored prizes. "
-                 "CAPSULES open into surprises (finer on festivals — and "
-                 "two of the ten boxes bite). Town shelves triple their "
-                 "variety. Even feeding hides a secret now. Go find it all. "
-                 "Also fixed: a pet sleeping off its exhaustion is no "
-                 "longer nagged to rest — the doze IS the rest.")
+    WHATS_NEW = ("THE SLEEP PILL SWALLOWS IN THE LIGHT: the 300-bit pill "
+                 "killed the lights the instant you picked it, and the "
+                 "lights-out cover is opaque — so its whole eating "
+                 "animation played behind a black screen you never saw. "
+                 "The pill goes down lit now, and the room drops on the "
+                 "beat the show ends.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the
@@ -1006,6 +1001,14 @@ class TuiPetApp(ActionsMixin, App):
         if sc.fx:
             sc.advance_fx()
             sc.paint(self.pet)
+            if not sc.fx and self.pet.pending_lights_out:
+                # the Sleep Pill's room drops HERE, on the beat its eat show
+                # ends (bug report 2026-07-26) -- deliberately NOT part of the
+                # pending_* elif chain below, which is one-branch-per-frame:
+                # the switch must never cost the evolve/gift/dying beat its turn.
+                self.pet.pending_lights_out = False
+                self.pet.lights = False
+                sc.paint(self.pet)          # dark on this frame, not the next
             if sc.fx:
                 # beat-scripted fx sounds: eat's per-bite map + the generic snds map
                 # (refuse head-shakes, the evolve burst, the dnaWash entry, ...)

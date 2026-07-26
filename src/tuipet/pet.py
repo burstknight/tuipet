@@ -176,6 +176,11 @@ class Pet(CareMixin, DnaMixin, BattleMixin, BodyMixin):
     # Held as a bare instance attribute, it evaporated on the next load, so
     # the pill you bought was refunded to the void by a quit.
     _bed_postpone_t: float = 0.0    # bedtime grace: disturb postpone / caffeine
+    # the Sleep Pill's room switch, held until its eat show has played (bug
+    # report 2026-07-26, v0.5.287).  Transient by design: it lives for the
+    # length of one animation, so it is NOT saved -- a quit mid-show leaves a
+    # sleeper under a lit room, which the next lights press (or bedtime) fixes.
+    pending_lights_out: bool = False
     free_style: bool = False        # _isFree: Battle Style toggle (Free vs Orders)
     gift: str = ""                  # pending gift-call present (consumable key; "" = none)
     # the DSprite item timers (BASIC VPET 2026-07-16, cloned from v0.4.x):
