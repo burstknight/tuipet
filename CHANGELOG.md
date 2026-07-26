@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.273 — THE ROAD GOT A FULL SHAKEDOWN (2026-07-25)
+
+THE ROAD GOT A FULL SHAKEDOWN — 25 fixes. The big ones: a town REST now patches wounds and cures sickness (your hurt mon was 4x likelier to be refused at the boss gate than to lose to the boss), the town warp reaches the nearest town in EITHER direction so it always buys a real town, an unfit body slips away from wilds instead of grinding, and a conquered boss pays its replay bounty once a day — the road was quietly out-earning every cup and raid combined.
+
 ## 0.5.272 — THE GUIDE GOT A FACT-CHECK (2026-07-25)
 
 THE GUIDE GOT A FACT-CHECK — and it caught a real bug: the feed menu's third row (the free Bandage) was INVISIBLE, the arrow sat on the Pill while ENTER bandaged. The stack now slides to show it. The data book can finally say 'hurt', and the guide no longer sends you to the bag for a cure that lives on F.
