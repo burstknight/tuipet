@@ -174,46 +174,80 @@ def test_the_feed_card_discloses_weight_on_both_rows():
     assert "weight +5" in lines["txt"]
 
 
-def test_the_stack_windows_to_show_the_bandage_row(monkeypatch):
-    """R3 grew a third row but the painter still drew the fixed meat/pill
-    stack: the bandage was INVISIBLE and the arrow sat on the PILL while
-    ENTER bandaged -- an injured pet's DEFAULT open (help claims audit
-    2026-07-25).  The stack is now a 2-slot window around the cursor, so
-    the arrow always points at the row ENTER will act on."""
+def test_the_feed_card_narrates_the_bandage_row():
+    """The card's min(sel, 1) clamp narrated the PILL while ENTER bandaged
+    (feed redo 2026-07-26) -- row 2 now discloses the bandage's true
+    effect, with its refusal gate visible BEFORE the pick."""
+    from tuipet.feedscreen import FeedPanel
+    from tuipet import statusbox
+
+    class _App:
+        pass
+
+    lines = {}
+
+    class _W:
+        border_subtitle = ""
+        def update(self, text):
+            lines["txt"] = text
+
+    app = _App()
+    app.pet = _pet(injured=True, inj_length=999.0)
+    app.mode = FeedPanel(app.pet)
+    app.stats_w = _W()
+    assert app.mode.cursor == 2                       # opens on its own cure
+    statusbox.feed(app)
+    assert "Bandage" in lines["txt"] and "injury" in lines["txt"]
+    assert "refused" not in lines["txt"]              # it WILL work: no gate
+
+    app.pet = _pet()                                  # healthy: gate disclosed
+    app.mode = FeedPanel(app.pet)
+    app.mode.cursor = 2
+    statusbox.feed(app)
+    assert "Bandage" in lines["txt"]
+    assert "refused — not injured" in lines["txt"]
+
+
+def test_all_three_cures_are_always_on_screen(monkeypatch):
+    """The bandage sits to the RIGHT of the canon meat/pill stack, visible
+    in every cursor state (Joel 2026-07-26 -- the earlier 2-slot window
+    still hid it until the cursor dropped onto it), and the arrow always
+    points at the row ENTER will act on."""
     from tuipet import data, feedscreen, grid
     calls = []
     real = feedscreen.render.blit
 
     def spy(rows, x, y):
-        calls.append((tuple(rows), y))
+        calls.append((tuple(rows), (x, y)))
         return real(rows, x, y)
 
     monkeypatch.setattr(feedscreen.render, "blit", spy)
     bandage = tuple(data.load_effects()["st_bandage"][0])
     meat, pill = tuple(feedscreen.MEAT), tuple(feedscreen.PILL)
+    cursor = tuple(feedscreen.CURSOR)
 
-    hurt = _pet(injured=True, inj_length=999.0)
-    pan = FeedPanel(hurt)
+    def paint(pet):
+        calls.clear()
+        pan = FeedPanel(pet)
+        pan.text()
+        glyphs = dict(calls)
+        # every state shows all three cures, in place
+        assert glyphs[meat] == (feedscreen.ICON_X, grid.TOP)
+        assert glyphs[pill] == (feedscreen.ICON_X, grid.TOP + 8)
+        assert glyphs[bandage] == (feedscreen.BAND_X, feedscreen.BAND_Y)
+        return pan, glyphs[cursor]
+
+    pan, arrow = paint(_pet(injured=True, inj_length=999.0))
     assert pan.cursor == 2                            # opens on its own cure
-    pan.text()
-    glyphs = {g: y for g, y in calls}
-    assert glyphs.get(pill) == grid.TOP               # window slid to pill/bandage
-    assert glyphs.get(bandage) == grid.TOP + 8        # the bandage is VISIBLE
-    assert meat not in glyphs
-    assert glyphs[tuple(feedscreen.CURSOR)] == grid.TOP + 9   # arrow on the bandage
+    assert arrow == (feedscreen.BAND_CURSOR_X, feedscreen.BAND_Y)
     # ...and ENTER acts on the row the arrow points at
     r = pan.key("enter")
     assert r[1][0] == "bandaged" and r[1][1]["name"] == "Bandage"
 
-    calls.clear()
-    FeedPanel(_pet()).text()                          # healthy: the classic stack
-    glyphs = {g: y for g, y in calls}
-    assert glyphs.get(meat) == grid.TOP and glyphs.get(pill) == grid.TOP + 8
-    assert glyphs[tuple(feedscreen.CURSOR)] == grid.TOP
+    pan, arrow = paint(_pet())                        # healthy: arrow on meat
+    assert pan.cursor == 0
+    assert arrow == (feedscreen.CURSOR_X, grid.TOP)
 
-    calls.clear()
-    sick = _pet(sick=True)
-    FeedPanel(sick).text()                            # cursor 1: same stack, arrow low
-    glyphs = {g: y for g, y in calls}
-    assert glyphs.get(meat) == grid.TOP and glyphs.get(pill) == grid.TOP + 8
-    assert glyphs[tuple(feedscreen.CURSOR)] == grid.TOP + 9
+    pan, arrow = paint(_pet(sick=True))               # sick: arrow on the pill
+    assert pan.cursor == 1
+    assert arrow == (feedscreen.CURSOR_X, grid.TOP + 9)

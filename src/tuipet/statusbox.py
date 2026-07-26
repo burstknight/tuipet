@@ -358,17 +358,24 @@ def scenes(app):
 
 
 def feed(app):
-    """FEED: the two rows' true effects beside the live gauges."""
+    """FEED: the selected row's true effects beside the live gauges."""
     p, m = app.pet, app.mode
     # both rows disclose in FULL, weight included -- the meat row used to
     # hide its +1 while the pill admitted its +5 (feed audit 2026-07-19)
     # pre-fit to the 26-col card (run-off sweep 2026-07-23: the meat row
     # ran 29 and wrapped the card) -- full disclosure kept, across three
     # short rows instead of two long ones
-    sel = min(getattr(m, "cursor", 0), 1)
-    row = ("Meat — hunger +1,", "Pill — cures sickness,")[sel]
-    tail = ("weight +1 · the staple", "effort +1 · energy +7")[sel]
-    tail2 = ("", "weight +5")[sel]
+    sel = getattr(m, "cursor", 0)
+    # the min(sel, 1) clamp narrated the PILL while ENTER bandaged -- the
+    # card twin of the invisible-bandage arrow bug (feed redo 2026-07-26)
+    row = ("Meat — hunger +1,", "Pill — cures sickness,",
+           "Bandage — patches the")[sel]
+    tail = ("weight +1 · the staple", "effort +1 · energy +7",
+            "battle injury · free")[sel]
+    tail2 = ("", "weight +5", "")[sel]
+    if sel == 2 and not p.is_injured():
+        # the refusal gate, visible BEFORE the pick (the meat pattern)
+        tail2 = f"[{theme.NEG}]refused — not injured[/]"
     if sel == 0:
         # meat's refusal gates, visible BEFORE the pick (QOL 2026-07-23):
         # the menu used to close on a refusal you couldn't see coming

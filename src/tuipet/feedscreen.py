@@ -72,9 +72,15 @@ CURSOR = ["1000",
           "1000"]
 
 # layout (decompile Rn coords, LCD-absolute): icons at x15, cursor at the
-# left margin; the two 8px icons stack to fill the 16px band
+# left margin; the two 8px icons stack to fill the 16px band.  The bandage
+# (R3) sits to the RIGHT of that stack, vertically centred in the band, so
+# all three cures are on screen at once (Joel 2026-07-26: "should be to the
+# right of the meat and pill sprites" -- the 2-slot window still hid it).
 ICON_X = 15
 CURSOR_X = grid.X0
+BAND_X = 28               # 7px glyph -> x28..34, inside the x36 window edge
+BAND_Y = grid.TOP + 4     # (16 - 7) // 2: centred between the two stack rows
+BAND_CURSOR_X = BAND_X - 5  # the same arrow, slid over to point at it
 
 # (the third, description field was dead data -- displayed nowhere; the
 # status card carries the real disclosure.  Trimmed, feed audit 2026-07-19.)
@@ -147,25 +153,22 @@ class FeedPanel:
         return None
 
     def text(self):
-        """The LCD scene: canon's two-glyph stack, now a WINDOW on the three
-        rows -- the 16px band fits exactly two 8px glyphs, so the stack
-        shows the pair around the cursor (meat/pill, or pill/bandage once
-        the cursor drops) and the arrow always points at the row ENTER
-        will act on.  (R3 added the third row to key() but never taught
-        this painter: the bandage was invisible and the arrow sat on the
-        PILL while ENTER bandaged -- an injured pet's DEFAULT open.  Found
-        by the help claims audit 2026-07-25.)  The bandage glyph is
-        DVPet's own st_bandage badge, the one bandage in the rips."""
+        """The LCD scene: canon's meat/pill stack, with the bandage BESIDE
+        it -- all three cures on screen at once, and the arrow points at the
+        row ENTER will act on (left margin for the stack, sliding right for
+        the bandage).  (The 2026-07-25 fix windowed the stack instead, which
+        still hid the bandage until the cursor dropped onto it -- Joel
+        2026-07-26: put it to the right.)  The bandage glyph is DVPet's own
+        st_bandage badge, the one bandage in the rips."""
         from . import data
-        icons = {"meat": MEAT, "pill": PILL,
-                 "bandage": data.load_effects()["st_bandage"][0]}
-        top = max(0, self.cursor - 1)   # window start: the classic meat/pill
-        #                                 stack until the cursor drops to the
-        #                                 bandage, then it slides one
-        overlay = []
-        for slot, (kind, _label) in enumerate(ROWS_MENU[top:top + 2]):
-            overlay += render.blit(icons[kind], ICON_X, grid.TOP + slot * 8)
-        overlay += render.blit(CURSOR, CURSOR_X,
-                               grid.TOP + (0 if self.cursor == top else 9))
+        overlay = render.blit(MEAT, ICON_X, grid.TOP)
+        overlay += render.blit(PILL, ICON_X, grid.TOP + 8)
+        overlay += render.blit(data.load_effects()["st_bandage"][0],
+                               BAND_X, BAND_Y)
+        if self.cursor == 2:
+            overlay += render.blit(CURSOR, BAND_CURSOR_X, BAND_Y)
+        else:
+            overlay += render.blit(CURSOR, CURSOR_X,
+                                   grid.TOP + (0 if self.cursor == 0 else 9))
         return menu.paint([], self.pet.background(), rows=grid.ROWS,
                           cols=grid.COLS, overlay=overlay, clip=grid.WINDOW)

@@ -141,15 +141,12 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE ROAD GOT A FULL SHAKEDOWN — 25 fixes. The big ones: "
-                 "a town REST now patches wounds and cures sickness (your "
-                 "hurt mon was 4x likelier to be refused at the boss gate "
-                 "than to lose to the boss), the town warp reaches the "
-                 "nearest town in EITHER direction so it always buys a "
-                 "real town, an unfit body slips away from wilds instead "
-                 "of grinding, and a conquered boss pays its replay "
-                 "bounty once a day — the road was quietly out-earning "
-                 "every cup and raid combined.")
+    WHATS_NEW = ("THE BANDAGE IS ON THE SHELF — the feed menu now shows "
+                 "all three cures at once: meat and pill in their classic "
+                 "stack, the bandage right beside them, arrow pointing at "
+                 "whichever ENTER will use. The feed card narrates the "
+                 "bandage row truthfully too (it used to describe the "
+                 "Pill), and warns before a pick that would be refused.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the
