@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.286 — THE GREAT ITEM EXPANSION (2026-07-26)
+
+THE GREAT ITEM EXPANSION — the catalog TRIPLES: 44 → 132, every last authored consumable, each wearing its real rip. New foods, toys, meds, and the keys to ~31 dormant evolutions: Spirits wait on the deepest roads, relics answer in cups. Beaten foes now DROP their goods — bosses guard Digimentals. Cups pay their own authored prizes. CAPSULES open into surprises (finer on festivals — and two of the ten boxes bite). Town shelves triple their variety. Even feeding hides a secret now. Go find it all. The five regional specialties redealt too: the starter map sells a toy surprise, the deep maps deal the Digitron and the Gold Pill.
+
 ## 0.5.285 — THE GREAT ITEM EXPANSION (2026-07-26)
 
 THE GREAT ITEM EXPANSION — the catalog TRIPLES: 44 → 132, every last authored consumable, each wearing its real rip. New foods, toys, meds, and the keys to ~31 dormant evolutions: Spirits wait on the deepest roads, relics answer in cups. Beaten foes now DROP their goods — bosses guard Digimentals. Cups pay their own authored prizes. CAPSULES open into surprises (finer on festivals — and two of the ten boxes bite). Town shelves triple their variety. Even feeding hides a secret now. Go find it all. (the Bandage item is gone again — the wrap belongs to the H heal's animation, which stays free)
