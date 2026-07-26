@@ -152,7 +152,8 @@ class TuiPetApp(ActionsMixin, App):
                  "guard Digimentals. Cups pay their own authored prizes. "
                  "CAPSULES open into surprises (finer on festivals — and "
                  "two of the ten boxes bite). Town shelves triple their "
-                 "variety. Even feeding hides a secret now. Go find it all.")
+                 "variety. Even feeding hides a secret now. Go find it all. "
+                 "(hotfix: bought Bandages now survive a reload)")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the

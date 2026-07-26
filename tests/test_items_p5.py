@@ -182,11 +182,16 @@ def test_healing_a_sleeper_disturbs_it_like_the_pill_does():
     assert p.care_mistakes >= before      # the disturb was billed
 
 
-def test_a_held_bandage_is_healed_out_of_an_old_bag():
-    """The item is gone for good (final ruling 2026-07-26): a bandage
-    bought in either brief shelf era must not linger as an unusable row."""
+def test_a_held_bandage_survives_the_bag_heal():
+    """SUPERSEDED, then HOTFIXED (v0.5.284): the expansion made the
+    bandage a real 10b catalog key again, but the dead-key sweep still
+    ate every bought one on reload -- shipped for one release (0.5.283)
+    before this pin flipped.  Bought meds must survive a save load; the
+    ancient raw-icon keys stay dead (the real items wear snake_case)."""
     from tuipet import persistence
-    assert persistence._heal_bag({"bandage": 2, "fish": 1}) == {"fish": 1}
+    healed = persistence._heal_bag({"bandage": 2, "fish": 1,
+                                    "i:80": 3, "i:82": 1})
+    assert healed == {"bandage": 2, "fish": 1}
 
 
 def test_the_ancient_eraser_key_now_points_at_the_new_item():

@@ -432,11 +432,12 @@ def _heal_bag(inv):
     their TUIPET heirs 1:1 (shop.LEGACY_KEYS; catalog turnover 2026-07-18
     -- nobody loses goods)."""
     from . import shop
-    # "bandage" is a dead key again (2026-07-26 final ruling: the injury
-    # cure is the free H hotkey, no item).  It was briefly buyable twice --
-    # v0.5.205-216 and the tag-only v0.5.277 (never on PyPI) -- so this
-    # drops at most a handful of 300b purchases, the R3 precedent.
-    for dead in ("i:80", "i:81", "i:82", "i:83", "bandage"):
+    # "bandage" LEFT the dead list (item expansion 2026-07-26, hotfix
+    # v0.5.284): it is a real 10b catalog key again, and the sweep was
+    # eating every bought one on reload.  The raw-icon keys stay dead --
+    # they are ancient-save cruft (the new items wear snake_case keys:
+    # bandage / futon / toilet / port_potty), so popping them loses nothing.
+    for dead in ("i:80", "i:81", "i:82", "i:83"):
         inv.pop(dead, None)
     for old, new in shop.LEGACY_KEYS.items():
         n = inv.pop(old, 0)
