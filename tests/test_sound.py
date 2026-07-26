@@ -91,16 +91,18 @@ def test_every_referenced_sound_ships_a_wav():
 
 def test_every_shipped_wav_is_referenced():
     """The inverse: an unreferenced wav is a wired-nowhere asset (this audit found
-    startBattle/mischief/thunder*/rain/wind exactly this way).  rain + wind are
-    DVPet's precip LOOPS — a fire-and-forget player can't stop a loop, so they
-    stay shipped-but-silent by design."""
+    startBattle/mischief/thunder*/rain/wind exactly this way).  The weather
+    loops are GONE from the package (rain/thunder pruned v0.2.219, wind cut on
+    Joel's order 2026-07-26 — setup_assets.sh excludes all of them now), so no
+    loop stays allowed here: if one resurrects, this test says so."""
     have = {os.path.splitext(os.path.basename(p))[0]
             for p in glob.glob(os.path.join(sound._DIR, "*.wav"))}
     # win.wav lost its player with adventure's boss fanfare (2026-07-16);
     # the raid pool-break re-took it 2026-07-26 (Joel's order) -- it is a
     # REFERENCED wav again and stays out of this list so the wiring holds
     # trainhit: the four-drill mash hit; the classic training left (2026-07-17)
-    allowed_silent = {"rain", "wind", "trainhit"}
+    # but it still bakes boot.wav's low note (tools/make_boot_jingle.py)
+    allowed_silent = {"trainhit"}
     dead = sorted(have - _referenced_names() - allowed_silent)
     assert not dead, f"shipped wavs no code path plays: {dead}"
 

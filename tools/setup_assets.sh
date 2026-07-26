@@ -24,7 +24,10 @@ done
 mkdir -p src/tuipet/data/sounds
 for snd in raw_resources/sounds/*.wav; do
   b="$(basename "$snd")"
-  case "$b" in fileCityDay.wav|fileCityNight.wav|parade.wav) ;; *) cp "$snd" "src/tuipet/data/sounds/$b" ;; esac
+  # excluded: city/parade ambience, and the WEATHER loops (rain/thunder pruned
+  # v0.2.219; wind cut on Joel's order 2026-07-26) -- no weather system, and the
+  # fire-and-forget player can't sustain or stop a loop anyway
+  case "$b" in fileCityDay.wav|fileCityNight.wav|parade.wav|wind.wav|rain.wav|thunder*.wav) ;; *) cp "$snd" "src/tuipet/data/sounds/$b" ;; esac
 done
 python tools/extract_sprites.py
 python tools/extract_effects.py
