@@ -208,72 +208,42 @@ def test_the_feed_card_narrates_the_bandage_row():
     assert "refused — not injured" in lines["txt"]
 
 
-def test_all_three_cures_are_always_on_screen(monkeypatch):
-    """The bandage is a second COLUMN directly right of the canon meat/pill
-    stack -- top-aligned, its glyph the i:80 roll the Bandaging show
-    applies, visible in every cursor state (Joel 2026-07-26 x2: the 2-slot
-    window hid it; the centred st_bandage badge redo 'looks like shit').
-    The arrow always points at the row ENTER will act on, and its bandage
-    position clears the food ink (the x23 arrow sat flush on the pill)."""
-    from tuipet import data, feedscreen, grid
-    calls = []
-    real = feedscreen.render.blit
-
-    def spy(rows, x, y):
-        calls.append((tuple(rows), (x, y)))
-        return real(rows, x, y)
-
-    monkeypatch.setattr(feedscreen.render, "blit", spy)
-    bandage = tuple(data.load_icons()["i:80"][0])
-    meat, pill = tuple(feedscreen.MEAT), tuple(feedscreen.PILL)
-    cursor = tuple(feedscreen.CURSOR)
-    assert feedscreen.BAND_Y == grid.TOP              # top-aligned, NOT centred
-    assert feedscreen.BAND_CURSOR_X >= 24             # off the food ink (x<=22)
-
+def test_the_feed_menu_wears_the_shop_layout():
+    """The redo of redos (Joel 2026-07-26: 'make it look like all the other
+    menus, show the sprites when selected in a box, like shops look'): the
+    feed menu is a standard chrome menu now -- header, the shared icon
+    dossier for the selected row, the three-row list.  All three cures are
+    always listed, the dossier names the selection, refusal gates disclose
+    BEFORE the pick, and the panel is exactly the 12x38 LCD."""
     def paint(pet):
-        calls.clear()
         pan = FeedPanel(pet)
-        pan.text()
-        glyphs = dict(calls)
-        # every state shows all three cures, in place
-        assert glyphs[meat] == (feedscreen.ICON_X, grid.TOP)
-        assert glyphs[pill] == (feedscreen.ICON_X, grid.TOP + 8)
-        assert glyphs[bandage] == (feedscreen.BAND_X, feedscreen.BAND_Y)
-        return pan, glyphs[cursor]
+        lines = pan.text().plain.split("\n")
+        assert len(lines) == 12
+        assert max(map(len, lines)) <= 38
+        for name in ("Meat", "Pill", "Bandage"):      # all three, always
+            assert any(ln.strip().startswith(("▸ " + name, name))
+                       for ln in lines[6:9]), name
+        return pan, lines
 
-    pan, arrow = paint(_pet(injured=True, inj_length=999.0))
+    pan, lines = paint(_pet(injured=True, inj_length=999.0))
     assert pan.cursor == 2                            # opens on its own cure
-    assert arrow == (feedscreen.BAND_CURSOR_X, feedscreen.BAND_Y)
-    # ...and ENTER acts on the row the arrow points at
-    r = pan.key("enter")
+    assert lines[2].endswith("Bandage")               # the dossier names it
+    assert "▸ Bandage" in lines[8]
+    assert not any("refused" in ln for ln in lines)   # it WILL work
+    r = pan.key("enter")                              # ENTER acts on the row
     assert r[1][0] == "bandaged" and r[1][1]["name"] == "Bandage"
 
-    pan, arrow = paint(_pet())                        # healthy: arrow on meat
-    assert pan.cursor == 0
-    assert arrow == (feedscreen.CURSOR_X, grid.TOP)
+    pan, lines = paint(_pet())                        # healthy, belly full
+    assert pan.cursor == 0 and lines[2].endswith("Meat")
+    assert any("refused — belly is full" in ln for ln in lines[2:6])
 
-    pan, arrow = paint(_pet(sick=True))               # sick: arrow on the pill
-    assert pan.cursor == 1
-    assert arrow == (feedscreen.CURSOR_X, grid.TOP + 9)
+    pan, lines = paint(_pet(sick=True))               # sick: opens on the pill
+    assert pan.cursor == 1 and lines[2].endswith("Pill")
 
+    pan, lines = paint(_pet(poop=2))                  # filth gates the meat
+    assert any("refused — clean first (C)" in ln for ln in lines[2:6])
 
-def test_the_bandage_column_is_reached_by_pressing_right():
-    """The 2-column grid (Joel 2026-07-26: 'let me actually press right'):
-    up/down works the meat/pill stack, RIGHT crosses to the bandage, LEFT
-    returns to the stack row you left, and up/down from the bandage
-    re-enters the stack -- the cursor is never trapped."""
-    pan = FeedPanel(_pet())
-    assert pan.cursor == 0
-    pan.key("down");  assert pan.cursor == 1          # stack toggle
-    pan.key("down");  assert pan.cursor == 0
-    pan.key("right"); assert pan.cursor == 2          # cross to the bandage
-    pan.key("right"); assert pan.cursor == 2          # right again: stays
-    pan.key("left");  assert pan.cursor == 0          # back to the row left
-    pan.key("down")
-    pan.key("right"); assert pan.cursor == 2
-    pan.key("left");  assert pan.cursor == 1          # remembers PILL too
-    pan.key("left");  assert pan.cursor == 1          # left in the stack: no-op
-    pan.key("right")
-    pan.key("up");    assert pan.cursor == 0          # bandage + up -> meat
-    pan.key("right")
-    pan.key("down");  assert pan.cursor == 1          # bandage + down -> pill
+    pan, _ = paint(_pet())                            # a healthy pet's bandage
+    pan.cursor = 2                                    # row discloses its gate
+    assert any("refused — not injured" in ln
+               for ln in pan.text().plain.split("\n")[2:6])

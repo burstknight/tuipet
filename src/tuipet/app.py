@@ -141,11 +141,10 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE BANDAGE GOT ITS OWN COLUMN — press RIGHT in the feed "
-                 "menu to reach it: the real bandage roll (the one the "
-                 "bandaging animation applies) sits directly right of the "
-                 "meat, top-aligned, with the cursor clear of the food "
-                 "sprites. LEFT returns to the row you came from.")
+    WHATS_NEW = ("THE FEED MENU LOOKS LIKE THE SHOP NOW — same layout as "
+                 "every other menu: pick a row and its sprite shows in the "
+                 "box with its true effects, free tag, and a warning when "
+                 "it would be refused. Meat, Pill and Bandage, one list.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the

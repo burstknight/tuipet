@@ -189,11 +189,10 @@ def test_the_menu_opens_on_the_ailment_that_is_live():
         assert ROWS_MENU[FeedPanel(p).cursor][0] == want, (sick, hurt)
 
 
-def test_every_feed_row_is_reachable():
-    """SUPERSEDED PIN (2026-07-26): the third row is no longer on the
-    up/down cycle -- it is a COLUMN, reached by RIGHT (Joel: "let me
-    actually press right").  up/down owns the meat/pill stack only;
-    every row stays reachable."""
+def test_every_feed_row_is_reachable_in_both_directions():
+    """A standard list menu again (the shop-layout redo 2026-07-26
+    superseded the brief RIGHT-column ruling): up/down cycles all three
+    rows, honoring direction."""
     from tuipet.feedscreen import FeedPanel, ROWS_MENU
     p = _pet()
     for key in ("down", "up"):
@@ -202,10 +201,7 @@ def test_every_feed_row_is_reachable():
         for _ in range(len(ROWS_MENU) * 2):
             pan.key(key)
             seen.add(pan.cursor)
-        assert seen == {0, 1}, key                    # the stack, both ways
-    pan = FeedPanel(p)
-    pan.key("right")
-    assert pan.cursor == 2                            # the bandage column
+        assert seen == set(range(len(ROWS_MENU))), key
 
 
 def test_the_bandage_row_plays_its_own_canon_show():
@@ -224,8 +220,12 @@ def test_the_bandage_row_plays_its_own_canon_show():
 
 
 def test_the_care_menu_keeps_its_lcd_geometry():
+    """12 rows, nothing past the menu.W content width -- the CHROME menu
+    geometry (the shop family), not the old 40-wide pixel canvas: the feed
+    menu joined the chrome family with the shop-layout redo 2026-07-26."""
+    from tuipet import menu
     from tuipet.feedscreen import FeedPanel
     p = _pet()
     p.injured = True
     lines = FeedPanel(p).text().plain.split("\n")
-    assert len(lines) == 12 and {len(ln) for ln in lines} == {40}
+    assert len(lines) == 12 and max(len(ln) for ln in lines) <= menu.W
