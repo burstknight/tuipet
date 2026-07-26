@@ -58,6 +58,10 @@ HELP = [
     # gate is BATTLE_MIN_ENERGY = 10 (audit 2026-07-25)
     ("  but no purse; costs 5 energy (10", 0),
     ("  in the tank to start)", 0),
+    # the named rival (Joel 2026-07-26: "build the named rival too")
+    ("  every 3rd bout your named RIVAL", 0),
+    ("  answers - the feud's score lives", 0),
+    ("  on the digicore PERSON page", 0),
     ("a adventure - head out on the road", 1),
     # eggs were never a road FIND -- they are bought at town vendors or
     # unlocked by clearing a map (audit 2026-07-25)

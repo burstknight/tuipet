@@ -343,6 +343,15 @@ class BattleMixin:
         self.battles += 1
         self.stage_battles += 1                          # LINES_SPEC BTL gate (per-stage)
         self.battle_log = (self.battle_log + [1 if won else 0])[-15:]   # Pen20 rolling window
+        # THE NAMED RIVAL's ledger (Joel 2026-07-26): a rival bout tallies
+        # the head-to-head here — the ONE recording source, local bouts
+        # only (the `online` return above keeps L17 duels out).  The tally
+        # rides the pet save, so the feud dies with the generation.
+        if isinstance(enemy, dict) and enemy.get("rival"):
+            if won:
+                self.rival_wins += 1
+            else:
+                self.rival_losses += 1
         # A BOUT TRAINS, ON BOTH CLOCKS (Joel 2026-07-25: "feed the
         # total_trainings thing too, flip it").  The +2 is the clone rule;
         # what the battle audit found was that only the STAGE counter got

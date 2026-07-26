@@ -119,6 +119,13 @@ class Pet(CareMixin, DnaMixin, BattleMixin, BodyMixin):
     bits: int = 0
     trophies: int = 0
     trophies_won: dict = _dcf(default_factory=dict)   # trophy id -> day-won label (the trophy room)
+    # ---- the NAMED RIVAL (Joel 2026-07-26: "build the named rival too") ----
+    # rides the pet save on purpose: the feud lives and dies with the
+    # generation — a new egg meets a new rival with a clean slate
+    rival_name: str = ""            # the recurring tamer; empty until the first challenge
+    rival_line: str = ""            # its pet's line id — the form tracks OUR stage
+    rival_wins: int = 0             # head-to-head this generation: our wins...
+    rival_losses: int = 0           # ...and theirs
     # ---- home shop (PhysicalState _homeFoodShop/_homeItemShop/_restock) ----
     shop_food: list = _dcf(default_factory=list)    # rolled food slots {key, stock, sale}
     shop_item: list = _dcf(default_factory=list)    # rolled item slots

@@ -20,6 +20,7 @@ from . import eggguidescreen  # noqa: F401
 from . import eggselectscreen  # noqa: F401
 from . import feedscreen  # noqa: F401
 from . import hallscreen  # noqa: F401
+from . import rival  # noqa: F401
 from . import helpscreen  # noqa: F401
 from . import lobbyscreen  # noqa: F401
 from . import net  # noqa: F401
@@ -270,7 +271,15 @@ class ActionsMixin:
         if err:
             self._do(err); return
         from . import battlescreen
-        self._open_mode(battlescreen.BattlePanel(self.pet),
+        # THE NAMED RIVAL answers every 3rd bout (Joel 2026-07-26): its
+        # card rides the ordinary Battle engine — same bracket, ideal
+        # condition, no purse — only the NAME changes.  A rival bout wears
+        # the arena backdrop (enemy != None flips it; presentation only).
+        foe = rival.maybe_challenge(self.pet)
+        if foe is not None:
+            self.flash(f"[b]{foe['tamer']}[/] challenges you — "
+                       f"{foe['name']} steps up!")
+        self._open_mode(battlescreen.BattlePanel(self.pet, enemy=foe),
                         self._after_battle)
 
     def _after_battle(self, b):
@@ -279,6 +288,9 @@ class ActionsMixin:
         # when the pet walked away before the bell -- nothing happened.
         if (b is not None and getattr(b, "over", False)
                 and self.screen_w.fx is None and not self.pet.dead):
+            if (getattr(b, "enemy", None) or {}).get("rival"):
+                # the feud's running score lands with the verdict
+                self.flash(f"[b]{rival.record_line(self.pet)}[/] all-time")
             self.screen_w.start_fx("cheer" if b.won else "losing")
         self.repaint()
 

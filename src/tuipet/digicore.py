@@ -385,6 +385,11 @@ def build_pages(pet):
         # the manners gauge, LIVE again (canon restoration B, 2026-07-23)
         ("Manners", f"{getattr(pet, 'obedience', 0)}/{_petbase.MAX_OBEDIENCE}"),
     ]
+    if getattr(pet, "rival_name", ""):
+        # the named rival's head-to-head (Joel 2026-07-26) — appears once
+        # the first challenge mints the tamer, dies with the generation
+        person.append(("Rival",
+                       f"{pet.rival_name} · {pet.rival_wins}W-{pet.rival_losses}L"))
     core = data.load_digicore_icons().get(pet.num)
     if core:
         person.append(("Core", f"{chr(0x25C6)} {core}"))   # DVPet digicore badge
