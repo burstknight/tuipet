@@ -1,27 +1,34 @@
-"""Feed menu — the classic care picker in the SHOP layout language (redo,
-Joel 2026-07-26: "make it look like all the other menus, show the sprites
-when selected in a box, like shops look").  The pixel-art LCD picker (canon
-decompile Rn glyph stack, then the bandage column) left with this redo —
-one layout language per screen family: header, selected-item dossier box
-(menu.icon_info, the icon cell every icon view shares), scrolling row list.
+"""Feed menu — the canon on-LCD icon picker (BASIC VPET 2026-07-16, cloned
+from the v0.4.x rebuild; RESTORED 2026-07-26 after a one-day chrome-menu
+detour — Joel: "just revert the feed menu to meat and pill lcd").
 
-The classic feed stack itself is unchanged: MEAT fills a hunger heart
-(+1 weight, refused at a full belly); the PILL cures an active sickness,
-restores a strength heart, +7 energy, +5 weight; the BANDAGE patches a
-battle injury.  All are free and infinite — the richer consumables live in
-the BAG as shop items.
+The classic feed pair: MEAT fills a hunger heart (+1 weight, refused at a
+full belly); the PILL cures an active sickness spell, restores a strength
+heart, +7 energy, +5 weight.  Both are free and infinite — the richer
+consumables (fruits, premium meat, junk food) live in the BAG as shop
+items.  The BANDAGE left this menu with the same 2026-07-26 ruling: it is
+a SHOP item again ("shop bandage, injuries heal over time"), and a wound
+also closes on its own canon clock (injLapse).
 
-Dossier art holds each item's IDENTITY law: the meat shows the DVPet f:0
-Meat rip (the strip the eat fx chews through); the pill shows ITS OWN
-glyph (DSprite SYMBOL_PILL — the picked pill IS the eaten pill, pill-anim
-fix 2026-07-20; there is no matching DVPet rip); the bandage shows the
-i:80 roll (frame 0 of the strip the Bandaging show applies).
+The source draws this as a MENU ON THE LCD (decompile `Rn()`): the meat glyph
+`me` sits top-centre, the pill glyph `he` directly below it, and the cursor
+arrow `O` sits at the left margin pointing at the selected row.  Glyphs are
+the EXACT bitmaps ripped from the decompile (`me`/`he`/`O`), not hand-drawn.
 """
 from __future__ import annotations
-from . import menu
+from . import grid, menu, render
 from .theme import INK, INK_B, DIM, ACCENT, POS  # noqa: F401  (theme.apply propagation)
 
-# --- the pill's own art (DSprite SYMBOL_PILL / SYMBOL_HALF_PILL) ------------
+# --- authentic LCD glyphs (decompile: me / he / O) --------------------------
+MEAT = ["00000011",
+        "00011101",
+        "00101110",
+        "01011110",
+        "01111110",
+        "01011100",
+        "10111000",
+        "11000000"]
+
 PILL = ["00001110",
         "00010011",
         "00101111",
@@ -31,7 +38,7 @@ PILL = ["00001110",
         "10001000",
         "01110000"]
 
-# the half-eaten pill: a bite taken out of the top
+# the half-eaten pill (DSprite SYMBOL_HALF_PILL): a bite taken out of the top
 HALF_PILL = ["00000000",
              "00000000",
              "00000000",
@@ -41,33 +48,46 @@ HALF_PILL = ["00000000",
              "10011000",
              "01110000"]
 
-# The pill is EATEN through ITS OWN glyph, the DSprite way
-# (EatingAnimationScreen.setSprites(SYMBOL_PILL, SYMBOL_HALF_PILL,
-# SYMBOL_EMPTY) -- main.cpp case 1): full -> half -> gone, so the picked
-# pill IS the eaten pill (pill-anim fix 2026-07-20; the old DVPet f:41
-# capsule never matched the picker).  The eat fx pulls this via the
-# "sym:pill" icon key; the None tail is the eaten-away frame blit()
-# tolerates.  DSprite's pill has ONLY these two art frames, so the strip is
-# paced full -> half -> half -> gone across the eat fx's food_beats
-# (2-frame rebalance, Joel 2026-07-20).
+# BOTH rows are EATEN -- the source's EATING action is the ANIMATION truth
+# (the item shrinks bite by bite as the mon chews).  MEAT eats through the
+# DVPet f:0 Meat sheet-strip (art truth, Joel 2026-07-18: "all sprites must
+# come from dvpet").  The PILL, though, eats through ITS OWN menu glyph, the
+# DSprite way (EatingAnimationScreen.setSprites(SYMBOL_PILL, SYMBOL_HALF_PILL,
+# SYMBOL_EMPTY) -- main.cpp case 1): full -> half -> gone, so the picked pill
+# IS the eaten pill (pill-anim fix 2026-07-20; the old DVPet f:41 capsule never
+# matched the picker -- Joel: "those are not the same sprites").  The eat fx
+# pulls this via the "sym:pill" icon key; the None tail is the eaten-away frame
+# blit() tolerates.  So the MEAT glyph above is menu-only, but PILL is both.
+# DSprite's pill has ONLY these two art frames (SYMBOL_PILL, SYMBOL_HALF_PILL --
+# there is no third bite stage in the source), so the strip is paced full ->
+# half -> half -> gone across the eat fx's food_beats: the half-eaten pill holds
+# through the middle of the chew instead of flashing by (2-frame rebalance, Joel
+# 2026-07-20 "the pill eating animation only has 2 frames?").
 PILL_FRAMES = [PILL, HALF_PILL, HALF_PILL, None]
 
-# R3 (2026-07-23, Joel "make them symmetric"): the BANDAGE beside the Pill
-# as a free, always-available cure.  Two ailments, two care BUTTONS --
-# ailments cost time, not bits.
-ROWS_MENU = [("meat", "Meat"), ("pill", "Pill"), ("bandage", "Bandage")]
+CURSOR = ["1000",
+          "1100",
+          "1110",
+          "1111",
+          "1110",
+          "1100",
+          "1000"]
 
-VIS = 6   # list rows: header 2 + dossier 4 + list 6 == the 12-row LCD
+# layout (decompile Rn coords, LCD-absolute): icons at x15, cursor at the
+# left margin; the two 8px icons stack to fill the 16px band
+ICON_X = 15
+CURSOR_X = grid.X0
+
+ROWS_MENU = [("meat", "Meat"), ("pill", "Pill")]
 
 
 class FeedPanel:
     def __init__(self, pet):
         self.pet = pet
-        # an AILING pet opens on its own cure: the HUD nag names it, and
-        # meat would only be refused -- don't make the cure extra presses in
-        # the most-repeated care loop (QOL sweep 2026-07-23).  Sick outranks
-        # hurt when both are true: sickness is the older, louder alarm.
-        self.cursor = 1 if pet.sick else (2 if pet.is_injured() else 0)
+        # a SICK pet opens on its own cure: the HUD nag names it, and meat
+        # would only be refused -- don't make the cure extra presses in the
+        # most-repeated care loop (QOL sweep 2026-07-23)
+        self.cursor = 1 if pet.sick else 0
         self.frame_i = 0
 
     def anim(self):
@@ -78,8 +98,7 @@ class FeedPanel:
 
     def key(self, k):
         if k in ("up", "k", "down", "j"):
-            step = -1 if k in ("up", "k") else 1
-            self.cursor = (self.cursor + step) % len(ROWS_MENU)
+            self.cursor = 1 - self.cursor
         elif k in ("enter", "space"):
             kind, label = ROWS_MENU[self.cursor]
             if kind == "meat":
@@ -91,70 +110,27 @@ class FeedPanel:
                 if "full" in msg:
                     return ("done", ("full", {"key": "f:0", "name": "Meat"}, msg))
                 return ("done", ("refused", {"key": "f:0", "name": "Meat"}, msg))
-            if kind == "bandage":
-                msg = self.pet.heal_bandage()
-                from .petbase import _Refused
-                if isinstance(msg, _Refused) or "patched" not in str(msg):
-                    return ("done", ("refused", {"key": "i:80",
-                                                 "name": "Bandage"}, str(msg)))
-                # the bandage is WORN, not eaten: its own canon Bandaging
-                # script plays (items.csv i:80 AnimationType)
-                return ("done", ("bandaged", {"key": "i:80",
-                                              "name": "Bandage"}, str(msg)))
             was_sick = self.pet.sick
             msg = self.pet.feed_pill()
             if self.pet.anim == "eat":
                 out = "Cured!" if was_sick else "A tonic — strength and pep."
+                # the pill is EATEN (the source's EATING action) through ITS
+                # OWN menu glyph -- the DSprite pill route (SYMBOL_PILL ->
+                # SYMBOL_HALF_PILL -> gone), so the picked pill IS the eaten
+                # pill (pill-anim fix 2026-07-20, replacing the DVPet f:41
+                # capsule that never matched the picker)
                 return ("done", ("healed", {"key": "sym:pill", "name": "Pill"}, out))
             return ("done", ("refused", {"key": "sym:pill", "name": "Pill"}, msg))
         elif k in ("escape", "f"):
             return ("done", None)
         return None
 
-    def _icon(self, kind):
-        """The dossier cell, per the identity law in the module docstring."""
-        from . import data
-        if kind == "pill":
-            return menu.icon_cell(PILL)
-        fr = data.load_icons().get({"meat": "f:0", "bandage": "i:80"}[kind])
-        return menu.icon_cell(fr[0]) if fr else [" " * menu.IC_W] * menu.IC_ROWS
-
-    def _info(self, kind):
-        """The four dossier rows -- true effects, and the refusal gate
-        visible BEFORE the pick (the shop-dossier grammar; the gates are
-        petcare's own: canon gates 2026-07-18)."""
-        from .petcare import FULL_HUNGER
-        p = self.pet
-        if kind == "meat":
-            gate = ""
-            if p.sick:
-                gate = "refused — sick: the Pill"
-            elif p.poop:
-                gate = "refused — clean first (C)"
-            elif p.hunger >= FULL_HUNGER:
-                gate = "refused — belly is full"
-            return ["Meat", "free · infinite",
-                    "hunger +1 · weight +1", gate or "the staple"]
-        if kind == "pill":
-            gate = ""
-            if p.poop:
-                gate = "refused — clean first (C)"
-            elif (not p.sick and p.strength >= 4
-                  and p.energy >= p.max_energy):
-                gate = "refused — doesn't need it"
-            return ["Pill", "cures sickness · effort +1",
-                    "energy +7 · weight +5", gate or "free · infinite"]
-        gate = "" if p.is_injured() else "refused — not injured"
-        return ["Bandage", "free · infinite",
-                "patches the battle injury", gate or "worn, not eaten"]
-
     def text(self):
-        out = menu.header("FEED")
-        kind, _label = ROWS_MENU[self.cursor]
-        menu.icon_info(out, self._icon(kind), self._info(kind))
-        fmt = lambda e, i: "%-29s %6s" % (e[1], "free")
-        self.cursor = menu.list_window(out, ROWS_MENU, self.cursor, VIS, fmt)
-        out.right_crop(1)          # the last row sheds its newline (the
-        #                            footer convention: 12 rows, no 13th
-        #                            empty split element)
-        return out
+        """The LCD scene: canon's two-glyph stack, the arrow pointing at the
+        row ENTER will act on."""
+        overlay = render.blit(MEAT, ICON_X, grid.TOP)
+        overlay += render.blit(PILL, ICON_X, grid.TOP + 8)
+        overlay += render.blit(CURSOR, CURSOR_X,
+                               grid.TOP + (0 if self.cursor == 0 else 9))
+        return menu.paint([], self.pet.background(), rows=grid.ROWS,
+                          cols=grid.COLS, overlay=overlay, clip=grid.WINDOW)

@@ -425,6 +425,12 @@ class CareMixin:
             "poison_mushroom": self._deadly,
             # ---- MEDICINE ---------------------------------------------------
             "vitamin": self._vitamin,
+            # the bandage RETURNS to the bag (2026-07-26, Joel: "shop
+            # bandage, injuries heal over time" -- superseding R3's free
+            # care button): use_item's sleeper-disturb wrap and _bandage's
+            # own not-injured refusal both apply, and item_script() fires
+            # its canon Bandaging show off items.csv i:80
+            "bandage": self._bandage,
             "miracle_drink": self._miracle_drink,
             # ---- CARE -------------------------------------------------------
             "sleeping_pill": self._sleep_pill,
@@ -627,23 +633,6 @@ class CareMixin:
         before = self.obedience
         self._set_obedience(self.obedience + TEXTBOOK_OBEDIENCE)  # noqa: F405
         return f"Studied hard. (+{self.obedience - before} obedience)"
-
-    def heal_bandage(self):
-        """THE BANDAGE, now a FREE care-menu action beside the Pill
-        (Joel 2026-07-23, R3 "make them symmetric").  Care actions on
-        this device are BUTTONS, not purchases -- the free Pill was the
-        correct half of the old asymmetry and the 300b item was the
-        wrong one.  Ailments cost time, not bits.
-
-        Mirrors feed_pill's shape: guarded, and healing a sleeper
-        DISTURBS it first."""
-        if (_g := self._guard(asleep_blocks=False)) is not None:
-            return _g
-        if not self.injured:
-            return _Refused("Nothing to bandage.")            # noqa: F405
-        if self.asleep:
-            self._disturbed()
-        return self._bandage()
 
     _ATTR_FIELDS = ("vaccine", "data_power", "virus")
     _ATTR_WORD = {"vaccine": "Vaccine", "data_power": "Data", "virus": "Virus"}

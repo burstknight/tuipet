@@ -106,10 +106,14 @@ def test_touches_has_no_duplicates(key):
     assert len(t) == len(set(t)), key
 
 
-def test_no_shelf_item_sells_an_ailment_cure():
-    """R3 landed: sick and injured are BOTH cured free from the care
-    menu, so no catalog entry may move either flag.  If one ever does,
-    the symmetry has quietly broken."""
+def test_only_the_bandage_sells_an_ailment_cure():
+    """SUPERSEDES R3's no-cure rule (2026-07-26, "shop bandage, injuries
+    heal over time"): SICKNESS stays free-cured on F, so nothing may sell
+    it; the INJURY cure is the Bandage's job alone -- the wait (injLapse)
+    and the road's town rest stay the free path."""
+    injured_sellers = []
     for key, v in shop.CATALOG.items():
         assert "sick" not in v.touches, key
-        assert "injured" not in v.touches, key
+        if "injured" in v.touches:
+            injured_sellers.append(key)
+    assert injured_sellers == ["bandage"]

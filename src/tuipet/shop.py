@@ -83,10 +83,14 @@ _AUTHORED = {
     "candy":           ("Candy",           "f:7",  None, "Food", "hunger +1 · energy +1", "a consolation sweet"),
     # ---- MEDICINE (the two ailments: sick and injured) ----------------------
     "vitamin":         ("Vitamin",         "f:5",  500,  "Medicine", "effort FULL · injury guard", "effort in a capsule"),
-    # (the BANDAGE left the shelf 2026-07-23, R3 "make them symmetric":
-    #  its cure is a FREE care-menu action beside the Pill now, so a 300b
-    #  entry would have sold what the F menu gives away.  The i:80 rip and
-    #  its Bandaging show both keep their jobs on that menu.)
+    # (the BANDAGE's third door ruling, 2026-07-26 -- Joel: "shop bandage,
+    #  injuries heal over time", superseding R3's free care button: a wound
+    #  closes on its own canon clock (injLapse, 0.2-2.5 game-days) or a
+    #  town rest; the bought bandage SKIPS the wait.  300b = common tier,
+    #  so it stocks 3-deep and rolls often -- the wait must never be
+    #  walled behind a rare shelf, because an untreated wound whispers
+    #  death at sick's scale the whole time.)
+    "bandage":         ("Bandage",         "i:80", 300,  "Medicine", "treats an injury now", "skip the healing wait"),
     "miracle_drink":   ("Miracle Drink",   "f:18", 7777, "Medicine", "ONE care slip erased · energy +12", "the expensive absolution"),
     # ---- CARE (upkeep: sleep, lights, filth, the mistake slate) -------------
     "sleeping_pill":   ("Sleep Pill",      "f:34", 300,  "Care", "sleep now", "lights out, no argument"),
@@ -168,6 +172,7 @@ _TOUCHES = {
     "energy_drink": ("energy",),
     "slim_drink": ("weight",),
     "vitamin": ("strength", "vitamin_lapse"),
+    "bandage": ("injured", "inj_length"),
     "miracle_drink": ("care_mistakes", "energy"),
     "sleeping_pill": ("asleep", "lights", "nap"),
     # BOTH channels, because it really does use both (item sweep

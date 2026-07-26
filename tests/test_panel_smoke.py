@@ -68,8 +68,10 @@ def _walk(panel, keys, renders=6):
 def test_feed_panel_renders_every_selection():
     from tuipet.feedscreen import FeedPanel, ROWS_MENU
     pan = FeedPanel(_pet())
-    assert len(ROWS_MENU) == 3                      # meat + pill + bandage
-    for _ in range(3):                              # both selections draw
+    assert len(ROWS_MENU) == 2                      # meat + pill (the classic
+    #                                                 pair; the bandage moved
+    #                                                 to the shop 2026-07-26)
+    for _ in range(2):                              # both selections draw
         pan.text()
         pan.key("down")
 

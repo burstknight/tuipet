@@ -141,10 +141,12 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE FEED MENU LOOKS LIKE THE SHOP NOW — same layout as "
-                 "every other menu: pick a row and its sprite shows in the "
-                 "box with its true effects, free tag, and a warning when "
-                 "it would be refused. Meat, Pill and Bandage, one list.")
+    WHATS_NEW = ("INJURIES TAKE TIME NOW — the feed menu is the classic "
+                 "meat-and-pill LCD again, and the BANDAGE is a 300b shop "
+                 "item: a battle wound heals on its own clock (or a town "
+                 "rest), and the bought bandage skips the wait. Untreated "
+                 "wounds still bench you from fights and whisper to death, "
+                 "so keep one in the bag.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the
@@ -1374,13 +1376,13 @@ class TuiPetApp(ActionsMixin, App):
         # canon meat/pill picker), NOT a bag item; the v0.5.169 hint sent a
         # panicked player to the bag (Joel caught it 2026-07-22)
         elif p.sick:          msg = f"{name} is sick! ([b]F[/] — feed it the pill)"
-        # ...and the BANDAGE is that same menu's third row, free and
-        # infinite, since the items refactor took it off the shelf
-        # (R3, 2026-07-23).  This line still sent a panicked tamer to the
-        # BAG for an item that no longer exists there -- the identical bug
-        # v0.5.178 fixed for the pill, on the very next line, two days
-        # before the cure moved (training audit 2026-07-25).
-        elif p.is_injured():  msg = f"{name} is hurt! ([b]F[/] — patch it up)"
+        # ...and the BANDAGE is a SHOP item again (2026-07-26, superseding
+        # R3's free care button: "shop bandage, injuries heal over time").
+        # The call names BOTH true doors -- the bag's bandage if one is
+        # held, and the wait if not -- because sending a tamer to a door
+        # the cure isn't behind is exactly the v0.5.169/178 bug, twice
+        # re-learned on these lines.
+        elif p.is_injured():  msg = f"{name} is hurt! ([b]I[/] Bandage — or it heals with time)"
         elif p.hunger == 0:   msg = f"{name} is hungry! ([b]F[/])"
         elif p.strength == 0: msg = f"{name}'s effort gauge is empty — train it! ([b]T[/])"
         elif p.poop >= 3:     msg = f"{name} needs cleaning! ([b]C[/])"

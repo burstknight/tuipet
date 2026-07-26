@@ -65,7 +65,8 @@ def test_the_bandage_cures_and_the_pill_does_not():
     p = _pet(injured=True, injuries=1)
     assert p.battle_condition() == "Too hurt to fight."        # the gate
     assert p.status_word() == "injured"                        # the word
-    assert "patched" in p.heal_bandage()      # FREE care-menu action (R3)
+    p.add_item("bandage")
+    assert "patched" in str(p.use_item("bandage"))    # the SHOP cure (2026-07-26)
     assert not p.injured and p.injuries == 1                   # cured; the count keeps
     # the pill stays sick-only: it cannot have been the cure
     p2 = _pet(injured=True)
@@ -76,8 +77,11 @@ def test_the_bandage_cures_and_the_pill_does_not():
 
 
 def test_the_bandage_refuses_a_healthy_pet():
+    """...and the refusal KEEPS the item (the 'consume on refusal' law)."""
     p = _pet()
-    assert "Nothing" in str(p.heal_bandage())
+    p.add_item("bandage")
+    assert "Nothing" in str(p.use_item("bandage"))
+    assert p.inventory.get("bandage") == 1
 
 
 def test_an_injured_pet_still_eats():
@@ -85,13 +89,19 @@ def test_an_injured_pet_still_eats():
     assert "sick" not in str(p.feed_meat())                    # only SICK blocks meat
 
 
-def test_the_bandage_is_a_free_care_action_not_a_shelf_item():
-    """R3 (2026-07-23, "make them symmetric"): the cure moved off the
-    300b shelf onto the F menu beside the Pill.  Ailments cost time."""
+def test_the_bandage_is_a_shelf_item_and_the_wait_is_the_free_path():
+    """SUPERSEDES R3 (2026-07-26, Joel: "shop bandage, injuries heal over
+    time"): the cure is a 300b common-tier shelf item again, the F menu is
+    meat/pill only, and the free path is the canon injLapse wait (plus the
+    road's town rest)."""
     from tuipet import shop
     from tuipet.feedscreen import ROWS_MENU
-    assert shop.entry("bandage") is None
-    assert "bandage" in [k for k, _label in ROWS_MENU]
+    e = shop.entry("bandage")
+    assert e is not None and e["price"] == 300
+    assert shop.CATALOG["bandage"].tier == "common"   # stocked wide: the wait
+    #                                                   must never be walled
+    #                                                   behind a rare shelf
+    assert "bandage" not in [k for k, _label in ROWS_MENU]
 
 
 def test_the_vitamin_guard_burns_at_one_per_game_minute(monkeypatch):
@@ -134,5 +144,6 @@ def test_a_wound_heals_on_its_own_clock(monkeypatch):
 
 def test_the_bandage_buys_off_the_wait():
     p = _pet(injured=True, inj_length=999.0)
-    p.heal_bandage()
+    p.add_item("bandage")
+    p.use_item("bandage")
     assert not p.injured and p.inj_length == 0.0

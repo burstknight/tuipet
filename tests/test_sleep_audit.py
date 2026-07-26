@@ -138,7 +138,11 @@ def test_the_raid_board_still_asks_the_body():
     pytest.param(lambda p: p.praise(), {}, id="praise"),
     pytest.param(lambda p: p.scold(), {}, id="scold"),
     pytest.param(lambda p: p.heal(), {"sick": True}, id="care-pill"),
-    pytest.param(lambda p: p.heal_bandage(), {"injured": True}, id="bandage"),
+    # (the bandage door is the BAG now -- 2026-07-26 "shop bandage";
+    #  use_item carries the same disturb law)
+    pytest.param(lambda p: (p.add_item("bandage"),
+                            p.use_item("bandage"))[1],
+                 {"injured": True}, id="bandage"),
     pytest.param(lambda p: p.feed_meat(), {"hunger": 2}, id="feed"),
 ])
 def test_every_player_poke_that_lands_wakes_the_sleeper(door, state):

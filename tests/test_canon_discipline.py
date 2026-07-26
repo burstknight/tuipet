@@ -325,7 +325,7 @@ def test_medicine_and_cleaning_are_never_refused(monkeypatch):
     assert not p.sick
     p.injured = True
     p.add_item("bandage")
-    assert "patched" in str(p.heal_bandage())   # free care action (R3)
+    assert "patched" in str(p.use_item("bandage"))   # the shop cure (2026-07-26)
     for kind in ("clean", "pill", "bandage", "item"):
         assert p.manners_refusal(kind) is False, kind
 

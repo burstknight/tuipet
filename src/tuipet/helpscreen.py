@@ -10,10 +10,10 @@ VIS = 8                                   # lines shown at once in the box
 # (text, kind): 2 = section head (bold), 1 = a control line, 0 = prose (dim)
 HELP = [
     ("CARE", 2),
-    # claims audit 2026-07-25: "pill heals" hid the third row (the Bandage
-    # joined with R3) and "bits/hour" was half the assistant's bill
-    ("f feed - meat fills; pill and", 1),
-    ("  bandage cure, free and infinite", 0),
+    # claims audit 2026-07-25; re-truthed 2026-07-26 when the bandage
+    # returned to the shop ("bits/hour" was half the assistant's bill)
+    ("f feed - meat fills; the pill", 1),
+    ("  cures sickness, free and infinite", 0),
     ("c clean poop", 1),
     ("s lights   v assistant - paid help:", 1),
     ("  a fee per visit + an hourly wage", 0),
@@ -34,14 +34,13 @@ HELP = [
     # reads "broken" to a player nobody told what spends it
     ("Energy fuels drills, fights and the", 0),
     ("road; sleep refills it each night.", 0),
-    # the two ailments, two meds (canon restoration 2026-07-23)
-    # (the bandage LEFT the bag with R3 2026-07-23 -- it is the F menu's
-    # free third row; "from the bag" outlived the move by two days)
+    # the two ailments, two meds (canon restoration 2026-07-23; the
+    # bandage's shop return + time-heal truth 2026-07-26)
     ("Two ailments: SICKNESS (filth or", 0),
-    ("fat) takes the pill; battle INJURY", 0),
-    ("the bandage - both cures are free", 0),
-    ("rows on F. Both block fights and", 0),
-    ("whisper to death.", 0),
+    ("fat) takes the pill, free on F.", 0),
+    ("Battle INJURY heals with time, or", 0),
+    ("a shop Bandage treats it now. Both", 0),
+    ("block fights and whisper to death.", 0),
     ("p discipline - praise & scold:", 1),
     ("  scold a tantrum (+manners), praise", 0),
     ("  a proud win; ignored tantrums", 0),

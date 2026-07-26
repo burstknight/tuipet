@@ -13,7 +13,7 @@ def _pet(**kw):
 
 
 def test_the_menu_is_meat_or_pill():
-    assert [k for k, _ in ROWS_MENU] == ["meat", "pill", "bandage"]
+    assert [k for k, _ in ROWS_MENU] == ["meat", "pill"]
 
 
 def test_meat_fills_a_heart_and_weighs():
@@ -174,76 +174,22 @@ def test_the_feed_card_discloses_weight_on_both_rows():
     assert "weight +5" in lines["txt"]
 
 
-def test_the_feed_card_narrates_the_bandage_row():
-    """The card's min(sel, 1) clamp narrated the PILL while ENTER bandaged
-    (feed redo 2026-07-26) -- row 2 now discloses the bandage's true
-    effect, with its refusal gate visible BEFORE the pick."""
-    from tuipet.feedscreen import FeedPanel
-    from tuipet import statusbox
+def test_the_classic_lcd_picker_is_back():
+    """The feed menu is the canon two-glyph LCD scene again (Joel
+    2026-07-26: "just revert the feed menu to meat and pill lcd" -- the
+    bandage moved to the shop the same day): 12x40 pixel rows, the meat/
+    pill stack, the cursor toggling between exactly two rows, and a sick
+    pet still opening on its own cure."""
+    pan = FeedPanel(_pet())
+    assert pan.cursor == 0
+    lines = pan.text().plain.split("\n")
+    assert len(lines) == 12 and {len(ln) for ln in lines} == {40}
+    pan.key("down"); assert pan.cursor == 1
+    pan.key("down"); assert pan.cursor == 0           # a two-row toggle
+    assert FeedPanel(_pet(sick=True)).cursor == 1     # opens on the pill
 
-    class _App:
-        pass
-
-    lines = {}
-
-    class _W:
-        border_subtitle = ""
-        def update(self, text):
-            lines["txt"] = text
-
-    app = _App()
-    app.pet = _pet(injured=True, inj_length=999.0)
-    app.mode = FeedPanel(app.pet)
-    app.stats_w = _W()
-    assert app.mode.cursor == 2                       # opens on its own cure
-    statusbox.feed(app)
-    assert "Bandage" in lines["txt"] and "injury" in lines["txt"]
-    assert "refused" not in lines["txt"]              # it WILL work: no gate
-
-    app.pet = _pet()                                  # healthy: gate disclosed
-    app.mode = FeedPanel(app.pet)
-    app.mode.cursor = 2
-    statusbox.feed(app)
-    assert "Bandage" in lines["txt"]
-    assert "refused — not injured" in lines["txt"]
-
-
-def test_the_feed_menu_wears_the_shop_layout():
-    """The redo of redos (Joel 2026-07-26: 'make it look like all the other
-    menus, show the sprites when selected in a box, like shops look'): the
-    feed menu is a standard chrome menu now -- header, the shared icon
-    dossier for the selected row, the three-row list.  All three cures are
-    always listed, the dossier names the selection, refusal gates disclose
-    BEFORE the pick, and the panel is exactly the 12x38 LCD."""
-    def paint(pet):
-        pan = FeedPanel(pet)
-        lines = pan.text().plain.split("\n")
-        assert len(lines) == 12
-        assert max(map(len, lines)) <= 38
-        for name in ("Meat", "Pill", "Bandage"):      # all three, always
-            assert any(ln.strip().startswith(("▸ " + name, name))
-                       for ln in lines[6:9]), name
-        return pan, lines
-
-    pan, lines = paint(_pet(injured=True, inj_length=999.0))
-    assert pan.cursor == 2                            # opens on its own cure
-    assert lines[2].endswith("Bandage")               # the dossier names it
-    assert "▸ Bandage" in lines[8]
-    assert not any("refused" in ln for ln in lines)   # it WILL work
-    r = pan.key("enter")                              # ENTER acts on the row
-    assert r[1][0] == "bandaged" and r[1][1]["name"] == "Bandage"
-
-    pan, lines = paint(_pet())                        # healthy, belly full
-    assert pan.cursor == 0 and lines[2].endswith("Meat")
-    assert any("refused — belly is full" in ln for ln in lines[2:6])
-
-    pan, lines = paint(_pet(sick=True))               # sick: opens on the pill
-    assert pan.cursor == 1 and lines[2].endswith("Pill")
-
-    pan, lines = paint(_pet(poop=2))                  # filth gates the meat
-    assert any("refused — clean first (C)" in ln for ln in lines[2:6])
-
-    pan, _ = paint(_pet())                            # a healthy pet's bandage
-    pan.cursor = 2                                    # row discloses its gate
-    assert any("refused — not injured" in ln
-               for ln in pan.text().plain.split("\n")[2:6])
+    # injured: NOT this menu's business any more -- opens on meat, and the
+    # panel still paints (the old default-open-on-bandage leg is gone)
+    hurt = FeedPanel(_pet(injured=True, inj_length=999.0))
+    assert hurt.cursor == 0
+    assert hurt.text().plain

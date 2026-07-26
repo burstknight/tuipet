@@ -163,6 +163,8 @@ def test_the_plain_foods_stayed_out():
 
 
 def test_the_catalog_grew_by_exactly_the_chips():
-    assert len(shop.CATALOG) == 44
+    # 44 + the returned Bandage (2026-07-26, "shop bandage, injuries heal
+    # over time")
+    assert len(shop.CATALOG) == 45
     assert sum(1 for v in shop.CATALOG.values()
                if v.category == "Evolution") == 11
