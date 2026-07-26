@@ -28,6 +28,13 @@ def test_need_message_priority_and_text():
     p.poop = 0
     p.energy = 0
     assert "exhausted" in app._need_message(p)
+    # ...but NEVER while it already rests (bug report 2026-07-26,
+    # v0.5.280: the nag rode through the recovery doze) -- this is the
+    # one call whose cure IS the state the pet is in
+    p.asleep = True
+    assert "exhausted" not in app._need_message(p)
+    p.asleep = False
+    assert "exhausted" in app._need_message(p)    # awake again: the nag returns
     p.energy = 10
     # (the misbehaving announcement left with the discipline system)
     # the pet's name appears in the announcement

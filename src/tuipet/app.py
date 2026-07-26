@@ -153,9 +153,8 @@ class TuiPetApp(ActionsMixin, App):
                  "CAPSULES open into surprises (finer on festivals — and "
                  "two of the ten boxes bite). Town shelves triple their "
                  "variety. Even feeding hides a secret now. Go find it all. "
-                 "The five regional specialties redealt too: the starter "
-                 "map sells a toy surprise, the deep maps deal the Digitron "
-                 "and the Gold Pill.")
+                 "Also fixed: a pet sleeping off its exhaustion is no "
+                 "longer nagged to rest — the doze IS the rest.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the
@@ -1393,7 +1392,12 @@ class TuiPetApp(ActionsMixin, App):
         elif p.hunger == 0:   msg = f"{name} is hungry! ([b]F[/])"
         elif p.strength == 0: msg = f"{name}'s effort gauge is empty — train it! ([b]T[/])"
         elif p.poop >= 3:     msg = f"{name} needs cleaning! ([b]C[/])"
-        elif p.energy <= 0:   msg = f"{name} is exhausted! ([b]S[/] — rest)"
+        # ...and never nag a SLEEPER to rest (bug report 2026-07-26,
+        # v0.5.280: "still getting exhausted! (S — rest) even when mon is
+        # sleeping after exhaustion") -- this is the one call whose cure
+        # IS the state the pet is already in; the doze is the rest
+        elif p.energy <= 0 and not p.asleep:
+            msg = f"{name} is exhausted! ([b]S[/] — rest)"
         elif p.discipline_call:
             msg = f"{name} is acting up! ([b]P[/] — scold it)"
         elif p.is_frail():
