@@ -195,36 +195,12 @@ class Screen(FxMixin, Static):
                - SPRITE_W) - base
         xshift = min(max(xshift, lo), max(cap, lo))       # poop wins over the skull (it yields when crowded)
         pts = _effect_overlay(pet, wf, SCREEN_COLS, SCREEN_ROWS * 2, tick=self.frame_i)
-        if pet.anim == "tantrum" and pet.num != -1:
-            # THE DISCOURAGED SHOW (Joel 2026-07-23: "we are missing the
-            # discouraged animation? opposite of the sunshine animation"):
-            # the ambient sulk wears the SMOKE -- `unhappy`+`unhappy2`, the
-            # big puff and the small one drifting off -- on the cheer/jeer
-            # emote grammar: the pet's right edge, head height, cycled on
-            # the 6-beat.  The sun finally has its opposite.  (It wore
-            # `depressed` until 2026-07-25; that sprite is a FACE, canon's
-            # status-page mood icon, and Joel identified the real smoke.)
-            # THE SMOKE YIELDS TO THE FLOOR ZONES (pose audit 2026-07-25):
-            # the sulk only reached a sick/filthy pet once the roll's guard
-            # moved, and those are exactly the scenes with a skull slot on
-            # the right and a filth block on the left -- the cloud would
-            # have printed straight over one of them.  Right edge first
-            # (the cheer/jeer grammar), left if the skull owns the right,
-            # and NOTHING if the corridor is full: the POSE is the show,
-            # the bubble is trim.
-            dep = _FX.get("unhappy")
-            if dep:
-                df = dep[(self.frame_i // 6) % len(dep)]
-                w = max(len(r) for r in df)
-                left_wall = _filth_right(pet.poop) if pet.poop else grid.X0
-                right_wall = grid.X1 - SICK_ZONE if _sick_mark_up(pet) else grid.X1
-                x = PET_BASE_X + xshift + SPRITE_W          # the pet's right edge
-                fits = x + w <= right_wall
-                if not fits:
-                    x = PET_BASE_X + xshift - w             # tuck it on the left
-                    fits = x >= left_wall                   # else: no room, pose only
-                if fits:
-                    pts += _blit(df, x, grid.TOP)
+        # (THE AMBIENT SULK IS POSE-ONLY -- Joel 2026-07-28, final: "the
+        # smoke is the reaction sprites... we already went over this."  The
+        # smoke (`unhappy`/`unhappy2`) belongs to REACTION shows alone --
+        # the jeer/scold and the lost battle/cup (arenafx) -- never to the
+        # idle sulk.  The 07-23 "discouraged show" wore it here for five
+        # days; the tantrum pose IS the discouraged show, no bubble.)
         overlay = _clip_win(pts)
         if not pet.lights:                 # lights off: DVPet's lightsOff is a fully-opaque black
             rows, xshift, mirror = [], 0, False   # cover -> the pet is hidden; only black (+ Zzz) shows

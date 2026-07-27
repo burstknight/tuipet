@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.297 — THE SMOKE KNOWS ITS PLACE (2026-07-27)
+
+THE SMOKE KNOWS ITS PLACE: the frustration smoke belongs to reactions — a scolding, a lost battle, a lost cup — and nowhere else. It had crept onto the idle sulk beside sick pets, where it was never asked for. The sulk pose stands on its own now, and the smoke only answers real setbacks.
+
 ## 0.5.296 — THE MUSIC PLAYER FINALLY LOOKS LIKE MUSIC (2026-07-27)
 
 THE MUSIC PLAYER FINALLY LOOKS LIKE MUSIC: the shop and bag now show the beamed-note orb — the one music-shaped sprite that actually fits the icon cell — instead of the box crushed to a smudge. And the show is the box alone, playing its own rising notes, with the bolted-on extra notes removed. The sheet had it right all along.

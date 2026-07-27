@@ -92,51 +92,6 @@ def test_no_sprite_ever_draws_on_another(monkeypatch):
                 assert not hit, (kw, n, i, sorted(hit)[:6])
 
 
-def test_the_sulks_gloom_cloud_yields_to_the_floor_zones(monkeypatch):
-    """Pose audit 2026-07-25: the ambient sulk only reached a sick or filthy
-    pet once the idle roll's sick/filth guard moved, and those are exactly
-    the scenes that already own floor -- a skull slot on the right, a filth
-    block on the left.  The cloud pinned to the pet's right edge printed
-    STRAIGHT into the skull (both land at x=28..35).  It takes the right
-    edge when it's free, tucks left when the skull owns it, and is dropped
-    entirely when the corridor is full -- the POSE is the show."""
-    cap = _paint_capture(monkeypatch)
-
-    def cloud_pts(p):
-        s = _screen()
-        s.paint(p)
-        overlay = set(cap["overlay"])
-        q = _pet(weather="Clear", **{k: getattr(p, k) for k in
-                                     ("sick", "poop", "poop_sizes") if hasattr(p, k)})
-        q.anim = "idle"                       # same scene, no cloud
-        base = set(arena._effect_overlay(q, s.frame_i // 4, 40, 24, tick=s.frame_i))
-        return overlay, base, _sprite_px(cap["rows"], cap["xshift"], cap["mirror"])
-
-    # SICK: the skull owns the right edge -> the cloud tucks in on the left
-    sickp = _pet(weather="Clear", sick=True, sick_length=99.0, anim="tantrum",
-                 anim_ttl=9.0)
-    overlay, skull, pet_px = cloud_pts(sickp)
-    cloud = overlay - skull
-    assert cloud, "the sulk lost its gloom cloud entirely"
-    assert not (cloud & skull), "the cloud printed on the skull"
-    assert not (cloud & pet_px), "the cloud printed on the pet"
-    assert max(x for x, _ in cloud) < grid.X1 - arena.SICK_ZONE
-    assert all(grid.X0 <= x < grid.X1 for x, _ in cloud), "the cloud left the window"
-
-    # FILTH BLOCK + the pet = no corridor: the pose plays, the bubble doesn't
-    filthy = _pet(weather="Clear", poop=4, poop_sizes=[3, 3, 2, 1],
-                  anim="tantrum", anim_ttl=9.0)
-    overlay, piles, pet_px = cloud_pts(filthy)
-    assert not (overlay - piles), "the cloud squeezed into a full corridor"
-    assert cap["rows"], "the sulk POSE must still play with no room for the bubble"
-
-    # a clean, healthy sulk keeps the canonical right-edge bubble
-    plain = _pet(weather="Clear", anim="tantrum", anim_ttl=9.0)
-    overlay, base, pet_px = cloud_pts(plain)
-    cloud = overlay - base
-    assert cloud and min(x for x, _ in cloud) >= arena.PET_BASE_X + arena.SPRITE_W
-    assert not (cloud & pet_px)
-
 
 def test_badges_never_touch_the_lcd():
     """Medicine, bandage, vitamin, fatigue, injury, teach, the care-call and
@@ -381,25 +336,30 @@ def test_dodge_turns_away_while_airborne():
         "touchdown + return steps land facing forward"
 
 
-def test_the_discouraged_show_wears_the_gloom_cloud(monkeypatch):
-    """Joel 2026-07-23: "we are missing the discouraged animation?
-    opposite of the sunshine animation."  The ambient sulk (tantrum)
-    wears THE SMOKE -- `unhappy`+`unhappy2`, the big puff and the small
-    one drifting off -- with the cheer-sun grammar: the pet's right edge,
-    head height, frame-cycled.  The plain idle never wears it.
-    (It wore `depressed` until 2026-07-25; that sprite is a FACE, canon's
-    status-page mood icon -- Joel pointed at the real smoke.)"""
-    from tuipet import data, grid
-    cap = _paint_capture(monkeypatch)
-    s = _screen()
-    p = _pet()
-    p._set_anim("tantrum", 2.0)
-    s.paint(p)
-    dep = data.load_effects()["unhappy"]
-    want = {(app.PET_BASE_X + app.SPRITE_W + x, grid.TOP + y)
-            for y, row in enumerate(dep[0])
-            for x, c in enumerate(row) if c == "1"}
-    assert want and want <= set(cap["overlay"]), "the gloom cloud is missing"
-    p.anim = "idle"
-    s.paint(p)
-    assert not (want & set(cap["overlay"])), "the cloud must leave with the sulk"
+
+
+def test_the_ambient_sulk_is_pose_only():
+    """FINAL RULING (Joel 2026-07-28): the smoke (`unhappy`/`unhappy2`) is a
+    REACTION sprite -- the jeer/scold and the lost battle/cup keep it; the
+    idle sulk (anim "tantrum") wears NO bubble.  For five days the sulk wore
+    the smoke and, when the sick skull owned the right corridor, tucked it
+    LEFT -- neither the attachment nor the left-tuck was ever Joel's order.
+    The tantrum POSE is the whole discouraged show."""
+    from tuipet import data
+    from tuipet.app import Screen
+    from tuipet.pet import Pet
+    s = object.__new__(Screen)
+    s.frame_i = 0
+    s.roamer = None
+    p = Pet(num=29, stage="Rookie", attribute="Vaccine")
+    p.name, p.line_id = "T", ""
+    p.sick = True
+    p._set_anim("tantrum", 5.0)
+    smoke = data.load_effects().get("unhappy")
+    assert smoke, "the smoke rip itself must survive -- reactions still wear it"
+    # the idle painter must no longer FETCH the smoke; the reaction
+    # shows in arenafx are the only place left that may
+    src = open("src/tuipet/arena.py").read()
+    assert '_FX.get("unhappy")' not in src, "the idle painter still draws smoke"
+    afx = open("src/tuipet/arenafx.py").read()
+    assert afx.count('"unhappy"') >= 2, "the REACTION smoke must survive"

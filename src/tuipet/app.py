@@ -144,12 +144,11 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE MUSIC PLAYER FINALLY LOOKS LIKE MUSIC: the shop and "
-                 "bag now show the beamed-note orb — the one music-shaped "
-                 "sprite that actually fits the icon cell — instead of the "
-                 "box crushed to a smudge. And the show is the box alone, "
-                 "playing its own rising notes, with the bolted-on extra "
-                 "notes removed. The sheet had it right all along.")
+    WHATS_NEW = ("THE SMOKE KNOWS ITS PLACE: the frustration smoke belongs "
+                 "to reactions — a scolding, a lost battle, a lost cup — and "
+                 "nowhere else. It had crept onto the idle sulk beside sick "
+                 "pets, where it was never asked for. The sulk pose stands "
+                 "on its own now, and the smoke only answers real setbacks.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the
