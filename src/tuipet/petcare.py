@@ -1238,11 +1238,17 @@ class CareMixin:
         out = self._snack(hunger=1, weight=1)
         if isinstance(out, _Refused):  # noqa: F405
             return out
+        # a TOY, as authored -- not another food (bug: "isnt there supposed
+        # to be items in chocolate eggs?", 2026-07-28).  The old pool took
+        # every common-tier good: 18 of 29 prizes were FOODS (one was
+        # another chocolate egg), and grant-only treats leaked in because
+        # a None tier reads as common.  Priced non-Feed commons only now.
         pool = [k for k, v in shop.CATALOG.items()
                 if k not in self._GIFT_BANNED and v.where == "home"
                 and k not in self._CAPSULE_KEYS
                 and k not in self._PRANK_CAPSULES
-                and (v.tier or "common") == "common"]
+                and v.price is not None and v.tier == "common"
+                and v.category != "Feed"]
         prize = random.choice(pool)
         self.add_item(prize)
         e = shop.entry(prize) or {}

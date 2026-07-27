@@ -144,11 +144,11 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE SMOKE KNOWS ITS PLACE: the frustration smoke belongs "
-                 "to reactions — a scolding, a lost battle, a lost cup — and "
-                 "nowhere else. It had crept onto the idle sulk beside sick "
-                 "pets, where it was never asked for. The sulk pose stands "
-                 "on its own now, and the smoke only answers real setbacks.")
+    WHATS_NEW = ("THE CHOCOLATE EGG KEEPS ITS PROMISE: 'a toy inside' meant "
+                 "it — but most of the time it paid out more food, sometimes "
+                 "another chocolate egg. Now every egg cracks open on a real "
+                 "item: a ball, a music player, a pill for the road. The "
+                 "snack half is unchanged.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the

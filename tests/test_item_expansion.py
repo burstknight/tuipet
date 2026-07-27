@@ -339,3 +339,27 @@ def test_the_home_capsule_shelf_is_rationed(isolate_save):
     assert sfx == "error" and "Sold out" in msg
     plain = next(e for e in shop.home_stock(pet=p) if e["key"] == "fish")
     assert plain.get("left") is None             # the reliable shelf, untouched
+
+
+def test_the_chocolate_egg_pays_a_toy_never_a_food():
+    """Authored 'Toy Inside' (bug 2026-07-28: the pool was 62% foods, one of
+    them ANOTHER chocolate egg, plus tierless grant treats leaking through
+    the None-reads-as-common hole).  Every prize: a priced, common, non-Feed
+    item."""
+    import random
+    from tuipet import shop
+    from tuipet.pet import Pet
+    random.seed(3)
+    seen = set()
+    for _ in range(120):
+        p = Pet(num=100, stage="Rookie", attribute="Vaccine")
+        p.name, p.line_id = "T", ""
+        p.hunger = 2
+        p.add_item("chocolate_egg")
+        p.use_item("chocolate_egg")
+        prize = next(k for k in p.inventory if k != "chocolate_egg")
+        seen.add(prize)
+        v = shop.CATALOG[prize]
+        assert v.category != "Feed", f"the egg paid food: {prize}"
+        assert v.price is not None and v.tier == "common", prize
+    assert len(seen) >= 4, "the toy pool collapsed to a coin flip"

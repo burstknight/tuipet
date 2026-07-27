@@ -155,7 +155,7 @@ _AUTHORED = {
     "broccoli":        ("Broccoli",            "f:51", 100,   "Feed", "hunger +1 · obedience +2", "eat it. no arguments."),
     "orange":          ("Orange",              "f:42", 300,   "Feed", "hunger +1 · obedience -1", "zest for the road"),
     "honey":           ("Honey",               "f:31", 500,   "Feed", "hunger +1 · energy +1 · obedience -5 · weight +1", "spoils them rotten"),
-    "chocolate_egg":   ("Chocolate Egg",       "f:58", 300,   "Feed", "hunger +1 · weight +1 · a surprise inside", "a toy hides inside"),
+    "chocolate_egg":   ("Chocolate Egg",       "f:58", 300,   "Feed", "hunger +1 · weight +1 · a TOY inside", "a toy hides inside"),
     "burnt_food":      ("Burnt Food",          "f:56", None,  "Feed", "hunger +1 · saps effort · obedience +5", "somebody wasn't watching"),
     "yellow_pepper":   ("Yellow Pepper",       "f:35", 100,   "Feed", "hunger +1 · Virus power +1 · obedience +1", "a spark of chaos"),
     "green_pepper":    ("Green Pepper",        "f:36", 100,   "Feed", "hunger +1 · Data power +1 · obedience +1", "a spark of logic"),
