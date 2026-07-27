@@ -68,7 +68,9 @@ def test_wrong_typed_cloud_save_never_clobbers_local(tmp_path, monkeypatch):
     bad = persistence.to_save_dict(_pet())
     bad["energy"] = {"oops": 1}
     bad["_saved_at"] = 9e12                          # "newer" than anything local
-    monkeypatch.setattr(cloudsync, "pull_save", lambda *a, **k: bad)
+    # the startup pull reads the cloud through probe() now (it has to tell
+    # "unreachable" from "no save yet"), so that is the seam to fake
+    monkeypatch.setattr(cloudsync, "probe", lambda *a, **k: ("ok", bad))
     assert cloudsync.sync_down_at_startup("ws://x/", "joel", "pw") == "cloud-save-invalid"
     loaded, _ = persistence.load()
     assert loaded is not None and loaded.bits == 999      # local untouched

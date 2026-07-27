@@ -144,14 +144,19 @@ def sync_down_at_startup(uri, name, pw, timeout=_TIMEOUT):
     if not name:
         PULL_REACHED = True              # no account: the cloud isn't in play
         return ""
-    save = pull_save(uri, name, pw, timeout)
-    if not save:
-        # UNREACHABLE vs EMPTY are the same None here, so assume the worse of
-        # the two: we could not confirm what the cloud holds, and the session
-        # pusher must not overwrite it blind (see PULL_REACHED).
-        PULL_REACHED = False
+    # probe(), not pull_save(): pull_save answers None for BOTH "the cloud is
+    # unreachable" and "this account has no save yet", and the guard added in
+    # 0.5.290 read that single None as the worse case -- so a NEW account (and
+    # any cleared one) could never upload its first save at all.  probe tells
+    # the two apart: 'ok' means we reached the cloud and know what it holds,
+    # even when what it holds is nothing.
+    status, save = probe(uri, name, pw, timeout)
+    if status != "ok":
+        PULL_REACHED = False             # couldn't confirm the cloud: push nothing
         return ""
     PULL_REACHED = True
+    if not save:
+        return ""                        # reached it; the account is simply empty
     cloud_ts = float(save.get("_saved_at") or 0)
     if cloud_ts <= persistence.local_saved_at():
         # Local is newer BY THE CLOCK -- which only says this device was
@@ -172,8 +177,10 @@ def sync_down_at_startup(uri, name, pw, timeout=_TIMEOUT):
     # pet (a malformed cloud payload used to mean a silent fresh-egg wipe) --
     # and never accept a FOREIGN-format save (strict: an outdated client's
     # push must not replace this build's pet; 2026-07-04 'Child' incident)
-    probe, _ = persistence.pet_from_save(dict(save), strict=True)
-    if probe is None:
+    # NOT named `probe`: this function calls the module-level probe() above,
+    # and a local of the same name shadows it for the WHOLE scope
+    parsed, _ = persistence.pet_from_save(dict(save), strict=True)
+    if parsed is None:
         return "cloud-save-invalid"
     persistence.write_save_dict(save)
     return "pulled"

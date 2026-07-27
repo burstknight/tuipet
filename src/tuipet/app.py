@@ -144,12 +144,12 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("TAKE YOUR PET BACK: Options → Rescued pets lists every pet "
-                 "a cloud pull replaced and puts one back with a keypress — "
-                 "no terminal, and the pet you're on is kept too. And a "
-                 "device holding a DIFFERENT pet from the cloud no longer "
-                 "wins just for being played more recently: it pauses sync "
-                 "instead of overwriting the account's real pet.")
+    WHATS_NEW = ("A FRESH ACCOUNT CAN SAVE TO THE CLOUD AGAIN: the guard "
+                 "added last release couldn't tell 'the cloud is down' from "
+                 "'this account has no save yet' and refused to upload in "
+                 "both cases — so a new or cleared login never got a cloud "
+                 "save at all. It asks properly now: an empty cloud is "
+                 "something to fill, not a reason to stop.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the

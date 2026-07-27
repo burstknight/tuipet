@@ -580,3 +580,26 @@ def test_leaving_the_raid_drops_its_lobby_worker():
     app._lobby_worker = w
     TuiPetApp._after_raid(app, "")
     assert w.cancelled and app._lobby_worker is None
+
+
+def test_an_empty_account_can_still_upload_its_first_save(server):
+    """THE REGRESSION 0.5.290 SHIPPED: pull_save answers None both when the
+    cloud is unreachable and when the account simply has no save, and the
+    push guard read that one None as 'unreachable'.  A brand-new account --
+    or one just cleared -- could therefore never upload anything.  Reaching
+    an EMPTY cloud is a success: nothing to pull, everything to push."""
+    cloudsync.PULL_REACHED = False
+    assert cloudsync.sync_down_at_startup(server, "fresh", "pw") == ""
+    assert cloudsync.PULL_REACHED is True, "an empty account can never push"
+    blob = persistence.to_save_dict(Pet.from_num(297))
+    blob["_saved_at"] = 5000.0
+    assert cloudsync.push_save(server, "fresh", "pw", blob) is True
+    assert cloudsync.pull_save(server, "fresh", "pw")["num"] == 297
+
+
+def test_an_unreachable_cloud_is_still_treated_as_unknown():
+    """...and the guard itself must survive the fix."""
+    cloudsync.PULL_REACHED = True
+    assert cloudsync.sync_down_at_startup("ws://127.0.0.1:1/", "joel", "s",
+                                          timeout=0.5) == ""
+    assert cloudsync.PULL_REACHED is False

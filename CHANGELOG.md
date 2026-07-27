@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.293 — A FRESH ACCOUNT CAN SAVE TO THE CLOUD AGAIN (2026-07-27)
+
+A FRESH ACCOUNT CAN SAVE TO THE CLOUD AGAIN: the guard added last release couldn't tell 'the cloud is down' from 'this account has no save yet' and refused to upload in both cases — so a new or cleared login never got a cloud save at all. It asks properly now: an empty cloud is something to fill, not a reason to stop.
+
 ## 0.5.292 — TAKE YOUR PET BACK (2026-07-27)
 
 TAKE YOUR PET BACK: Options → Rescued pets lists every pet a cloud pull replaced and puts one back with a keypress — no terminal, and the pet you're on is kept too. And a device holding a DIFFERENT pet from the cloud no longer wins just for being played more recently: it pauses sync instead of overwriting the account's real pet.
