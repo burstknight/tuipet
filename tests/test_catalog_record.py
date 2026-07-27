@@ -79,9 +79,9 @@ def test_widening_the_record_cannot_break_a_reader():
     again, this fails without needing the whole suite to notice."""
     wider = shop.Item(*(tuple(shop.CATALOG["fish"])[:6]))._replace(
         touches=("hunger", "energy"))
-    assert wider.name == "Fish" and wider.category == "Food"
+    assert wider.name == "Fish" and wider.category == "Feed"
     assert shop.entry("fish")["name"] == "Fish"
-    assert shop.entry("fish")["category"] == "Food"
+    assert shop.entry("fish")["category"] == "Feed"
 
 
 def test_the_record_can_grow_without_breaking_readers():

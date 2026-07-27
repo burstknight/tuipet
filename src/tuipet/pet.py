@@ -33,7 +33,6 @@ class Pet(CareMixin, DnaMixin, BattleMixin, BodyMixin):
     strength: int = 4               # effort hearts 0..4; resetToEgg sets FullStrength(4)
     energy: int = 24                # DVPet energy, -max_energy..+max_energy (full at max_energy)
     max_energy: int = 24            # per-Digimon (digimon.csv MaxEnergy)
-    mood: int = 0                   # DVPet signed mood (MinMood..MaxMood); Neutral at 0
     enthusiasm: int = 0             # DVPet spirit, MinEnthusiasm..MaxEnthusiasm (separate from mood)
     weight: int = 20
     poop: int = 0                   # pile count == DVPet countFilth()
@@ -277,7 +276,6 @@ class Pet(CareMixin, DnaMixin, BattleMixin, BodyMixin):
             egg_type = random.randrange(egg_mod.count())
         pet = cls(num=-1, name="Digitama", stage="Egg",
                   egg_type=egg_type, generation=generation)
-        pet.mood = EGG_MOOD                     # Evolution.egg: setMood(EggMood 100)
         if generation == 1:
             # the tamer's pocket money (gameplay polish #23, 2026-07-22): a
             # first-generation pet started at 0 bits with every faucet
@@ -708,7 +706,6 @@ class Pet(CareMixin, DnaMixin, BattleMixin, BodyMixin):
         if self.stage == "Fresh":
             # fresh(): born TRUSTING (obedience 75) but grumpy (-10 mood),
             # hungry, full of energy, with a starter nutrition base 6/6/6
-            self._set_mood(FRESH_MOOD)
             self._set_obedience(FRESH_OBEDIENCE)
             self.strength = 0
             self.hunger = 0
@@ -847,7 +844,6 @@ class Pet(CareMixin, DnaMixin, BattleMixin, BodyMixin):
 
     def _weight_limit_penalty(self):
         """PhysicalState.weightLimitPenalty: hitting the body's hard wall."""
-        self._set_mood(self.mood - WEIGHT_LIMIT_MOOD_PENALTY)
         self._set_obedience(self.obedience - WEIGHT_LIMIT_OBED_PENALTY)
         self._set_enthusiasm(self.enthusiasm - WEIGHT_LIMIT_ENTH_PENALTY)
 
@@ -883,15 +879,7 @@ class Pet(CareMixin, DnaMixin, BattleMixin, BodyMixin):
         all of them."""
         self.obedience = _clamp(int(value), 0, MAX_OBEDIENCE)  # noqa: F405
 
-    def _set_mood(self, value):
-        """A NO-OP: the mood meter left with the mood system (BASIC VPET
-        2026-07-16, converging on the clone sim).  The canon write-sites
-        remain in place as inert citations and vanish with their own
-        systems; the meter itself is pinned at 0 (Neutral)."""
 
-    def mood_pct(self):
-        """Neutral forever (the meter is gone); kept for the status bar."""
-        return 50
 
     def condition(self):
         """CONDITION 0..3: how well-kept the pet is RIGHT NOW.  Care pays into
@@ -935,7 +923,6 @@ class Pet(CareMixin, DnaMixin, BattleMixin, BodyMixin):
         the floor burns MinEnergyLifePenalty of life per hit)."""
         raw = int(round(value))
         if raw < self.energy and raw < 0:
-            self._set_mood(self.mood - (NEGATIVE_ENERGY_MOOD_DEC - raw))
             self._set_obedience(self.obedience - (NEGATIVE_ENERGY_OBEDIENCE_DEC - raw))
             # (the over-exertion fatigue left with the fatigue system; the
             # perfect-conditions bounce left with the day/night system)
@@ -1135,10 +1122,10 @@ class Pet(CareMixin, DnaMixin, BattleMixin, BodyMixin):
         # left with the day/night system -- BASIC VPET 2026-07-17)
         if self._in_sleep_window() and not self.asleep and self.energy < self.max_energy // 2:
             return "sleepy"
-        # (the happy/unhappy words left with the MOOD system -- BASIC VPET
-        # 2026-07-16: _set_mood is a no-op, so mood never moves off its init
-        # value and MIN_UNHAPPY_MOOD (-1) / MIN_HAPPY_MOOD (150) were both
-        # unreachable -- the branches could only fire for a legacy save frozen
+        # (the happy/unhappy words left with the MOOD system -- and the
+        # meter itself is BURIED outright as of 2026-07-27 (Joel: "there
+        # shoukdnt be a mood system at all... we have manners"); the
+        # branches below could once only fire for a legacy save frozen
         # at a pre-slim extreme.  Pruned 2026-07-24, Joel "prune the vestigial
         # happy/unhappy branches"; a well-kept pet just reads "ok".)
         return "ok"

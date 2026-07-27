@@ -133,14 +133,6 @@ def test_attention_predicate_is_shared():
     # (the misbehavior half left with the discipline system)
 
 
-def test_nap_mood_farm_is_closed():
-    p = _pet()
-    p.world_seconds = 10 * 60.0
-    m0 = p.mood
-    for _ in range(6):                  # toggle lights off/on six times fast
-        p.lights = False
-        p.tick(1.0)                     # nap starts
-        p.toggle_lights()               # lights on wakes it
-    assert p.mood - m0 <= 10 + 6        # ONE +10 bonus (a few wake nudges aside), not +60
-
-
+# test_nap_mood_farm_is_closed RETIRED 2026-07-27: it pinned that a nap could
+# not be farmed for MOOD.  The mood meter is buried (Joel: "there shouldnt be
+# a mood system at all"), so there is no longer a thing to farm.

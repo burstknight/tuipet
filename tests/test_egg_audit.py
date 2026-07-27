@@ -236,11 +236,10 @@ def test_the_full_hatch_lifecycle_lands_in_the_line():
 def test_the_egg_stage_is_inert():
     """No needs, no filth, no mistakes accrue inside the shell."""
     p = Pet.new_egg(egg_type=1)
-    before = (p.hunger, p.strength, p.poop, p.care_mistakes, p.weight, p.mood)
+    before = (p.hunger, p.strength, p.poop, p.care_mistakes, p.weight)
     for _ in range(59):
         p.tick(1.0)
-    assert (p.hunger, p.strength, p.poop, p.care_mistakes, p.weight,
-            p.mood) == before
+    assert (p.hunger, p.strength, p.poop, p.care_mistakes, p.weight) == before
 
 
 # ---- the unlock table and its screens ------------------------------------

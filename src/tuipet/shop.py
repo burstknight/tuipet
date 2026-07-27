@@ -11,6 +11,7 @@ town counters serve the same catalog.  The digitama-licence shelf was cut
 like the real devices -- the shop sells goods, never digitama.
 """
 from __future__ import annotations
+import random
 from functools import lru_cache
 from math import gcd as _gcd
 from typing import NamedTuple
@@ -70,19 +71,19 @@ class Item(NamedTuple):
 # gets named fields.  Keep the alignment: this table is meant to be read.
 _AUTHORED = {
     # ---- FOOD (eaten on the LCD through their own 4-frame strips) ----------
-    "fish":            ("Fish",            "f:1",  50,   "Food", "hunger +1", "the everyday catch"),
-    "vegetable":       ("Vegetable",       "f:3",  150,  "Food", "hunger +1 · weight -1", "crunchy diet fare"),
-    "tuna":            ("Tuna",            "f:14", 400,  "Food", "hunger +2 · energy +1", "a hearty catch"),
-    "cake":            ("Cake",            "f:6",  300,  "Food", "hunger +1 · energy +2 · weight +2", "a celebration slice"),
-    "cheese_burger":   ("Cheese burger",   "f:57", 50,   "Food", "fills belly · weight +4 · a care mistake", "greasy, regrettable"),
-    "giga_meal":       ("Giga Meal",       "f:28", 800,  "Food", "fills belly · energy +4 · weight +6", "a feast fit for a Mega"),
-    "steak":           ("Steak",           "f:8",  2000, "Food", "fills belly · 12h satiety", "the premium table"),
-    "poison_mushroom": ("Poison Mushroom", "f:13", 200,  "Food", "DO NOT FEED", "it does look delicious"),
-    "cupcake":         ("Cupcake",         "f:55", None, "Food", "hunger +1 · energy +1", "a birthday's reward"),
-    "cookie":          ("Cookie",          "f:54", None, "Food", "hunger +1 · energy +1", "a birthday's treat"),
-    "candy":           ("Candy",           "f:7",  None, "Food", "hunger +1 · energy +1", "a consolation sweet"),
+    "fish":            ("Fish",            "f:1",  50,   "Feed", "hunger +1", "the everyday catch"),
+    "vegetable":       ("Vegetable",       "f:3",  150,  "Feed", "hunger +1 · weight -1", "crunchy diet fare"),
+    "tuna":            ("Tuna",            "f:14", 400,  "Feed", "hunger +2 · energy +1", "a hearty catch"),
+    "cake":            ("Cake",            "f:6",  300,  "Feed", "hunger +1 · energy +2 · weight +2", "a celebration slice"),
+    "cheese_burger":   ("Cheese burger",   "f:57", 50,   "Feed", "fills belly · weight +4 · a care mistake", "greasy, regrettable"),
+    "giga_meal":       ("Giga Meal",       "f:28", 800,  "Feed", "fills belly · energy +4 · weight +6", "a feast fit for a Mega"),
+    "steak":           ("Steak",           "f:8",  2000, "Feed", "fills belly · 12h satiety", "the premium table"),
+    "poison_mushroom": ("Poison Mushroom", "f:13", 200,  "Feed", "DO NOT FEED", "it does look delicious"),
+    "cupcake":         ("Cupcake",         "f:55", None, "Feed", "hunger +1 · energy +1", "a birthday's reward"),
+    "cookie":          ("Cookie",          "f:54", None, "Feed", "hunger +1 · energy +1", "a birthday's treat"),
+    "candy":           ("Candy",           "f:7",  None, "Feed", "hunger +1 · energy +1", "a consolation sweet"),
     # ---- MEDICINE (the two ailments: sick and injured) ----------------------
-    "vitamin":         ("Vitamin",         "f:5",  500,  "Medicine", "effort FULL · injury guard", "effort in a capsule"),
+    "vitamin":         ("Vitamin",         "f:5",  500,  "Cure", "effort FULL · injury guard", "effort in a capsule"),
     # (the BANDAGE's FINAL door, 2026-07-26: after one era as the F menu's
     #  third row (R3) and one afternoon as a 300b shelf item (v0.5.277,
     #  tag-only, never published), Joel settled it -- "remove bandage as an
@@ -90,55 +91,53 @@ _AUTHORED = {
     #  the H key: a free care BUTTON with the i:80 rip and the Bandaging
     #  show; the canon time-heal (injLapse) stays underneath.  No shelf
     #  entry may ever sell either ailment cure again.)
-    "miracle_drink":   ("Miracle Drink",   "f:18", 7777, "Medicine", "ONE care slip erased · energy +12", "the expensive absolution"),
+    "miracle_drink":   ("Miracle Drink",   "f:18", 7777, "Cure", "ONE care slip erased · energy +12", "the expensive absolution"),
     # ---- CARE (upkeep: sleep, lights, filth, the mistake slate) -------------
-    "sleeping_pill":   ("Sleep Pill",      "f:34", 300,  "Care", "sleep now", "lights out, no argument"),
-    "caffeine_pill":   ("Caffeine Pill",   "f:38", 300,  "Care", "bedtime pushed later", "tonight runs long"),
-    "music_player":    ("Music Player",    "i:9",  300,  "Care", "wake now, no grudge", "a gentle waking song"),
-    "textbook":        ("Textbook",        "i:0",  1500, "Care", "obedience +20", "study makes a good pupil"),
-    "port_potty":      ("Port. Potty",     "i:83", 2000, "Care", "clean + auto-clean 24h", "it cleans itself"),
+    "sleeping_pill":   ("Sleep Pill",      "f:34", 300,  "Rest", "sleep now", "lights out, no argument"),
+    "caffeine_pill":   ("Caffeine Pill",   "f:38", 300,  "Rest", "bedtime pushed later", "tonight runs long"),
+    "music_player":    ("Music Player",    "i:9",  300,  "Rest", "wake now, no grudge", "a gentle waking song"),
+    "textbook":        ("Textbook",        "i:0",  1500, "Manners", "obedience +20", "study makes a good pupil"),
+    "port_potty":      ("Port. Potty",     "i:83", 2000, "Rest", "clean + auto-clean 24h", "it cleans itself"),
     # ---- TRAINING (the body: effort, weight, drills) ------------------------
-    "energy_drink":    ("Energy Drink",    "f:17", 200,  "Training", "energy to FULL", "instant pep"),
-    "slim_drink":      ("Slim Drink",      "f:23", 100,  "Training", "weight -10", "the crash diet"),
-    "dumbbell":        ("Dumbbell",        "i:7",  300,  "Training", "training +10", "reps in a box"),
+    "energy_drink":    ("Energy Drink",    "f:17", 200,  "Rest", "energy to FULL", "instant pep"),
+    "slim_drink":      ("Slim Drink",      "f:23", 100,  "Drill", "weight -10", "the crash diet"),
+    "dumbbell":        ("Dumbbell",        "i:7",  300,  "Drill", "training +10", "reps in a box"),
     # ---- EVOLUTION (the gates: growth, locks, X, DNA) -----------------------
-    "grow_capsule":    ("Grow Capsule",    "i:78", 500,  "Evolution", "growth: a quarter of this stage", "time in a bottle"),
-    "anti_evo_chip":   ("Anti-Evo Chip",   "f:32", 1000, "Evolution", "toggle evolution lock", "holds this form"),
-    "x_antibody":      ("X-Antibody",      "i:79", 2000, "Evolution", "the X-Antibody takes hold", "the X factor"),
-    "dna_crystal":     ("DNA Crystal",     "i:35", 1500, "Evolution", "+10 own-Field DNA banked", "a Field's worth of code"),
+    "grow_capsule":    ("Grow Capsule",    "i:78", 500,  "Evolve", "growth: a quarter of this stage", "time in a bottle"),
+    "anti_evo_chip":   ("Anti-Evo Chip",   "f:32", 1000, "Evolve", "toggle evolution lock", "holds this form"),
+    "x_antibody":      ("X-Antibody",      "i:79", 2000, "Evolve", "the X-Antibody takes hold", "the X factor"),
+    "dna_crystal":     ("DNA Crystal",     "i:35", 1500, "Power", "+10 own-Field DNA banked", "a Field's worth of code"),
     # ---- THE ATTRIBUTE CHIPS (items refactor P6, 2026-07-23) ---------------
     # The one LIVE lever with no purchasable support: Va/D/Vi powers gate
     # hundreds of evolution rows (>10 / >20 / >25 / >50) and the only ways to
     # move them were winning battles (+1 each) and the inheritance-only
     # Digimemory.  Canon rows, canon prices, canon +15/+30 -- a chip is worth
     # about fifteen wins.  Uncapped, exactly like the win path they shortcut.
-    "vaccine_chip":    ("Vaccine Chip",    "f:10", 1500, "Evolution", "Vaccine power +15", "a shot of order"),
-    "data_chip":       ("Data Chip",       "f:11", 1500, "Evolution", "Data power +15", "a shot of logic"),
-    "virus_chip":      ("Virus Chip",      "f:12", 1500, "Evolution", "Virus power +15", "a shot of chaos"),
-    "vaccine_chip_g":  ("Vaccine Chip G",  "f:20", 3000, "Evolution", "Vaccine power +30", "the golden dose"),
-    "data_chip_g":     ("Data Chip G",     "f:21", 3000, "Evolution", "Data power +30", "the golden dose"),
-    "virus_chip_g":    ("Virus Chip G",    "f:22", 3000, "Evolution", "Virus power +30", "the golden dose"),
-    "omni_chip_g":     ("Omni Chip G",     "f:33", 8000, "Evolution", "all three powers +30", "every colour at once"),
+    "vaccine_chip":    ("Vaccine Chip",    "f:10", 1500, "Power", "Vaccine power +15", "a shot of order"),
+    "data_chip":       ("Data Chip",       "f:11", 1500, "Power", "Data power +15", "a shot of logic"),
+    "virus_chip":      ("Virus Chip",      "f:12", 1500, "Power", "Virus power +15", "a shot of chaos"),
+    "vaccine_chip_g":  ("Vaccine Chip G",  "f:20", 3000, "Power", "Vaccine power +30", "the golden dose"),
+    "data_chip_g":     ("Data Chip G",     "f:21", 3000, "Power", "Data power +30", "the golden dose"),
+    "virus_chip_g":    ("Virus Chip G",    "f:22", 3000, "Power", "Virus power +30", "the golden dose"),
+    "omni_chip_g":     ("Omni Chip G",     "f:33", 8000, "Power", "all three powers +30", "every colour at once"),
     # ---- LEGACY (death and inheritance -- NOT medicine, which is why the
     # old "Medical" name had to go: it never held a med) ---------------------
     # i:64 (the notched-square disk glyph): i:32 is DVPet's own Digimemory
     # sprite, and two catalog entries sharing an icon broke key_for_icon
     # (consistency audit 2026-07-21) -- the floppy wears its own rip now
-    "revive_floppy":   ("Rev. Floppy",     "i:64", 2500, "Legacy", "raise the dead", "one more chance"),
-    "digimemory":      ("Digimemory",      "i:32", None, "Legacy", "the ancestor's Va·D·Vi", "its data lives on"),
+    "revive_floppy":   ("Rev. Floppy",     "i:64", 2500, "Cure", "raise the dead", "one more chance"),
+    "digimemory":      ("Digimemory",      "i:32", None, "Evolve", "the ancestor's Va·D·Vi", "its data lives on"),
     # ---- PLAY (the shows the engine already ships; small LIVE stat dials:
     # exercise sheds weight, couch time buys energy at a weight price) --------
-    "ball":            ("Ball",            "i:3",  100,  "Play", "play! weight -1", "a grand kickabout"),
-    "skateboard":      ("Skateboard",      "i:6",  500,  "Play", "ride! weight -2 · energy -1", "shred the living room"),
-    "xylophone":       ("Xylophone",       "i:63", 800,  "Play", "a recital · energy +2", "music hath charms"),
-    "video_game":      ("Video Game",      "i:65", 600,  "Play", "couch time · energy +2 · weight +1", "one more level…"),
-    "television":      ("Television",      "i:10", 1000, "Play", "deep couch · energy +3 · weight +1", "glued to the screen"),
-    "bubble_bath":     ("Bubble Bath",     "i:26", 400,  "Play", "washes the filth, with style", "rubber duck included"),
-    "cold_shower":     ("Cold Shower",     "i:67", 300,  "Play", "a bracing wake · energy +2", "brrr. effective."),
+    "ball":            ("Ball",            "i:3",  100,  "Drill", "play! weight -1", "a grand kickabout"),
+    "skateboard":      ("Skateboard",      "i:6",  500,  "Drill", "ride! weight -2 · energy -1", "shred the living room"),
+    "xylophone":       ("Xylophone",       "i:63", 800,  "Rest", "a recital · energy +2", "music hath charms"),
+    "video_game":      ("Video Game",      "i:65", 600,  "Rest", "couch time · energy +2 · weight +1", "one more level…"),
+    "television":      ("Television",      "i:10", 1000, "Rest", "deep couch · energy +3 · weight +1", "glued to the screen"),
     # ---- ADVENTURE (the road's own shelf -- cleared maps open it) -----------
-    "town_transport":     ("Town Transport",   "i:29", 500,  "Adventure", "on the road: T-warp to a town + rest", "a Birdramon ride"),
-    "disaster_transport": ("Disaster Transp.", "i:30", 250,  "Adventure", "on the road: T-dash to the boss + ambush", "a Garudamon ride"),
-    "life_recovery":      ("Life Recovery",    "i:27", 1000, "Adventure", "restore adventure lives on the road", "a second wind"),
+    "town_transport":     ("Town Transport",   "i:29", 500,  "Road", "on the road: T-warp to a town + rest", "a Birdramon ride"),
+    "disaster_transport": ("Disaster Transp.", "i:30", 250,  "Road", "on the road: T-dash to the boss + ambush", "a Garudamon ride"),
+    "life_recovery":      ("Life Recovery",    "i:27", 1000, "Road", "restore adventure lives on the road", "a second wind"),
     # ======================= THE EXPANSION (2026-07-26) =====================
     # Joel: "bring in all 99 unused items ... spread out ... your call".
     # Every row below is an authored source row (foods.csv / items.csv):
@@ -149,93 +148,83 @@ _AUTHORED = {
     # (i:15-25) are NOT here: they live on the crest shelf (one door), and
     # i:35 "Blue Crystal" stays out (its rip is the shipped dna_crystal's).
     # Board file: ITEM_EXPANSION_2026_07_26.md.
-    "meat":            ("Meat",                "f:0",  None,  "Food", "hunger +1 · weight +2", "the classic slab, to go"),
-    "fruit":           ("Fruit",               "f:2",  None,  "Food", "hunger +1 · obedience -1", "sweet, and a little spoiling"),
-    "banana":          ("Banana",              "f:9",  300,   "Food", "hunger +1 · energy +1 · obedience -1 · weight +1", "instant pep in a peel"),
-    "bread":           ("Bread",               "f:24", 100,   "Food", "hunger +1 · weight +1", "a warm honest loaf"),
-    "rice":            ("Rice",                "f:29", 100,   "Food", "hunger +1 · weight +2", "a full bowl, home comfort"),
-    "nuts":            ("Nuts",                "f:45", 50,    "Food", "hunger +1 · weight +1", "trail rations"),
-    "oats":            ("Oats",                "f:46", 75,    "Food", "hunger +1 · weight +1", "slow fuel"),
-    "milk":            ("Milk",                "f:47", 150,   "Food", "hunger +1 · weight +1", "cold and calming"),
-    "egg":             ("Egg",                 "f:48", 100,   "Food", "hunger +1 · weight +1", "sunny side up"),
-    "cheese":          ("Cheese",              "f:49", 200,   "Food", "hunger +1 · weight +2", "aged to please"),
-    "salmon":          ("Salmon",              "f:53", 150,   "Food", "hunger +1 · weight +2", "the river's finest"),
-    "beans":           ("Beans",               "f:52", 150,   "Food", "hunger +1 · obedience +1 · weight +1", "musical, nutritious"),
-    "broccoli":        ("Broccoli",            "f:51", 100,   "Food", "hunger +1 · obedience +2", "eat it. no arguments."),
-    "guava":           ("Guava",               "f:50", 100,   "Food", "hunger +1 · weight +1", "tropic freshness"),
-    "orange":          ("Orange",              "f:42", 300,   "Food", "hunger +1 · obedience -1", "zest for the road"),
-    "honey":           ("Honey",               "f:31", 500,   "Food", "hunger +1 · energy +1 · obedience -5 · weight +1", "spoils them rotten"),
-    "ice_cream":       ("Ice Cream",           "f:39", 150,   "Food", "hunger +1 · obedience -1 · weight +2", "brain-freeze bliss"),
-    "chicken_soup":    ("Chicken Soup",        "f:40", 150,   "Food", "hunger +1 · weight +1", "warms the code"),
-    "chocolate_egg":   ("Chocolate Egg",       "f:58", 300,   "Food", "hunger +1 · weight +1 · a surprise inside", "a toy hides inside"),
-    "burnt_food":      ("Burnt Food",          "f:56", None,  "Food", "hunger +1 · saps effort · obedience +5", "somebody wasn't watching"),
-    "yellow_pepper":   ("Yellow Pepper",       "f:35", 100,   "Food", "hunger +1 · Virus power +1 · obedience +1", "a spark of chaos"),
-    "green_pepper":    ("Green Pepper",        "f:36", 100,   "Food", "hunger +1 · Data power +1 · obedience +1", "a spark of logic"),
-    "red_pepper":      ("Red Pepper",          "f:37", 100,   "Food", "hunger +1 · Vaccine power +1 · obedience +1", "a spark of order"),
-    "med":             ("Med",                 "f:4",  None,  "Medicine", "cures sickness", "the field pill"),
-    "elixir":          ("Elixir",              "f:15", 2000,  "Medicine", "cures sickness · energy to FULL", "the pill, perfected"),
-    "vitamin_g":       ("Vitamin G",           "f:16", 2000,  "Medicine", "heals injury · effort FULL · injury guard", "the golden mend"),
-    "gold_pill":       ("Gold Pill",           "f:19", 10000, "Medicine", "energy +12", "vitality, gilded"),
-    "supplement":      ("Supplement",          "f:25", 100,   "Medicine", "effort FULL · obedience +5 · weight +1", "discipline in a dose"),
-    "bitter_herbs":    ("Bitter Herbs",        "f:30", 750,   "Medicine", "obedience +5", "good for you. tastes it."),
-    "food_pill":       ("Food Pill",           "f:41", 100,   "Medicine", "fills belly · obedience +5 · weight +3", "a meal, compressed"),
-    "ai_supplement":   ("AI Supplement",       "f:43", None,  "Medicine", "effort +1", "the assistant's own blend"),
-    "ai_food_pill":    ("AI Food Pill",        "f:44", None,  "Medicine", "hunger +1", "the assistant's ration"),
-    "hp_chip":         ("HP Chip",             "f:26", 1500,  "Evolution", "all three powers +5", "vitality etched in silicon"),
-    "hp_chip_g":       ("HP Chip G",           "f:27", 3000,  "Evolution", "all three powers +10", "the golden constitution"),
-    "hedonism_101":    ("Hedonism 101",        "i:1",  2000,  "Play", "manners OBLITERATED · DO NOT STUDY", "the forbidden syllabus"),
-    "book":            ("Book",                "i:2",  1000,  "Care", "obedience +5", "a well-thumbed guide"),
-    "stuffed_animal":  ("Stuffed Animal",      "i:4",  1000,  "Play", "snuggle! obedience -1", "a softest friend"),
-    "board_game":      ("Board Game",          "i:5",  2000,  "Play", "Vaccine power -15 · Data power +15 · obedience +5", "logic beats order"),
-    "computer_game":   ("Computer Game",       "i:8",  2000,  "Play", "Virus power -15 · Data power +15", "logic tames chaos"),
-    "toy_car":         ("Toy Car",             "i:11", 500,   "Play", "zoom! obedience -1", "vroom of its own"),
-    "balloon":         ("Balloon",             "i:12", 100,   "Play", "a bobbing delight", "pure uplift"),
-    "trampoline":      ("Trampoline",          "i:13", 2500,  "Training", "bounce! effort +1 · weight -1", "gravity, negotiable"),
-    "x_program":       ("X-Program Sample",    "i:14", None,  "Evolution", "belly + effort emptied · the X takes hold", "survive it, transcend"),
-    "zone_transport":  ("Zone Transport",      "i:28", 750,   "Adventure", "on the road: a safe T-lift up the road", "a Birdramon lift"),
-    "continent_transport":("Continent Transport", "i:31", 1000,  "Adventure", "on the road: rest to half tank, anywhere", "a Whamon camp"),
-    "digitron":        ("Digitron",            "i:33", 6000,  "Evolution", "a dark evolution, if one answers", "a mysterious dark fluid"),
-    "horn_helmet":     ("Horn Helmet",         "i:34", 3000,  "Evolution", "evolve: Kabuterimon, if the body is ready", "the beetle's crown"),
-    "grey_claws":      ("Grey Claws",          "i:36", 3000,  "Evolution", "evolve: Greymon, if the body is ready", "the tyrant's grip"),
-    "water_bottle":    ("Water Bottle",        "i:37", 3000,  "Evolution", "evolve: Seadramon, if the body is ready", "the serpent's sea"),
-    "torn_tatter":     ("Torn Tatter",         "i:38", 3000,  "Evolution", "evolve: Bakemon, if the body is ready", "the ghost's shroud"),
-    "white_wings":     ("White Wings",         "i:39", 3000,  "Evolution", "evolve: Angemon, if the body is ready", "the angel's lift"),
-    "black_wings":     ("Black Wings",         "i:40", 3000,  "Evolution", "evolve: Devimon, if the body is ready", "the fallen's lift"),
-    "metal_armor":     ("Metal Armor",         "i:41", 3000,  "Evolution", "evolve: MetalMamemon, if the body is ready", "the mercenary's shell"),
-    "flaming_wings":   ("Flaming Wings",       "i:42", 3000,  "Evolution", "evolve: Birdramon, if the body is ready", "the firebird's pinions"),
-    "toy_oven":        ("Toy Oven",            "i:66", 500,   "Play", "fresh-baked! hunger -1 (makes room)", "smells like seconds"),
-    "capsule_a":       ("Capsule",             "i:68", 100,   "Play", "open: a surprise item (finer on festivals)", "a random surprise"),
-    "capsule_b":       ("Capsule",             "i:69", None,  "Play", "open: a surprise item (finer on festivals)", "a random surprise"),
-    "capsule_c":       ("Capsule",             "i:70", None,  "Play", "open: a surprise item (finer on festivals)", "a random surprise"),
-    "capsule_d":       ("Capsule",             "i:72", None,  "Play", "open: a surprise item (finer on festivals)", "a random surprise"),
-    "capsule_e":       ("Capsule",             "i:73", None,  "Play", "open: a surprise item (finer on festivals)", "a random surprise"),
-    "capsule_f":       ("Capsule",             "i:74", None,  "Play", "open: a surprise item (finer on festivals)", "a random surprise"),
-    "capsule_g":       ("Capsule",             "i:75", None,  "Play", "open: a surprise item (finer on festivals)", "a random surprise"),
-    "capsule_h":       ("Capsule",             "i:76", None,  "Play", "open: a surprise item (finer on festivals)", "a random surprise"),
-    "prank_capsule_a": ("Capsule",             "i:71", None,  "Play", "open: a surprise item (finer on festivals)", "a random surprise"),
-    "prank_capsule_b": ("Capsule",             "i:77", None,  "Play", "open: a surprise item (finer on festivals)", "a random surprise"),
-    "futon":           ("Futon",               "i:81", 1000,  "Care", "the next daytime doze rests to FULL", "deepest daytime sleep"),
-    "toilet":          ("Toilet",              "i:82", 1000,  "Care", "a clean + a mannerly ritual", "civilisation, delivered"),
-    "human_fire_spirit":("Human Fire Spirit",   "i:43", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
-    "human_light_spirit":("Human Light Spirit",  "i:44", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
-    "human_ice_spirit":("Human Ice Spirit",    "i:45", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
-    "human_wind_spirit":("Human Wind Spirit",   "i:46", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
-    "human_thunder_spirit":("Human Thndr. Spirit", "i:47", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
-    "human_earth_spirit":("Human Earth Spirit",  "i:48", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
-    "human_water_spirit":("Human Water Spirit",  "i:49", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
-    "human_wood_spirit":("Human Wood Spirit",   "i:50", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
-    "human_metal_spirit":("Human Metal Spirit",  "i:51", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
-    "human_dark_spirit":("Human Dark Spirit",   "i:52", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
-    "beast_fire_spirit":("Beast Fire Spirit",   "i:53", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
-    "beast_light_spirit":("Beast Light Spirit",  "i:54", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
-    "beast_ice_spirit":("Beast Ice Spirit",    "i:55", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
-    "beast_wind_spirit":("Beast Wind Spirit",   "i:56", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
-    "beast_thunder_spirit":("Beast Thndr. Spirit", "i:57", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
-    "beast_earth_spirit":("Beast Earth Spirit",  "i:58", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
-    "beast_water_spirit":("Beast Water Spirit",  "i:59", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
-    "beast_wood_spirit":("Beast Wood Spirit",   "i:60", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
-    "beast_metal_spirit":("Beast Metal Spirit",  "i:61", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
-    "beast_dark_spirit":("Beast Dark Spirit",   "i:62", None,  "Evolution", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "meat":            ("Meat",                "f:0",  None,  "Feed", "hunger +1 · weight +2", "the classic slab, to go"),
+    "fruit":           ("Fruit",               "f:2",  None,  "Feed", "hunger +1 · obedience -1", "sweet, and a little spoiling"),
+    "bread":           ("Bread",               "f:24", 100,   "Feed", "hunger +1 · weight +1", "a warm honest loaf"),
+    "cheese":          ("Cheese",              "f:49", 200,   "Feed", "hunger +1 · weight +2", "aged to please"),
+    "broccoli":        ("Broccoli",            "f:51", 100,   "Feed", "hunger +1 · obedience +2", "eat it. no arguments."),
+    "orange":          ("Orange",              "f:42", 300,   "Feed", "hunger +1 · obedience -1", "zest for the road"),
+    "honey":           ("Honey",               "f:31", 500,   "Feed", "hunger +1 · energy +1 · obedience -5 · weight +1", "spoils them rotten"),
+    "chocolate_egg":   ("Chocolate Egg",       "f:58", 300,   "Feed", "hunger +1 · weight +1 · a surprise inside", "a toy hides inside"),
+    "burnt_food":      ("Burnt Food",          "f:56", None,  "Feed", "hunger +1 · saps effort · obedience +5", "somebody wasn't watching"),
+    "yellow_pepper":   ("Yellow Pepper",       "f:35", 100,   "Feed", "hunger +1 · Virus power +1 · obedience +1", "a spark of chaos"),
+    "green_pepper":    ("Green Pepper",        "f:36", 100,   "Feed", "hunger +1 · Data power +1 · obedience +1", "a spark of logic"),
+    "red_pepper":      ("Red Pepper",          "f:37", 100,   "Feed", "hunger +1 · Vaccine power +1 · obedience +1", "a spark of order"),
+    "med":             ("Med",                 "f:4",  None,  "Cure", "cures sickness", "the field pill"),
+    "elixir":          ("Elixir",              "f:15", 2000,  "Cure", "cures sickness · energy to FULL", "the pill, perfected"),
+    "vitamin_g":       ("Vitamin G",           "f:16", 2000,  "Cure", "heals injury · effort FULL · injury guard", "the golden mend"),
+    # THE CURE LADDER (2026-07-27, Joel: "fill the cure hole").  care_mistakes
+    # is the deadliest meter in the game -- 21 reads, it gates evolutions and
+    # it KILLS -- and until now exactly one item touched it, at 7777b.  These
+    # two give the slate a ladder instead of a single luxury.  Both wear art
+    # freed by the same day's cuts: nothing is drawn, ever.
+    "cold_compress":   ("Cold Compress",       "i:67", 2000,  "Cure", "ONE care slip erased · costs energy", "relief, the hard way"),
+    "gold_pill":       ("Gold Pill",           "f:19", 10000, "Cure", "energy +12", "vitality, gilded"),
+    "supplement":      ("Supplement",          "f:25", 100,   "Drill", "effort FULL · obedience +5 · weight +1", "discipline in a dose"),
+    "food_pill":       ("Food Pill",           "f:41", 100,   "Feed", "fills belly · obedience +5 · weight +3", "a meal, compressed"),
+    "ai_supplement":   ("AI Supplement",       "f:43", None,  "Drill", "effort +1", "the assistant's own blend"),
+    "ai_food_pill":    ("AI Food Pill",        "f:44", None,  "Cure", "hunger +1", "the assistant's ration"),
+    "hp_chip":         ("HP Chip",             "f:26", 1500,  "Power", "all three powers +5", "vitality etched in silicon"),
+    "hp_chip_g":       ("HP Chip G",           "f:27", 3000,  "Power", "all three powers +10", "the golden constitution"),
+    "hedonism_101":    ("Hedonism 101",        "i:1",  2000,  "Manners", "manners OBLITERATED · DO NOT STUDY", "the forbidden syllabus"),
+    "book":            ("Book",                "i:2",  1000,  "Manners", "obedience +5", "a well-thumbed guide"),
+    "board_game":      ("Board Game",          "i:5",  2000,  "Power", "Vaccine power -15 · Data power +15 · obedience +5", "logic beats order"),
+    "computer_game":   ("Computer Game",       "i:8",  2000,  "Power", "Virus power -15 · Data power +15", "logic tames chaos"),
+    "trampoline":      ("Trampoline",          "i:13", 2500,  "Drill", "bounce! effort +1 · weight -1", "gravity, negotiable"),
+    "x_program":       ("X-Program Sample",    "i:14", None,  "Evolve", "belly + effort emptied · the X takes hold", "survive it, transcend"),
+    "zone_transport":  ("Zone Transport",      "i:28", 750,   "Road", "on the road: a safe T-lift up the road", "a Birdramon lift"),
+    "continent_transport":("Continent Transport", "i:31", 1000,  "Road", "on the road: rest to half tank, anywhere", "a Whamon camp"),
+    "digitron":        ("Digitron",            "i:33", 6000,  "Evolve", "a dark evolution, if one answers", "a mysterious dark fluid"),
+    "horn_helmet":     ("Horn Helmet",         "i:34", 3000,  "Evolve", "evolve: Kabuterimon, if the body is ready", "the beetle's crown"),
+    "grey_claws":      ("Grey Claws",          "i:36", 3000,  "Evolve", "evolve: Greymon, if the body is ready", "the tyrant's grip"),
+    "water_bottle":    ("Water Bottle",        "i:37", 3000,  "Evolve", "evolve: Seadramon, if the body is ready", "the serpent's sea"),
+    "torn_tatter":     ("Torn Tatter",         "i:38", 3000,  "Evolve", "evolve: Bakemon, if the body is ready", "the ghost's shroud"),
+    "white_wings":     ("White Wings",         "i:39", 3000,  "Evolve", "evolve: Angemon, if the body is ready", "the angel's lift"),
+    "black_wings":     ("Black Wings",         "i:40", 3000,  "Evolve", "evolve: Devimon, if the body is ready", "the fallen's lift"),
+    "metal_armor":     ("Metal Armor",         "i:41", 3000,  "Evolve", "evolve: MetalMamemon, if the body is ready", "the mercenary's shell"),
+    "flaming_wings":   ("Flaming Wings",       "i:42", 3000,  "Evolve", "evolve: Birdramon, if the body is ready", "the firebird's pinions"),
+    "toy_oven":        ("Toy Oven",            "i:66", 500,   "Feed", "fresh-baked! hunger -1 (makes room)", "smells like seconds"),
+    "capsule_a":       ("Capsule",             "i:68", 100,   "Treasure", "open: a surprise item (finer on festivals)", "the corner-shop gacha"),
+    "capsule_b":       ("Blue Capsule",             "i:69", None,  "Treasure", "open: an uncommon surprise", "a cut above the counter"),
+    "capsule_c":       ("Green Capsule",             "i:70", None,  "Treasure", "open: an uncommon surprise", "road-found, road-worthy"),
+    "capsule_d":       ("Red Capsule",             "i:72", None,  "Treasure", "open: a rare surprise", "warm to the touch"),
+    "capsule_e":       ("Silver Capsule",             "i:73", None,  "Treasure", "open: a rare surprise", "heavier than it looks"),
+    "capsule_f":       ("Gold Capsule",             "i:74", None,  "Treasure", "open: a fine surprise", "it practically hums"),
+    "capsule_g":       ("Prism Capsule",             "i:75", None,  "Treasure", "open: a fine surprise", "light bends around it"),
+    "capsule_h":       ("Royal Capsule",             "i:76", None,  "Treasure", "open: the finest surprise", "festival stock, the good shelf"),
+    "prank_capsule_a": ("Rattling Capsule",             "i:71", None,  "Treasure", "open: a surprise. probably fine.", "something inside is ALIVE"),
+    "prank_capsule_b": ("Hissing Capsule",             "i:77", None,  "Treasure", "open: a surprise. definitely fine.", "do you smell smoke?"),
+    "futon":           ("Futon",               "i:81", 1000,  "Rest", "the next daytime doze rests to FULL", "deepest daytime sleep"),
+    "human_fire_spirit":("Human Fire Spirit",   "i:43", None,  "Evolve", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "human_light_spirit":("Human Light Spirit",  "i:44", None,  "Evolve", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "human_ice_spirit":("Human Ice Spirit",    "i:45", None,  "Evolve", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "human_wind_spirit":("Human Wind Spirit",   "i:46", None,  "Evolve", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "human_thunder_spirit":("Human Thndr. Spirit", "i:47", None,  "Evolve", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "human_earth_spirit":("Human Earth Spirit",  "i:48", None,  "Evolve", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "human_water_spirit":("Human Water Spirit",  "i:49", None,  "Evolve", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "human_wood_spirit":("Human Wood Spirit",   "i:50", None,  "Evolve", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "human_metal_spirit":("Human Metal Spirit",  "i:51", None,  "Evolve", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "human_dark_spirit":("Human Dark Spirit",   "i:52", None,  "Evolve", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "beast_fire_spirit":("Beast Fire Spirit",   "i:53", None,  "Evolve", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "beast_light_spirit":("Beast Light Spirit",  "i:54", None,  "Evolve", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "beast_ice_spirit":("Beast Ice Spirit",    "i:55", None,  "Evolve", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "beast_wind_spirit":("Beast Wind Spirit",   "i:56", None,  "Evolve", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "beast_thunder_spirit":("Beast Thndr. Spirit", "i:57", None,  "Evolve", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "beast_earth_spirit":("Beast Earth Spirit",  "i:58", None,  "Evolve", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "beast_water_spirit":("Beast Water Spirit",  "i:59", None,  "Evolve", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "beast_wood_spirit":("Beast Wood Spirit",   "i:60", None,  "Evolve", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "beast_metal_spirit":("Beast Metal Spirit",  "i:61", None,  "Evolve", "a spirit evolution, if one answers", "an elemental inheritance"),
+    "beast_dark_spirit":("Beast Dark Spirit",   "i:62", None,  "Evolve", "a spirit evolution, if one answers", "an elemental inheritance"),
 }
 
 # ---------------------------------------------------------------------------
@@ -300,8 +289,6 @@ _TOUCHES = {
     "xylophone": ("energy",),
     "video_game": ("energy", "weight"),
     "television": ("energy", "weight"),
-    "bubble_bath": ("poop", "poop_sizes"),
-    "cold_shower": ("energy", "asleep"),   # runs its OWN disturb, so: asleep
     # ---- ADVENTURE ----
     # Empty by design: from the HOME bag these three only refuse.  Their
     # real work is adventure-run state (the march's location, its lives),
@@ -313,22 +300,11 @@ _TOUCHES = {
     # ---- THE EXPANSION (2026-07-26): read out of the new handlers ----------
     "meat": ('hunger', 'weight'),
     "fruit": ('hunger', 'obedience'),
-    "banana": ('hunger', 'energy', 'obedience', 'weight'),
     "bread": ('hunger', 'weight'),
-    "rice": ('hunger', 'weight'),
-    "nuts": ('hunger', 'weight'),
-    "oats": ('hunger', 'weight'),
-    "milk": ('hunger', 'weight'),
-    "egg": ('hunger', 'weight'),
     "cheese": ('hunger', 'weight'),
-    "salmon": ('hunger', 'weight'),
-    "beans": ('hunger', 'obedience', 'weight'),
     "broccoli": ('hunger', 'obedience'),
-    "guava": ('hunger', 'weight'),
     "orange": ('hunger', 'obedience'),
     "honey": ('hunger', 'energy', 'obedience', 'weight'),
-    "ice_cream": ('hunger', 'obedience', 'weight'),
-    "chicken_soup": ('hunger', 'weight'),
     "chocolate_egg": ('hunger', 'weight'),
     "burnt_food": ('hunger', 'strength', 'obedience'),
     "yellow_pepper": ("hunger", "obedience", "virus"),
@@ -337,9 +313,9 @@ _TOUCHES = {
     "med": ('sick',),
     "elixir": ('sick', 'energy'),
     "vitamin_g": ('injured', 'strength', 'vitamin_lapse'),
+    "cold_compress": ('care_mistakes', 'energy'),
     "gold_pill": ('energy',),
     "supplement": ('strength', 'obedience', 'weight'),
-    "bitter_herbs": ('obedience',),
     "food_pill": ('hunger', 'obedience', 'weight'),
     "ai_supplement": ('strength',),
     "ai_food_pill": ('hunger',),
@@ -347,11 +323,8 @@ _TOUCHES = {
     "hp_chip_g": ('vaccine', 'data_power', 'virus'),
     "hedonism_101": ('obedience',),
     "book": ('obedience',),
-    "stuffed_animal": ('obedience',),
     "board_game": ('vaccine', 'data_power', 'obedience'),
     "computer_game": ('virus', 'data_power'),
-    "toy_car": ('obedience',),
-    "balloon": (),
     "trampoline": ('strength', 'weight'),
     "x_program": ('hunger', 'strength', 'energy', 'x_antibody'),
     "zone_transport": (),
@@ -377,7 +350,6 @@ _TOUCHES = {
     "prank_capsule_a": (),
     "prank_capsule_b": (),
     "futon": ('futon_doze',),
-    "toilet": ('poop', 'poop_sizes', 'obedience'),
     "human_fire_spirit": ('num',),
     "human_light_spirit": ('num',),
     "human_ice_spirit": ('num',),
@@ -510,8 +482,14 @@ for _k, _v in CATALOG.items():
 
 
 def key_for_icon(icon):
-    """The CATALOG key whose sprite is `icon`, or None (unmapped loot)."""
-    return _BY_ICON.get(icon)
+    """The CATALOG key whose sprite is `icon`, or None (unmapped loot).
+    A RETIRED key's icon resolves to its heir -- authored loot rows, cup
+    prizes and town stock lines written against a cut item keep paying."""
+    k = _BY_ICON.get(icon)
+    if k is not None:
+        return k
+    old = _RETIRED_ICONS.get(icon)
+    return RETIRED.get(old) if old else None
 
 
 # Which frame of an item's sheet IS the item, for every still cell that
@@ -609,6 +587,48 @@ def item_script(key):
 
 # old-catalog keys -> their heirs (the save-heal maps bags 1:1 on load;
 # nobody loses goods when the shelf turns over)
+# THE RETIRED LEDGER (item refactor 2026-07-27).  Every key cut by the
+# refactor names an HEIR: owned copies convert 1:1 in the bag heal
+# (persistence._heal_bag), and any authored channel still speaking the old
+# icon -- a loot row, a cup prize, a town stock line -- resolves to the heir
+# through key_for_icon's fallback below.  Nobody loses goods; no authored
+# data goes dark.
+# the icons the RETIRED keys wore, for key_for_icon's fallback (static on
+# purpose: the rows are gone from CATALOG, so nothing can derive these; the
+# test suite pins that every entry here names a live heir)
+_RETIRED_ICONS = {
+    "f:45": "nuts", "f:46": "oats", "f:48": "egg", "f:50": "guava",
+    "f:47": "milk", "f:40": "chicken_soup", "f:29": "rice", "f:53": "salmon",
+    "f:52": "beans", "f:39": "ice_cream", "f:9": "banana",
+    "f:30": "bitter_herbs", "i:12": "balloon", "i:26": "bubble_bath",
+    "i:11": "toy_car", "i:4": "stuffed_animal",
+    # (no i:67 row: cold_compress WEARS the shower art now, so the live icon
+    # table already routes it -- the shower literally continues as the compress)
+    "i:82": "toilet",
+}
+
+RETIRED = {
+    "balloon": "ball",
+    "banana": "cake",
+    "beans": "broccoli",
+    "bitter_herbs": "book",
+    "bubble_bath": "ball",
+    "chicken_soup": "bread",
+    "cold_shower": "cold_compress",
+    "egg": "bread",
+    "gluttons_platter": "giga_meal",
+    "guava": "bread",
+    "ice_cream": "cake",
+    "milk": "bread",
+    "nuts": "bread",
+    "oats": "bread",
+    "rice": "cheese",
+    "salmon": "cheese",
+    "stuffed_animal": "ball",
+    "toilet": "port_potty",
+    "toy_car": "ball",
+}
+
 LEGACY_KEYS = {
     "best_fruit": "tuna", "normal_fruit": "fish", "worst_fruit": "vegetable",
     "deadly_fruit": "poison_mushroom", "junk_food": "cheese_burger",
@@ -781,9 +801,11 @@ def shelf(cat):
 # shelf tabs in PLAY order -- everyday care first, the relics last (shop
 # polish 2026-07-17: the old alphabetical order opened the shop on a
 # two-item Armor-Spirit tab).  Unknown categories append alphabetically.
-CATEGORY_ORDER = ("Food", "Medicine", "Care", "Training", "Play",
-                  "Evolution", "Legacy",
-                  "Adventure", ARMOR_CATEGORY)
+# EIGHT TABS BY ACT (item refactor 2026-07-27, Joel: "all items need to be
+# completely refactored and catagorized"): each tab names the thing the
+# player wants to HAPPEN, in play order -- feed first, the doors late.
+CATEGORY_ORDER = ("Feed", "Rest", "Cure", "Drill", "Manners", "Power",
+                  "Treasure", "Evolve", "Road", ARMOR_CATEGORY)
 
 
 def crest_answer(pet, key):
@@ -955,7 +977,7 @@ def _econ_stub(key):
     catalog price, standard factors, capped stock -- no money printer."""
     v = CATALOG[key]
     return {"price": v.price, "sale_factor": 2, "resell_factor": 2,
-            "max_stock": 2, "is_food": v.category == "Food",
+            "max_stock": 2, "is_food": v.category == "Feed",
             "consumable_id": -1}
 
 
@@ -988,6 +1010,13 @@ def _base_rows(town_id):
             local = max(1, round(e["price"] * o["price"] / default))
         else:
             local = o["price"]
+        if any(k == have for _s, have, _o, _l in rows):
+            # RETIRED resolution can land two authored rows on one heir (a
+            # town that stocked both the toilet and the port-potty now has
+            # two port-potty lines): the shelf keeps the FIRST, because a
+            # duplicate row breaks the one-key-one-row grammar everything
+            # downstream (deal dedup included) assumes (refactor 2026-07-27)
+            continue
         rows.append((sid, k, o, local))
     sk = _MAP_SPECIALTY.get(_town_maps().get(town_id))
     if sk and sk not in {k for _sid, k, _o, _p in rows}:
@@ -1020,7 +1049,7 @@ def _guest_deal():
     deal stays stable), and the leftover slots go to base-covered goods."""
     import zlib
     pool = [k for k, v in CATALOG.items()
-            if v.price is not None and v.category != "Adventure"
+            if v.price is not None and v.category != "Road"
             and k != "poison_mushroom"]
     base_anywhere = set()
     for tid in _town_maps():
@@ -1062,7 +1091,7 @@ def _town_rows(town_id):
                      CATALOG[gk].price))
     have = {k for _sid, k, _o, _p in rows}
     for k, v in CATALOG.items():
-        if v.category == "Adventure" and k not in have:
+        if v.category == "Road" and k not in have:
             rows.append((f"road:{town_id}:{k}", k, _econ_stub(k), v.price))
     return rows
 
@@ -1142,7 +1171,7 @@ HOME_DEAL_FACTOR = 2
 @lru_cache(maxsize=1)
 def _home_deal_pool():
     return sorted(k for k, v in CATALOG.items()
-                  if v.price is not None and v.category != "Adventure")
+                  if v.price is not None and v.category != "Road")
 
 
 def home_deal_key(today=None):
@@ -1161,50 +1190,98 @@ HOME_SHOP_ID = "home"        # the deal ledger's pseudo-town (see home_stock)
 HOME_RATIONED = frozenset({"capsule_a"})
 
 
+# THE HOME COUNTER, refactored (2026-07-27, Joel: "shops need the same
+# thing... daily items. not all at once like the home shop. basic items
+# sure but cmon").  Home stops being the whole catalog on one wall.  It
+# carries the STAPLES -- the basics a tamer must always be able to buy --
+# and a rotating DAILY BAND drawn from everything else, tier-weighted so
+# a legendary drops in rarely and a common often.  ~20 rows a day, and
+# the week has texture.  Towns are untouched: they were already the
+# curated half of the economy.
+HOME_STAPLES = frozenset({
+    # feed basics: the ladder's everyday rungs
+    "fish", "bread", "cheese", "vegetable",
+    # rest basics: the night and the tank
+    "sleeping_pill", "music_player", "energy_drink",
+    # drill + cure basics
+    "dumbbell", "slim_drink", "supplement",
+    # the gacha counter never closes -- its RATION is the guard, not absence
+    "capsule_a",
+})
+HOME_BAND_SIZE = 10
+
+
+def home_band(today=None):
+    """The day's rotating guest rows.
+
+    A SHUFFLED CYCLE, not a random draw (audit 2026-07-27): the first cut
+    of this was tier-weighted sampling, and a 40-day probe caught it simply
+    never dealing Flaming Wings -- a shelf that MAY show a thing eventually
+    is the slot machine, not the store.  Joel's actual question ("are items
+    spread out evenly thoughout the week?") is the spec: the non-staple pool
+    is shuffled once per EPOCH (seeded, so every device deals the same week)
+    and dealt out in day-sized hands, so every sellable key is guaranteed a
+    home-shelf day each cycle (~1 week).  Rarity stays where it belongs --
+    in prices, town curation and the tier rations -- not in whether the
+    counter will ever stock the good at all."""
+    pool = [k for k, v in sorted(CATALOG.items())
+            if v.price is not None and k not in HOME_STAPLES
+            and v.category != "Road"]        # road rows ride their own gate
+    if not pool:
+        return []
+    days = -(-len(pool) // HOME_BAND_SIZE)          # hands per full cycle
+    o = _today_ordinal(today)
+    epoch, day = divmod(o, days)
+    deck = list(pool)
+    random.Random(f"homeband:{epoch}").shuffle(deck)
+    hand = deck[day * HOME_BAND_SIZE:(day + 1) * HOME_BAND_SIZE]
+    # the last hand of a short deck tops up from the front, never short-shelves
+    if len(hand) < HOME_BAND_SIZE:
+        hand += deck[:HOME_BAND_SIZE - len(hand)]
+    return hand
+
+
+def _ration_left(shop_id, key, taken):
+    """Today's remaining ration for a tier-limited row -- THE one place the
+    arithmetic lives (assembly dedup 2026-07-27: home and town each hand-
+    rolled this line, the seam where the two shelves could drift)."""
+    return max(0, tier_stock(key) - int(taken.get(f"{shop_id}:{key}", 0)))
+
+
 def home_stock(today=None, pet=None):
-    """The home shelf as ready entries, with the day's deal marked,
-    discounted and STOCK-LIMITED.  Same entry shape as catalog(), plus
-    `deal`/`base_price`/`left` on the one bargain row -- so the shelf
-    renders the ▾, the cut price and the sold-out note with no extra UI,
-    exactly like a town counter.
+    """The home shelf: staples + the day's band + the deal, decorated the
+    same way a town counter is (shops-look-the-same law).
 
-    THE DEAL IS RATIONED (item sweep 2026-07-24).  Every price in the
-    town economy was built so a flip lands at-or-below water, and the
-    ones that don't are bounded by TOWN_DAILY_CAP -- "the daily cap is
-    what makes the demand resale a treat instead of a printer".  The home
-    deal (v0.5.225) arrived after that and skipped the bound: it sells at
-    HALF catalog while any town that doesn't stock the good pays
-    TOWN_DEMAND 70%, so buy-here-sell-there cleared +20% of catalog PER
-    UNIT with nothing to buy but bits -- +1,600b a copy on Omni Chip G
-    day, unbounded.  The deal now carries the same tier ration a town
-    row does: rare and legendary go one a day, commons three.  The rest
-    of the home shelf stays deliberately unlimited -- home is the
-    reliable counter, and at full price it is always a loss to flip.
-
-    A SPENT RATION IS NOT A SHUT DOOR: once the day's cut-price copies are
-    gone the row goes back to FULL price and stays buyable without limit,
-    because home is the shelf that is always open.  Only the discount runs
-    out."""
+    Pricing and rationing are unchanged from the audit rulings: staples and
+    band rows sell UNLIMITED at full catalog price (a flip at catalog is
+    always a loss -- item sweep 2026-07-24), the one deal row and the
+    capsule keep their daily tier rations, and a spent deal ration falls
+    back to full price rather than a shut door."""
     deal = home_deal_key(today)
+    band = set(home_band(today))
     taken = _town_taken(pet, today) if pet is not None else {}
     out = []
     for e in catalog():
-        if e["key"] in HOME_RATIONED and e["key"] != deal:
-            # THE CAPSULE RATION (expansion audit 2026-07-26): a capsule's
-            # CONTENTS carry more resale than its 100b price by construction
-            # (measured EV 123b home / 172b town-demand), so the one shelf
-            # that never runs dry would be a +23b/loop printer.  The box
-            # rides the same daily tier ration a deal row does -- a treat,
-            # not a mint.  Every other home row stays unlimited: at full
-            # price a flip is a loss there, as ever.
-            left = max(0, tier_stock(e["key"])
-                       - int(taken.get(f"{HOME_SHOP_ID}:{e['key']}", 0)))
+        k = e["key"]
+        if (k != deal and k not in HOME_STAPLES and k not in band
+                and e["category"] not in (ARMOR_CATEGORY, "Road")):
+            # not on today's shelf -- come back tomorrow.  TWO shelves
+            # bypass the band, because both are DOORS, not stock: the
+            # Digimental shelf (the crest system's single door) and the
+            # ROAD shelf (map-clear gated -- a tamer who just earned the
+            # warp must not wait three days to buy it; the gate IS its
+            # scarcity).  Everything else rotates.
+            continue
+        if k in HOME_RATIONED and k != deal:
+            # THE CAPSULE RATION (expansion audit 2026-07-26): its contents
+            # out-value its price by construction, so the always-open shelf
+            # rations it like a deal row or it prints bits
+            left = _ration_left(HOME_SHOP_ID, k, taken)
             out.append(dict(e, left=left, town_id=HOME_SHOP_ID))
             continue
-        if e["key"] == deal:
+        if k == deal:
             base = e["price"]
-            left = max(0, tier_stock(e["key"])
-                       - int(taken.get(f"{HOME_SHOP_ID}:{e['key']}", 0)))
+            left = _ration_left(HOME_SHOP_ID, k, taken)
             e = (dict(e, deal=True, base_price=base, left=left,
                       town_id=HOME_SHOP_ID,
                       price=max(1, base // HOME_DEAL_FACTOR)) if left > 0
@@ -1251,8 +1328,10 @@ def town_stock(town_id, today=None, pet=None):
         # will part with in a day, on the same ladder the road rolls -- a
         # legendary good is one-per-town-per-day, a common one three.  The
         # authored maxStock and the global daily cap still bound it.
-        cap = min(o["max_stock"], TOWN_DAILY_CAP, tier_stock(k))
-        left = max(0, cap - int(taken.get(f"{town_id}:{k}", 0)))
+        # the authored maxStock and the global cap still bound the shared ration
+        left = min(_ration_left(town_id, k, taken),
+                   max(0, min(o["max_stock"], TOWN_DAILY_CAP)
+                       - int(taken.get(f"{town_id}:{k}", 0))))
         out.append(dict(e, price=max(1, price), base_price=local,
                         deal=on, left=left, town_id=town_id))
     return out

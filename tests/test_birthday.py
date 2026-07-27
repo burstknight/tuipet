@@ -50,7 +50,7 @@ def test_mood_tie_yields_a_normal_day():
 
 
 def test_birthday_fires_on_the_age_day():
-    p = _pet(mood=300)
+    p = _pet()
     p.age_seconds = DAY_LENGTH - 1
     p.tick(2.0)                                                 # crosses day 1
     assert p.last_birthday == 1

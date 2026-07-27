@@ -260,7 +260,6 @@ class CareMixin:
             return "Nothing to clean."
         n, self.poop = self.poop, 0
         self.poop_sizes = []                        # clearFilth()
-        self._set_mood(self.mood + CLEAN_MOOD_INC)
         self._set_obedience(self.obedience + CLEAN_OBED_INC[self._disposition()])
         self._set_anim("wash", 1.2)
         return f"Cleaned {n} poop."
@@ -444,6 +443,7 @@ class CareMixin:
             # ---- MEDICINE ---------------------------------------------------
             "vitamin": self._vitamin,
             "miracle_drink": self._miracle_drink,
+            "cold_compress": self._cold_compress,
             # ---- CARE -------------------------------------------------------
             "sleeping_pill": self._sleep_pill,
             "caffeine_pill": self._caffeine,
@@ -478,8 +478,6 @@ class CareMixin:
                                             msg="One more level…"),
             "television": lambda: self._toy(energy=3, weight=1,
                                             msg="Glued to the screen."),
-            "bubble_bath": self._bubble_bath,
-            "cold_shower": self._cold_shower,
             # ---- ADVENTURE (spent ON THE ROAD, not from the home bag) -------
             "town_transport": lambda: _Refused("Save it for the road (press T)."),
             "disaster_transport": lambda: _Refused("Save it for the road (press T)."),
@@ -498,15 +496,10 @@ class CareMixin:
             "computer_game": self._computer_game,
             "toy_oven": self._toy_oven,
             "futon": self._futon,
-            "toilet": self._toilet_item,
             "x_program": self._x_program,
             "chocolate_egg": self._chocolate_egg,
             "book": self._textbook_lite,
             "hedonism_101": self._hedonism,
-            "stuffed_animal": lambda: self._toy(obedience=-1,
-                                                msg="Snuggled speechless."),
-            "toy_car": lambda: self._toy(obedience=-1, msg="VROOM."),
-            "balloon": lambda: self._toy(msg="It bobs. Bliss."),
             "trampoline": lambda: self._toy(weight=-1, strength=1,
                                             msg="BOING. Light training!"),
         }.get(key)
@@ -534,7 +527,7 @@ class CareMixin:
         # set (2026-07-26): it is the sleep family's fourth member -- sliding
         # a bed under a sleeper is the opposite of a disturbance.
         if self.asleep and key not in ("music_player", "sleeping_pill",
-                                       "cold_shower", "futon"):
+                                       "futon"):
             self._disturbed()
         out = fx()
         if not isinstance(out, _Refused) and out is not None:
@@ -681,6 +674,25 @@ class CareMixin:
         return ("One slip, forgiven." if not left
                 else f"One slip forgiven — {left} still on the slate.")
 
+    def _cold_compress(self):
+        """THE CHEAP ERASER (2026-07-27, Joel: "fill the cure hole").
+
+        care_mistakes is the game's death clock -- 20 kills outright, an
+        Ultimate dies at 5 -- and the ONLY answer was a 7777b drink that
+        also paid +12 energy.  One luxury is not a ladder.  This one wipes
+        the same single slip for a quarter of the price and takes the
+        energy instead of giving it: relief you have to sleep off.
+        """
+        if self.care_mistakes <= 0:
+            return _Refused("Nothing on the slate to erase.")   # noqa: F405
+        if self.energy <= COMPRESS_ENERGY_COST:                 # noqa: F405
+            return _Refused("Too drained to take the shock.")   # noqa: F405
+        self.care_mistakes -= 1
+        self._set_energy(self.energy - COMPRESS_ENERGY_COST)    # noqa: F405
+        left = self.care_mistakes
+        return ("One slip scrubbed off — and it stings." if not left
+                else f"One slip scrubbed off — {left} still on the slate.")
+
     def _textbook(self):
         """THE TEXTBOOK, back to canon (Joel 2026-07-23: R4).  items.csv
         row 0 is `+Obedience -Mood +Stress`; mood and stress are stripped
@@ -767,25 +779,6 @@ class CareMixin:
         if strength:
             self.strength = _clamp(self.strength + strength, 0, 4)  # noqa: F405
         return msg
-
-    def _bubble_bath(self):
-        """Washes the filth, with style (a clean wearing toy clothes)."""
-        if not self.poop:
-            return _Refused("Squeaky clean already.")
-        n, self.poop = self.poop, 0
-        self.poop_sizes = []
-        return f"Scrubbed {n} mess{'es' if n > 1 else ''} away."
-
-    def _cold_shower(self):
-        """The RUDE waker: not on the mistake-free list -- on a sleeper it
-        runs the disturb ITSELF (the item-sleep law, kept; use_item leaves it
-        to us so this wake branch can actually run) -- then the pep lands."""
-        woke = ""
-        if self.asleep:
-            self._disturbed()                # bills + wakes like any rude item
-            woke = "AWAKE and "
-        self._set_energy(self.energy + 2)
-        return f"Brrr! {woke}bracing."
 
     def _deadly(self):
         # through _die like every other death: it clears asleep/hatching and
@@ -997,22 +990,11 @@ class CareMixin:
     _SNACK_FX = {
         "meat": dict(hunger=1, weight=2),
         "fruit": dict(hunger=1, obedience=-1),
-        "banana": dict(hunger=1, energy=1, weight=1, obedience=-1),
         "bread": dict(hunger=1, weight=1),
-        "rice": dict(hunger=1, weight=2),
-        "nuts": dict(hunger=1, weight=1),
-        "oats": dict(hunger=1, weight=1),
-        "milk": dict(hunger=1, weight=1),
-        "egg": dict(hunger=1, weight=1),
         "cheese": dict(hunger=1, weight=2),
-        "salmon": dict(hunger=1, weight=2),
-        "beans": dict(hunger=1, weight=1, obedience=1),
         "broccoli": dict(hunger=1, obedience=2),
-        "guava": dict(hunger=1, weight=1),
         "orange": dict(hunger=1, obedience=-1),
         "honey": dict(hunger=1, energy=1, weight=1, obedience=-5),
-        "ice_cream": dict(hunger=1, weight=2, obedience=-1),
-        "chicken_soup": dict(hunger=1, weight=1),
         "yellow_pepper": dict(hunger=1, obedience=1, powers=(0, 0, 1)),
         "green_pepper": dict(hunger=1, obedience=1, powers=(0, 1, 0)),
         "red_pepper": dict(hunger=1, obedience=1, powers=(1, 0, 0)),
@@ -1137,16 +1119,6 @@ class CareMixin:
             self.nap = True
         self.futon_doze = True
         return "Tucked in deep. Zzz..."
-
-    def _toilet_item(self):
-        """Clean now + the authored obedience (+1) -- port_potty's little
-        brother: one clean, no 24h auto."""
-        if not self.poop and self.obedience >= MAX_OBEDIENCE:  # noqa: F405
-            return _Refused("Spotless and civilised already.")  # noqa: F405
-        if self.poop:
-            self.clean()
-        self._set_obedience(self.obedience + 1)
-        return "Civilisation, delivered."
 
     def _x_program(self):
         """The RISKY X (items.csv 14, a 100%-authored elite drop): the

@@ -442,7 +442,10 @@ def _heal_bag(inv):
     # (futon / toilet / port_potty).
     for dead in ("i:80", "i:81", "i:82", "i:83", "bandage"):
         inv.pop(dead, None)
-    for old, new in shop.LEGACY_KEYS.items():
+    # ...and the 2026-07-27 refactor's RETIRED ledger rides the same door:
+    # every cut key converts 1:1 to its named heir, same as the 07-18
+    # turnover -- nobody loses goods
+    for old, new in {**shop.LEGACY_KEYS, **shop.RETIRED}.items():
         n = inv.pop(old, 0)
         if n:
             inv[new] = inv.get(new, 0) + n
@@ -546,7 +549,6 @@ def get_progress():
         "tourneys": set(prog.get("tourneys", [])),
         "last_field": last.get("field", "None"),
         "last_attr": last.get("attribute", "None"),
-        "last_mood": int(last.get("mood", 0)),
         "last_obed": int(last.get("obedience", 0)),
         "last_xanti": bool(last.get("xanti", False)),
         "connections": len(prog.get("connections", [])),

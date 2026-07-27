@@ -560,6 +560,9 @@ PILL_ENERGY_GAIN = 7                    # the DSprite pill (feed menu, BASIC VPE
 # numbers are DVPet's own, not tuned: foods.csv row 18 (Miracle Drink) is the
 # only consumable in either sheet with Mistake = -1, and it carries Energy 12.
 MIRACLE_ENERGY_GAIN = 12
+# the CURE ladder (2026-07-27): the cheap eraser TAKES the tank the drink
+# gives, so the two are a ladder and not the same item at two prices
+COMPRESS_ENERGY_COST = 8
 # items.csv row 0 (Textbook) = Obedience +20, on the canon 150 scale.
 TEXTBOOK_OBEDIENCE = 20
 # THE GROW CAPSULE, priced (Joel 2026-07-24: "make the grow capsule worth

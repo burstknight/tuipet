@@ -396,17 +396,18 @@ def test_mid_bracket_contracts():
 
 def test_champion_wins_the_cup_prizes():
     """Trophy.ItemWon / FoodWonqAmount: the AUTHORED prize table is live
-    (item expansion 2026-07-26) -- ItemID 26 IS the Bubble Bath and
-    FoodID 3 IS the Vegetable, so the champion banks the real authored
-    goods, not the old flat treats."""
+    (item expansion 2026-07-26) -- and it stays live through the refactor:
+    ItemID 26 WAS the Bubble Bath, retired 2026-07-27, so the prize now
+    pays its HEIR (the Ball) through key_for_icon's RETIRED fallback.  A
+    champion is never stiffed, even by a catalog cut."""
     random.seed(4)
     p = _pet("Rookie")
     tm = Tournament(p, _trophy(item=26, food_id=3, food_amt=2))
     tm.record(True); tm.record(True); tm.record(True)
     assert tm.champion
-    assert p.inventory.get("bubble_bath", 0) >= 1
+    assert p.inventory.get("ball", 0) >= 1        # the heir arrives
     assert p.inventory.get("vegetable", 0) >= 2
-    assert "Bubble Bath" in tm.last and "Vegetable" in tm.last
+    assert "Ball" in tm.last and "Vegetable" in tm.last   # the banner names the heir
 
 
 def test_the_purse_truncates_per_entrant():

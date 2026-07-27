@@ -187,8 +187,8 @@ def test_a_dead_save_loads_untouched_however_long_it_sat():
     save["_saved_at"] = time.time() - 4 * 3600
     pet, msg = persistence.pet_from_save(save)
     assert pet.dead
-    assert (pet.hunger, pet.poop, pet.care_mistakes, pet.mood) == (
-        d.hunger, d.poop, d.care_mistakes, d.mood), "the departed do not decay"
+    assert (pet.hunger, pet.poop, pet.care_mistakes) == (
+        d.hunger, d.poop, d.care_mistakes), "the departed do not decay"
     assert "needs care" not in msg
 
 

@@ -144,11 +144,16 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("CLOUD SAVE IS BACK TO PLAIN AND SIMPLE: the rescue copies, "
-                 "the Rescued pets page and the sync guards added over the "
-                 "last four releases are all gone. Newest save wins, the way "
-                 "it did before — one pet, following your account between "
-                 "devices, with nothing to read and nothing to choose.")
+    WHATS_NEW = ("THE ITEM REFACTOR — every item earns its place now. 18 "
+                 "do-nothing and duplicate items retired (your copies convert "
+                 "to their heirs — nobody loses goods), and every shelf is "
+                 "sorted by what you WANT: Feed, Rest, Cure, Drill, Manners, "
+                 "Power, Treasure, Evolve, Road. The home shop is a real "
+                 "store at last — staples always, everything else on a "
+                 "rotating daily shelf that deals the whole catalog across "
+                 "the week. New: the Cold Compress, a cheaper way to erase "
+                 "a care slip that costs energy instead of bits alone. And "
+                 "the mood meter, long dead, is buried — manners rule.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the

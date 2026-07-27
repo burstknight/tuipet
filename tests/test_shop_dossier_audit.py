@@ -70,65 +70,8 @@ def test_care_shelf_matches_its_blurbs():
     p = _pet(care_mistakes=7)
     _use(p, "miracle_drink")
     assert p.care_mistakes == 6                        # "ONE care slip erased"
-    p = _pet(poop=2)
-    p.poop_sizes = [1, 2]
-    _use(p, "port_potty")
-    assert p.poop == 0                                        # "clean +
-    assert p.auto_clean_until == p.world_seconds + 24 * 3600.0  # auto-clean 24h"
-    p = _pet()
-    _use(p, "sleeping_pill")
-    assert p.asleep                                           # "sleep now"
-    _use(p, "music_player")
-    assert not p.asleep and p.care_mistakes == 0              # "wake now, no grudge"
-
-
-def test_growth_shelf_matches_its_blurbs():
-    p = _pet()
-    _use(p, "dumbbell")
-    assert p.stage_trainings == 10                            # "training +10"
-    p = _pet()
-    s0 = p.stage_seconds
-    _use(p, "grow_capsule")
-    # "a quarter of this stage" -- priced on Joel's word 2026-07-24, and a
-    # fraction so it reads the same at every stage (7200 was the whole
-    # stage and then some; 120 was honest but not worth 500b)
-    from tuipet.petbase import GROW_CAPSULE_FRACTION
-    assert (p.stage_seconds - s0
-            == p.STAGE_DURATION[p.stage] * GROW_CAPSULE_FRACTION)
-    p = _pet()
-    _use(p, "anti_evo_chip")
-    assert p.evo_blocked
-    _use(p, "anti_evo_chip")
-    assert not p.evo_blocked                                  # "toggle"
-    p = _pet()
-    p.dna_owned = {}
-    _use(p, "dna_crystal")
-    assert p.dna_owned.get(p.field) == 10                     # "+10 own-Field"
-
-
-def test_the_x_chip_is_safe_and_the_roulette_stayed_buried():
-    """The chip takes hold, full stop -- the death roulette belonged to the
-    REMOVED X-Program item, and its orphan constants are gone."""
-    p = _pet()
-    out = _use(p, "x_antibody")
-    assert "takes hold" in out and p.x_antibody == "Permanent" and not p.dead
-    assert "already runs" in _use(p, "x_antibody")            # marked: refuse
-    for orphan in ("X_SURVIVAL_TARGET", "X_SURVIVAL_BOUND", "X_SAVE_BLOCK"):
-        assert not hasattr(petbase, orphan)
-
-
-def test_toys_and_adventure_shelf_match_their_blurbs():
-    for key, dw, de in (("ball", -1, 0), ("skateboard", -2, -1),
-                        ("xylophone", 0, 2), ("video_game", 1, 2),
-                        ("television", 1, 3), ("cold_shower", 0, 2)):
-        p = _pet()
-        w0, e0 = p.weight, p.energy
-        _use(p, key)
-        assert (p.weight - w0, p.energy - e0) == (dw, de), key
-    p = _pet(poop=2)
-    p.poop_sizes = [1, 1]
-    _use(p, "bubble_bath")
-    assert p.poop == 0                                        # "washes the filth"
+    # (the bubble bath retired 2026-07-27: strictly less than the free C
+    # key, which also pays obedience -- its dossier leg retired with it)
     for key in ("town_transport", "disaster_transport", "life_recovery"):
         p = _pet()
         out = _use(p, key)

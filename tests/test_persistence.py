@@ -123,20 +123,19 @@ def test_progress_signals_round_trip():
     assert 9 in prog["tourneys"]
     # full shape the egg evaluator depends on
     for k in ("album", "wins", "max_gen", "max_stage", "xanti_ever", "maps",
-              "tourneys", "last_field", "last_attr", "last_mood",
+              "tourneys", "last_field", "last_attr",
               "last_obed", "last_xanti"):
         assert k in prog
 
 
 def test_snapshot_prev_gen():
-    pet = Pet(num=-1, stage="Champion", attribute="Vaccine", mood=50, obedience=7)
+    pet = Pet(num=-1, stage="Champion", attribute="Vaccine", obedience=7)
     pet.field = "Nature Spirits"
     pet.x_antibody = "Permanent"
     persistence.snapshot_prev_gen(pet)
     prog = persistence.get_progress()
     assert prog["last_field"] == "Nature Spirits"
     assert prog["last_attr"] == "Vaccine"
-    assert prog["last_mood"] == 50
     assert prog["last_obed"] == 7
     assert prog["last_xanti"] is True
 

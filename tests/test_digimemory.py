@@ -189,7 +189,7 @@ def test_the_chip_renders_in_the_bag():
     of them (and stay OFF the shop shelf: price None is never sold)."""
     from tuipet import shop
     e = shop.entry("digimemory")
-    assert e and e["category"] == "Legacy"
+    assert e and e["category"] == "Evolve"  # Legacy dissolved 2026-07-27
     assert all(row["key"] != "digimemory" for row in shop.catalog())
 
 

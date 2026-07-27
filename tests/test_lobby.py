@@ -373,7 +373,7 @@ def test_remote_invite_never_disturbs_a_sleeper():
     s.inbox.append({"t": "invite", "from_id": 2, "from_name": "mika", "kind": "battle"})
     pan.anim()
     assert stub.sent == [("respond", 2, "battle", False)]
-    assert pet.asleep and pet.disturb == 0 and pet.mood == 0
+    assert pet.asleep and pet.disturb == 0
     assert pan.invite_prompt is None
 
 

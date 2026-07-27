@@ -339,7 +339,9 @@ def test_a_disturbed_wake_leaves_no_stale_morning_note():
 
 @pytest.mark.parametrize("key,wakes,disturbs", [
     ("music_player", True, False),      # the alarm: its whole point
-    ("cold_shower", True, True),        # runs its OWN disturb, inside
+    # (cold_shower retired 2026-07-27 -- its rude wake was Music Player's
+    #  niche done worse; the disturb-inside grammar it pinned lives on in
+    #  the "anything else" row below)
     ("sleeping_pill", False, False),    # pointless on a sleeper
     ("ball", True, True),               # anything else DISTURBS, then applies
 ])

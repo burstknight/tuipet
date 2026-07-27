@@ -105,7 +105,7 @@ def test_towns_are_curated_but_home_sells_everything():
     still hands guest slots to goods no base sells before doubling up."""
     home = {e["key"] for e in shop.catalog()}
     for k, v in shop.CATALOG.items():
-        if v.price is not None and v.category != "Adventure":
+        if v.price is not None and v.category != "Road":
             assert k in home, f"{k} is priced but unbuyable at home"
     guests = shop._guest_deal()
     assert len(set(guests.values())) == len(guests)   # unique game-wide
@@ -299,3 +299,47 @@ def test_the_cure_combos_honour_the_free_button_law():
     curers = {k for k, v in shop.CATALOG.items()
               if "sick" in v.touches or "injured" in v.touches}
     assert curers == {"med", "elixir", "vitamin_g"}
+
+
+def test_the_home_counter_rotates_but_never_starves():
+    """THE DAILY SHELF (refactor 2026-07-27, Joel: "daily items. not all at
+    once like the home shop. basic items sure").  home_stock is a DAY'S
+    shelf now, not the whole catalog: staples always, the band rotating,
+    and the two DOOR shelves (crests, road gear) riding their own gates.
+    The rotation must never starve a key -- the band is a shuffled CYCLE,
+    so one epoch deals every non-staple sellable exactly once."""
+    import datetime
+    from tuipet import shop
+    D = datetime.date(2026, 8, 3)
+    rows = {e["key"] for e in shop.home_stock(today=D)}
+    assert shop.HOME_STAPLES <= rows, "a staple left the shelf"
+    assert len(rows) < 40, "the wall is back -- rotation is not filtering"
+    # one aligned epoch covers the whole band pool
+    pool = {k for k, v in sorted(shop.CATALOG.items())
+            if v.price is not None and k not in shop.HOME_STAPLES
+            and v.category != "Road"}
+    days = -(-len(pool) // shop.HOME_BAND_SIZE)
+    base = shop._today_ordinal(D)
+    start = D + datetime.timedelta(days=(days - base % days) % days)
+    seen = set()
+    for i in range(days):
+        seen.update(shop.home_band(start + datetime.timedelta(days=i)))
+    assert seen == pool, f"the cycle starved {sorted(pool - seen)[:5]}"
+    # ...and the same day deals the same band on every device
+    assert shop.home_band(D) == shop.home_band(D)
+
+
+def test_every_retired_key_has_a_living_heir():
+    """THE RETIRED LEDGER (refactor 2026-07-27): each cut key names an heir
+    in the catalog, owned copies convert in the bag heal, and every icon a
+    cut key wore still resolves -- no authored channel goes dark."""
+    from tuipet import persistence, shop
+    for old, heir in shop.RETIRED.items():
+        assert old not in shop.CATALOG, f"{old} is both retired and live"
+        assert heir in shop.CATALOG, f"{old}'s heir {heir} is not in the catalog"
+    for icon, old in shop._RETIRED_ICONS.items():
+        assert shop.key_for_icon(icon) in shop.CATALOG, icon
+    inv = {k: 2 for k in shop.RETIRED}
+    persistence._heal_bag(inv)
+    assert not (set(inv) & set(shop.RETIRED)), "a retired key survived the heal"
+    assert sum(inv.values()) == 2 * len(shop.RETIRED), "the heal lost goods"

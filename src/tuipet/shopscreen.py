@@ -47,13 +47,14 @@ from . import menu
 # Items tab now GROUPS its seven categories under dim sub-headers, which
 # scroll with the list and are therefore not capped by the bar at all.
 #
-# The dead "Fruit" category was REMOVED here: no catalog item ever
-# carried it (a DSprite-era leftover), so the Food tab listed a category
-# that could never match.  Not to be confused with data_shop's
-# FOOD_CATEGORIES, a different namespace that IS live for food_ranks.
-GROUPS = (("Food", ("Food",)),
-          ("Items", ("Medicine", "Care", "Training", "Play", "Evolution",
-                     "Legacy", "Adventure")),
+# THE ITEM REFACTOR (2026-07-27): the catalog's categories are the eight
+# ACTS now -- Feed / Rest / Cure / Drill / Manners / Power / Treasure /
+# Evolve / Road -- so the fold speaks them.  The BAR stays four wide (the
+# same P4 width law), and the acts ride the Items tab as its sub-headers:
+# the sub-header line finally answers "what do I want to happen?"
+GROUPS = (("Food", ("Feed",)),
+          ("Items", ("Rest", "Cure", "Drill", "Manners", "Power",
+                     "Treasure", "Evolve", "Road")),
           ("Eggs", (shop.ARMOR_CATEGORY,)),
           ("Honors", None))
 

@@ -19,8 +19,9 @@ from tuipet import shop, shopscreen
 from tuipet.pet import Pet
 from tuipet.shopscreen import ShopPanel
 
-ITEM_CATEGORIES = ("Food", "Medicine", "Care", "Training", "Play",
-                   "Evolution", "Legacy", "Adventure")
+ITEM_CATEGORIES = ("Feed", "Rest", "Cure", "Drill", "Manners", "Power",
+                   "Treasure", "Evolve", "Road")  # the eight ACTS (+Treasure),
+                   # refactor 2026-07-27: tabs name what the player WANTS
 
 
 def _pet(**kw):
@@ -52,15 +53,20 @@ def test_category_order_covers_every_live_category():
 
 
 def test_medicine_holds_the_ailment_cures_and_legacy_holds_the_dead():
-    assert shop.CATALOG["miracle_drink"].category == "Medicine"
-    assert shop.CATALOG["vitamin"].category == "Medicine"
-    assert shop.CATALOG["revive_floppy"].category == "Legacy"
-    assert shop.CATALOG["digimemory"].category == "Legacy"
+    # Medicine became CURE, and the dead's item moved in with it: raising
+    # the dead is the ultimate cure (Legacy dissolved, refactor 2026-07-27)
+    assert shop.CATALOG["miracle_drink"].category == "Cure"
+    assert shop.CATALOG["vitamin"].category == "Cure"
+    assert shop.CATALOG["revive_floppy"].category == "Cure"
+    assert shop.CATALOG["digimemory"].category == "Evolve"  # Legacy dissolved: inheritance is an Evolve door
 
 
 def test_training_holds_the_body_items():
-    for k in ("dumbbell", "slim_drink", "energy_drink"):
-        assert shop.CATALOG[k].category == "Training", k
+    # Training became DRILL -- and the energy drink moved to REST, where
+    # the tank's items live (it trains nothing; it refills)
+    for k in ("dumbbell", "slim_drink", "skateboard", "trampoline"):
+        assert shop.CATALOG[k].category == "Drill", k
+    assert shop.CATALOG["energy_drink"].category == "Rest"
 
 
 # ---- goal 1: ONE grouping, not three ---------------------------------------

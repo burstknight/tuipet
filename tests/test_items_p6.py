@@ -109,7 +109,7 @@ def test_the_chips_declare_their_live_touches():
 def test_the_chips_landed_in_evolution():
     """They steer attribute-GATED evolutions; that is what they are for."""
     for key in list(CHIPS) + ["omni_chip_g"]:
-        assert shop.CATALOG[key].category == "Evolution", key
+        assert shop.CATALOG[key].category == "Power", key   # chips move battle POWER, 2026-07-27
 
 
 def test_the_chips_are_eaten_like_every_other_food_sheet_consumable():
@@ -182,6 +182,11 @@ def test_the_catalog_holds_the_whole_authored_corpus():
     """44 -> 132 (item expansion 2026-07-26): every authored consumable is
     a catalog key except the 11 crest-shelf Digimentals (one door) and
     i:35 Blue Crystal (its rip is the shipped dna_crystal's)."""
-    assert len(shop.CATALOG) == 131
-    assert sum(1 for v in shop.CATALOG.values()
-               if v.category == "Evolution") == 43
+    # 131 -> 114 (refactor 2026-07-27): 18 keys retired by named order --
+    # every one converts to its heir via shop.RETIRED, no authored channel
+    # goes dark (key_for_icon successor fallback), and cold_compress joined
+    assert len(shop.CATALOG) == 114
+    # Evolution split on the axis it serves: the DOORS stay Evolve, the
+    # stat chips are POWER (they move battle meters, not destinations)
+    assert sum(1 for v in shop.CATALOG.values() if v.category == "Evolve") == 34
+    assert sum(1 for v in shop.CATALOG.values() if v.category == "Power") == 12

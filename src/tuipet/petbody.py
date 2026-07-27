@@ -127,10 +127,6 @@ class BodyMixin:
         a Happy pet is knocked DOWN TO 100 (MistakeHappyMoodChange, absolute),
         anyone else loses 50 -- then the counters tick (care-mistake audit
         2026-07-05: the counters ticked silently)."""
-        if self.current_mood() == "Happy":
-            self._set_mood(MISTAKE_HAPPY_MOOD)
-        else:
-            self._set_mood(self.mood - MISTAKE_MOOD_DEC)
         self.care_mistakes += 1
         self.mistake_day += 1                        # MistakeIncMissedDayChange
 
@@ -250,9 +246,6 @@ class BodyMixin:
             self._poop_wait_t = getattr(self, "_poop_wait_t", 0.0) + dt
             if self._poop_wait_t >= 1.0:                 # PoopWaitMin 1 game-min (was 60.0)
                 self._poop_wait_t = 0.0
-                self._set_mood(self.mood + (LARGE_POOP_WAIT_MOOD
-                                            if self._poop_t >= self._poop_interval * 1.5
-                                            else POOP_WAIT_MOOD))
         # death does not wait for morning: the caps, the filth/overweight
         # sickness rolls and the sick-death whisper run in bed too, exactly as
         # the "filth risk runs in bed" note promises -- _tick_mortality's own
@@ -312,7 +305,6 @@ class BodyMixin:
             self._filth_mood_t = getattr(self, "_filth_mood_t", 0.0) + dt
             if self._filth_mood_t >= FILTH_MOOD_DEC_MIN:
                 self._filth_mood_t = 0.0
-                self._set_mood(self.mood + fm * self.poop)
         # the sickness roll this docstring always promised (live-play audit
         # 2026-07-25: the wiring was lost -- FILTH_SICK_CHANCE/BOUND and 232
         # species' PoopSickChanceBoundMultiplier sat unread while
@@ -398,7 +390,6 @@ class BodyMixin:
                 # accruing -- a long hold releases as the big backlog pile.
                 if not getattr(self, "_poop_held", False):
                     self._poop_held = True
-                    self._set_mood(self.mood - 1)
             else:
                 self._poop_held = False
                 self._poop_t -= self._poop_interval  # gauge -= bmMax (the remainder carries)
@@ -506,7 +497,6 @@ class BodyMixin:
             # a daytime doze: same once-per-game-hour mood bonus guard as checkNap
             if self.world_seconds - getattr(self, "_nap_bonus_t", -9e9) >= 60:
                 self._nap_bonus_t = self.world_seconds
-                self._set_mood(self.mood + ON_NAP_MOOD_INC)
             self.asleep, self.nap = True, True
             # the doze's own length: checkNap's fixed hour (awakeLimit -
             # minutesHour) -- without this the doze inherited the whole
@@ -560,7 +550,6 @@ class BodyMixin:
                     # guard (belt over the doze-off wait, canon's own anti-farm)
                     if self.sleep_lapse - getattr(self, "_nap_bonus_lapse", -9e9) >= 60:
                         self._nap_bonus_lapse = self.sleep_lapse
-                        self._set_mood(self.mood + ON_NAP_MOOD_INC)
                     self.asleep, self.nap = True, True
                     self._lights_t = 0.0
                     self._lit_obed_hit = False
@@ -754,7 +743,6 @@ class BodyMixin:
         added to the filth (capped at the _filth array length).  A big BACKLOG
         (gauge still >= bmMax/2 after the poop) makes the pile one size bigger --
         the only source of size-4 piles -- and sheds an extra half weight."""
-        self._set_mood(self.mood + POOP_MOOD_INC)                 # PoopMoodInc
         # ⭐ THE WEIGHT FLOOR LAW REACHES THE LAST SINK (2026-07-25).  Every
         # other drain floors at the species BASE -- training (v0.5.17),
         # battles (v0.5.204, "the one sink still grinding to a skeleton"),
@@ -835,10 +823,8 @@ class BodyMixin:
         m = self.current_mood()
         if was_nap:
             if r == 0:
-                self._set_mood(self.mood - NAP_WAKE_MOOD_DEC)
                 wake_anim = "sad"                    # BadMorning: wakeUp(9)
             elif r == 1:
-                self._set_mood(self.mood + NAP_WAKE_MOOD_DEC)
                 wake_anim = "happy"                  # GoodMorning: wakeUp(5)
         else:
             # canon wakeUp poses vary with the morning: 7 normal / 5 good /
@@ -848,15 +834,12 @@ class BodyMixin:
             # leaves a note the HUD flashes (gameplay polish #11,
             # 2026-07-22; the assist_note pop grammar)
             if r == 0:
-                self._set_mood(self.mood + BAD_MORNING_MOOD.get(m, -10))
                 wake_anim = "sad"                    # BadMorning: wakeUp(9)
                 self.wake_note = f"{self.name} woke up on the wrong side…"
             elif r == 1 and m == "Happy":
-                self._set_mood(WORST_MORNING_MOOD)
                 wake_anim = "surprise"               # TerribleMorning: wakeUp(6)
                 self.wake_note = f"{self.name} had an awful night!"
             elif r == 2:
-                self._set_mood(self.mood + GOOD_MORNING_MOOD.get(m, 100))
                 wake_anim = "happy"                  # GoodMorning: wakeUp(5)
                 # the note tells the TRUTH about the night (sleep audit
                 # 2026-07-22, Joel: "my mon woke up 'beaming' with only one
@@ -903,7 +886,6 @@ class BodyMixin:
             # (the rough-waking sickness risks left with the sickness
             # system (BASIC VPET 2026-07-17))
         # DisturbMoodDec{,Restless,NotRestless}: a restless pet WANTED up
-        self._set_mood(self.mood - DISTURB_MOOD_DEC.get(self.restless, 10))
         enth = {1: -1, 0: -2, -1: -3}.get(self.restless, -2)   # DisturbEnthusiasmDec*
         self._set_enthusiasm(self.enthusiasm + enth)
         self._wake()                                # setAsleep(false): the wake roll
@@ -1017,7 +999,6 @@ class BodyMixin:
         if act == "clean":
             # Assistant_Clean -> onClean: the standard clean, minus YOUR wash pose
             self.poop, self.poop_sizes = 0, []
-            self._set_mood(self.mood + 6)                # CleanMoodInc
             self._filth_t = 0                            # mess handled: the filth call resets
         elif act == "feed":
             # assistantFeed: the AI Food Pill serving -- lands on a sick pet
@@ -1030,7 +1011,6 @@ class BodyMixin:
             self.lights = False                          # Assistant_Lights -> onLights
         # processAutoCarePrice: the visit fee, and the bond cost of hired care
         self.bits -= price
-        self._set_mood(self.mood + AUTO_CARE_MOOD)
         self._set_obedience(self.obedience + AUTO_CARE_OBEDIENCE)
         self._set_enthusiasm(self.enthusiasm + AUTO_CARE_ENTHUSIASM)
         self._ac_cool = AUTO_CARE_VISIT_SPACING

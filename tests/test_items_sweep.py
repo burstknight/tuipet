@@ -272,6 +272,10 @@ def test_declared_touches_match_what_the_handler_actually_moves(key):
     p.strength, p.obedience = 0, 50
     p.vaccine = p.data_power = p.virus = 50   # a bank the converters can trade
     p.sleep_lapse = 100.0        # some bedtime pressure for the Caffeine Pill
+    if key == "cold_compress":
+        p._set_energy(20)        # the compress CHARGES the tank (its whole
+        #                          design: relief you sleep off) -- the
+        #                          fixture's 2-energy floor would refuse it
     p.dna_owned = {}
     p.field = p.field if p.field not in ("", "None") else "Nature"
     # deep-copied: the DNA bank and the poop list are MUTATED in place, and

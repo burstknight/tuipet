@@ -22,7 +22,7 @@ class _Win:
 def test_the_road_items_are_real_catalog_entries():
     for k in ("town_transport", "disaster_transport", "life_recovery"):
         e = shop.entry(k)
-        assert e and e["category"] == "Adventure" and e["price"] > 0
+        assert e and e["category"] == "Road" and e["price"] > 0  # Adventure -> Road, 2026-07-27
         # and they're usable from the bag (kept until spent on the road)
         p = _pet()
         p.add_item(k)

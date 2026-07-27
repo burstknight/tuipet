@@ -142,11 +142,14 @@ def test_the_toys_are_unchanged_by_the_canon_lookup():
     from tuipet import shop
     assert {k: shop.item_script(k) for k in
             ("ball", "skateboard", "xylophone", "video_game",
-             "television", "bubble_bath", "cold_shower")} == {
+             "television")} == {
         "ball": "Bounce", "skateboard": "Ride",
         "xylophone": "InteractXylophone", "video_game": "Play",
-        "television": "InteractTelevision", "bubble_bath": "Bathe",
-        "cold_shower": "Shower"}
+        "television": "InteractTelevision"}
+    # the bath and the shower retired with their items (refactor 2026-07-27);
+    # their scripts stay in itemfx.SCRIPTS as canon tables, unmapped
+    assert shop.item_script("bubble_bath") is None
+    assert shop.item_script("cold_shower") is None
 
 
 def test_the_free_wins_are_wired():

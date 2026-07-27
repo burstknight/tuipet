@@ -87,7 +87,7 @@ def test_the_eraser_can_walk_a_terminal_mega_back_from_death():
 
 
 def test_the_eraser_lives_in_medicine():
-    assert shop.CATALOG["miracle_drink"].category == "Medicine"
+    assert shop.CATALOG["miracle_drink"].category == "Cure"   # Medicine -> Cure, 2026-07-27
     assert shop.CATALOG["miracle_drink"].touches == ("care_mistakes", "energy")
 
 

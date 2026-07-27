@@ -36,7 +36,7 @@ def test_hiring_rolls_an_assistant_from_the_can_assist_pool():
 
 def test_clean_visit_charges_and_costs_bond():
     p = _pet(bits=2000, poop=2, poop_sizes=[2, 3], auto_care=True, assistant_num=29)
-    m0, o0, e0 = p.mood, p.obedience, p.enthusiasm
+    o0, e0 = p.obedience, p.enthusiasm
     p.tick(1.0)
     assert p.poop == 0 and p.poop_sizes == []
     assert p.bits == 2000 - 400                              # the Champion visit price

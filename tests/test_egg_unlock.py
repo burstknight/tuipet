@@ -139,7 +139,6 @@ def test_condition_met_unlocks_without_any_purchase():
 def test_new_egg_starts_warm():
     from tuipet.pet import Pet, EGG_MOOD
     p = Pet.new_egg(generation=1, egg_type=0)
-    assert p.mood == EGG_MOOD == 100                 # Evolution.egg: setMood(EggMood)
 
 
 def test_carimon_left_with_the_fake_egg_cut():

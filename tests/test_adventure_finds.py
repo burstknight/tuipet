@@ -88,7 +88,7 @@ def test_the_road_feeds_you_and_carries_its_tools():
     for z in ZONES:
         assert set(_ROAD_KEYS) <= set(z["find_keys"]), z["name"]
         findable.update(z["find_keys"])
-    foods = {k for k in findable if shop.CATALOG[k][3] == "Food"}
+    foods = {k for k in findable if shop.CATALOG[k][3] == "Feed"}
     assert "fish" in foods and len(foods) >= 5
     seafloor = next(z for z in ZONES if "Seafloor" in z["name"])
     assert "fish" in seafloor["find_keys"]

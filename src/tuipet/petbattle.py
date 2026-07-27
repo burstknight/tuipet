@@ -436,9 +436,6 @@ class BattleMixin:
     def surrender_effect(self, surrender_val, health, enemy_health):
         """ClockTic.surrenderEffect: the morale aftermath when the pet gives up (1) or
         its surrender request is accepted (2)."""
-        self._set_mood(self.mood + SURR_EFFECT_MOOD_INC)
-        if surrender_val == 1 and self._disposition() < 0 and health >= enemy_health:
-            self._set_mood(self.mood - SURR_EFFECT_LOWDISP_MOOD_DEC)
         if health >= enemy_health:
             self._set_obedience(self.obedience
                                 - (SURR_EFFECT_REQ_OBED_DEC if surrender_val == 2 else SURR_EFFECT_OBED_DEC))
@@ -456,7 +453,6 @@ class BattleMixin:
         SURR_DECLINED_LOST_OBED is unapplied -- the old comment claimed
         otherwise (gameplay audit 2026-07-19).  Kept as the canon reference
         for a battle flow that asks again; dormant stays dormant."""
-        self._set_mood(self.mood - SURR_REJECT_MOOD_DEC)
         self._set_obedience(self.obedience + SURR_REJECT_OBED_INC)
         self._surr_declined = True                       # no live consumer (see above)
 

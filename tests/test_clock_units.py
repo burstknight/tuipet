@@ -76,7 +76,7 @@ def test_good_care_is_never_punished_by_the_faster_pressure():
     # (+3/29s) left with the weather system (BASIC VPET 2026-07-16), so an
     # idle well-kept pet no longer drifts happy for free -- happiness now
     # comes only from active care (liked meals, play, praise)
-    assert p.mood >= 0 and not p.dead
+    assert not p.dead
 
 
 def test_the_pet_split_holds_its_boundaries():

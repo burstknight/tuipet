@@ -289,11 +289,14 @@ def test_the_toys_turn_live_dials():
     assert p.weight == 27 and p.energy == -1
     p.use_item("television")
     assert p.weight == 28 and p.energy == 2
+    # (the bubble bath leg retired with the item, refactor 2026-07-27: it
+    # did strictly less than the free C key, which also pays obedience.
+    # An owned copy converts to Ball through the RETIRED ledger.)
     q = _pet()
-    q.poop, q.poop_sizes = 2, [1, 2]
-    q.add_item("bubble_bath")
-    q.use_item("bubble_bath")
-    assert q.poop == 0                          # the stylish clean is real
+    q.add_item("bubble_bath")                   # a pre-refactor bag survives
+    from tuipet import persistence
+    persistence._heal_bag(q.inventory)
+    assert q.inventory.get("ball", 0) >= 1 and "bubble_bath" not in q.inventory
 
 
 def test_the_dna_crystal_banks_own_field():

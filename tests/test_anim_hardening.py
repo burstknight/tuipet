@@ -140,11 +140,11 @@ def test_final_winning_blow_lands_silent():
 # ---- care widens the skill window (condition, 2026-07-14) -----------------------
 
 def test_condition_tiers():
-    p = Pet(num=100, stage="Champion", hunger=4, strength=4, mood=300)
+    p = Pet(num=100, stage="Champion", hunger=4, strength=4)
     p.energy = p.max_energy
     assert p.condition() == 3                      # a perfectly kept pet
     # (the sick/injured tier cap left with those systems -- 2026-07-17)
-    q = Pet(num=100, stage="Champion", hunger=0, strength=0, mood=-300)
+    q = Pet(num=100, stage="Champion", hunger=0, strength=0)
     q.energy = 0
     assert q.condition() == 0                      # trembling paw
 
