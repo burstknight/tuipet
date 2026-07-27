@@ -144,12 +144,12 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE MUSIC PLAYER GETS ITS SONG: the box was showing you a "
-                 "blank disc — the first frame of its sheet isn't the item "
-                 "at all, and the old show walked straight through it twice. "
-                 "Now the real box plays, its keys working, and the notes "
-                 "drift across the room to your pet. The shop and bag show "
-                 "the box too. Wake it and watch.")
+    WHATS_NEW = ("TAKE YOUR PET BACK: Options → Rescued pets lists every pet "
+                 "a cloud pull replaced and puts one back with a keypress — "
+                 "no terminal, and the pet you're on is kept too. And a "
+                 "device holding a DIFFERENT pet from the cloud no longer "
+                 "wins just for being played more recently: it pauses sync "
+                 "instead of overwriting the account's real pet.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the
@@ -478,7 +478,10 @@ class TuiPetApp(ActionsMixin, App):
         worse, blame "a newer session" for every cause (audit 2026-07-18:
         format rejections and oversized saves wore the wrong warning)."""
         if not cloudsync.PULL_REACHED:
-            msg = ("⚠ Cloud sync paused — couldn't read the cloud save at "
+            msg = ("⚠ Cloud sync paused — the cloud holds a different pet. "
+                   "Play the device you want to keep; this one saves locally."
+                   if cloudsync.DIVERGED else
+                   "⚠ Cloud sync paused — couldn't read the cloud save at "
                    "launch. This device saves locally only.")
             if getattr(self, "_cloud_warned", None) != msg:
                 self._cloud_warned = msg

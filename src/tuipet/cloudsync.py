@@ -36,6 +36,9 @@ BOOT = time.time()
 # holds the session pusher back; the quit flush still runs, guarded by its
 # own timestamp compare, so a genuinely newer pet still reaches the cloud.
 PULL_REACHED = True
+# ...and if it was held back because the cloud holds a DIFFERENT pet rather
+# than because the cloud was unreachable, so the warning can say which.
+DIVERGED = False
 
 
 def _connect(uri, timeout):
@@ -115,11 +118,29 @@ def push_save(uri, name, pw, save, timeout=_TIMEOUT):
         return False
 
 
+def _other_pet(cloud):
+    """Is the cloud holding a DIFFERENT pet from the local save?
+
+    Different species or different generation = a different life, not a
+    later state of this one.  Unreadable local save -> False: an empty or
+    torn save has nothing to protect, and the ordinary rules apply.
+    """
+    import json as _json
+    try:
+        with open(persistence.SAVE_PATH) as fh:
+            local = _json.load(fh)
+    except (ValueError, OSError):
+        return False
+    return (local.get("num"), local.get("generation")) != \
+           (cloud.get("num"), cloud.get("generation"))
+
+
 def sync_down_at_startup(uri, name, pw, timeout=_TIMEOUT):
     """Pull the cloud save and, if it's newer than the local one, write it to the
     local save file so the app loads the synced pet. Returns a short status string
     for logging/tests ('' when nothing changed)."""
-    global PULL_REACHED
+    global PULL_REACHED, DIVERGED
+    DIVERGED = False
     if not name:
         PULL_REACHED = True              # no account: the cloud isn't in play
         return ""
@@ -133,7 +154,19 @@ def sync_down_at_startup(uri, name, pw, timeout=_TIMEOUT):
     PULL_REACHED = True
     cloud_ts = float(save.get("_saved_at") or 0)
     if cloud_ts <= persistence.local_saved_at():
-        return ""                                    # local is as new or newer
+        # Local is newer BY THE CLOCK -- which only says this device was
+        # played more recently, NOT that it holds the account's real pet.
+        # A desktop sitting on an old playthrough is permanently "newer"
+        # than the phone you actually play, so it never pulls, and then its
+        # autosave pushes its stale pet over the cloud.  That is how the
+        # same account lost a pet twice (2026-07-27).  When the cloud holds
+        # a DIFFERENT pet, the clock does not get to decide: keep local,
+        # push NOTHING, and let the player's next real session on the other
+        # device move the cloud ahead -- then this one pulls it normally.
+        if _other_pet(save):
+            PULL_REACHED, DIVERGED = False, True
+            return "diverged"
+        return ""                                    # same pet, just older
     persistence.rescue_copy()                        # the pulled-over pet STAYS
     # never clobber a valid local save with a blob that can't even become a
     # pet (a malformed cloud payload used to mean a silent fresh-egg wipe) --

@@ -304,6 +304,41 @@ def test_rescue_copies_are_pruned_not_hoarded(tmp_path, monkeypatch):
     assert len(kept) == persistence.RESCUE_KEEP, kept
 
 
+def test_a_stale_device_never_pushes_over_a_different_pet(server):
+    """THE SECOND LOSS (2026-07-27).  A desktop sitting on an old playthrough
+    is permanently 'newer' than the phone you actually play: it never pulls,
+    and its autosave pushes the stale pet over the cloud.  A cloud holding a
+    DIFFERENT pet now stops the clock from deciding."""
+    cloud = persistence.to_save_dict(Pet.from_num(297))   # the phone's Mega
+    cloud["_saved_at"] = 1000.0
+    cloudsync.push_save(server, "joel", "secret", cloud)
+    local = persistence.to_save_dict(Pet.from_num(283))   # the desktop's own
+    local["_saved_at"] = 9000.0                           # ...played more recently
+    persistence.write_save_dict(local)
+
+    cloudsync.PULL_REACHED = True
+    assert cloudsync.sync_down_at_startup(server, "joel", "secret") == "diverged"
+    assert cloudsync.PULL_REACHED is False, "the stale device may still push"
+    assert cloudsync.DIVERGED is True
+    # local is untouched -- this is a HOLD, not a pull
+    assert json.load(open(persistence.SAVE_PATH))["num"] == 283
+
+
+def test_a_newer_state_of_the_SAME_pet_still_just_wins(server):
+    """The guard must not freeze ordinary one-device play: same pet, older
+    cloud -> nothing to do, and pushing stays free."""
+    same = persistence.to_save_dict(Pet.from_num(297))
+    same["_saved_at"] = 1000.0
+    cloudsync.push_save(server, "joel", "secret", same)
+    local = dict(same)
+    local["_saved_at"] = 9000.0
+    persistence.write_save_dict(local)
+    cloudsync.PULL_REACHED = True
+    assert cloudsync.sync_down_at_startup(server, "joel", "secret") == ""
+    assert cloudsync.PULL_REACHED is True
+    assert cloudsync.DIVERGED is False
+
+
 def test_rescue_copy_of_nothing_is_harmless(tmp_path, monkeypatch):
     monkeypatch.setattr(persistence, "SAVE_DIR", str(tmp_path))
     monkeypatch.setattr(persistence, "SAVE_PATH", str(tmp_path / "save.json"))

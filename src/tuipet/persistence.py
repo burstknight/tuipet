@@ -706,6 +706,47 @@ def rescue_copy(path=None):
     return name
 
 
+def rescue_list():
+    """Every rescued pet on this device, newest first: [(filename, blob)].
+
+    The rescue copies exist so a wrong cloud pull is undoable -- but a file
+    the player cannot reach is not a recovery (2026-07-27: the copies were
+    written correctly and the only way to use one was a shell).  Options ->
+    Rescued pets reads THIS.
+    """
+    import glob as _glob
+    out = []
+    for p in sorted(_glob.glob(os.path.join(SAVE_DIR, "save.rescue.*.json")),
+                    reverse=True):
+        try:
+            with open(p) as fh:
+                out.append((os.path.basename(p), json.load(fh)))
+        except (ValueError, OSError):
+            continue                     # a torn copy is skipped, not fatal
+    return out
+
+
+def rescue_restore(name):
+    """Put a rescued pet back as the live save.  Returns its blob, or None.
+
+    Two things make this safe to press: the CURRENT pet is rescued first (so
+    restoring is itself undoable), and the restored save is stamped NOW --
+    otherwise the cloud copy that replaced it is still 'newer' and the very
+    next launch pulls it straight back over the top.
+    """
+    p = os.path.join(SAVE_DIR, os.path.basename(name))
+    try:
+        with open(p) as fh:
+            blob = json.load(fh)
+    except (ValueError, OSError):
+        return None
+    rescue_copy()                        # the pet being replaced keeps a copy
+    blob = dict(blob)
+    blob["_saved_at"] = time.time()      # the newest save anywhere: nothing outranks it
+    write_save_dict(blob)
+    return blob
+
+
 def write_save_dict(data, path=None):
     """Atomically write a raw save dict (e.g. one pulled from the cloud) to disk.
     keep_bak: a cloud pull is the ONE writer that replaces the save with bytes

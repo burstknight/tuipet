@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.292 — TAKE YOUR PET BACK (2026-07-27)
+
+TAKE YOUR PET BACK: Options → Rescued pets lists every pet a cloud pull replaced and puts one back with a keypress — no terminal, and the pet you're on is kept too. And a device holding a DIFFERENT pet from the cloud no longer wins just for being played more recently: it pauses sync instead of overwriting the account's real pet.
+
 ## 0.5.291 — THE MUSIC PLAYER GETS ITS SONG (2026-07-27)
 
 THE MUSIC PLAYER GETS ITS SONG: the box was showing you a blank disc — the first frame of its sheet isn't the item at all, and the old show walked straight through it twice. Now the real box plays, its keys working, and the notes drift across the room to your pet. The shop and bag show the box too. Wake it and watch.
