@@ -24,6 +24,19 @@ _TIMEOUT = 3.0
 # can't steal save ownership back from the session the player actually opened.
 BOOT = time.time()
 
+# Did the startup pull actually reach the cloud and read what it holds?
+#
+# push_save (the quit flush) has always compared timestamps first, on the
+# stated rule that "a device that missed its startup pull must not stomp a
+# newer cloud save".  The SESSION pusher (net.SyncClient, every autosave)
+# never learned that rule: it sends unconditionally and the server is
+# last-write-wins, so a launch whose pull timed out spent the whole session
+# overwriting the account's real save with this device's stale pet.  That is
+# how a desktop's gen-3 replaced a phone's gen-10 (2026-07-27).  False here
+# holds the session pusher back; the quit flush still runs, guarded by its
+# own timestamp compare, so a genuinely newer pet still reaches the cloud.
+PULL_REACHED = True
+
 
 def _connect(uri, timeout):
     # imported lazily so a missing optional dep never blocks startup
@@ -106,14 +119,22 @@ def sync_down_at_startup(uri, name, pw, timeout=_TIMEOUT):
     """Pull the cloud save and, if it's newer than the local one, write it to the
     local save file so the app loads the synced pet. Returns a short status string
     for logging/tests ('' when nothing changed)."""
+    global PULL_REACHED
     if not name:
+        PULL_REACHED = True              # no account: the cloud isn't in play
         return ""
     save = pull_save(uri, name, pw, timeout)
     if not save:
+        # UNREACHABLE vs EMPTY are the same None here, so assume the worse of
+        # the two: we could not confirm what the cloud holds, and the session
+        # pusher must not overwrite it blind (see PULL_REACHED).
+        PULL_REACHED = False
         return ""
+    PULL_REACHED = True
     cloud_ts = float(save.get("_saved_at") or 0)
     if cloud_ts <= persistence.local_saved_at():
         return ""                                    # local is as new or newer
+    persistence.rescue_copy()                        # the pulled-over pet STAYS
     # never clobber a valid local save with a blob that can't even become a
     # pet (a malformed cloud payload used to mean a silent fresh-egg wipe) --
     # and never accept a FOREIGN-format save (strict: an outdated client's

@@ -242,6 +242,74 @@ def test_offline_is_silent():
     assert cloudsync.sync_down_at_startup("ws://127.0.0.1:1/", "joel", "secret", timeout=0.5) == ""
 
 
+# ---- THE GEN-10 INCIDENT (2026-07-27) ---------------------------------------
+# A phone's Mega gen 10 was replaced by a desktop's gen 3, then the only local
+# backup rotated away before it could be read.  Two defects, both pinned here.
+
+def test_a_pull_that_never_reached_the_cloud_holds_the_session_pusher_back():
+    """The session pusher sends unconditionally and the server is
+    last-write-wins, so a launch that could NOT read the cloud must not push
+    over it -- that is what overwrote the account's real pet."""
+    cloudsync.PULL_REACHED = True
+    assert cloudsync.sync_down_at_startup("ws://127.0.0.1:1/", "joel", "s", timeout=0.5) == ""
+    assert cloudsync.PULL_REACHED is False, "an unreachable cloud read as 'in sync'"
+    # ...and with no account at all the cloud simply isn't in play
+    cloudsync.PULL_REACHED = False
+    assert cloudsync.sync_down_at_startup("ws://127.0.0.1:1/", "", "", timeout=0.5) == ""
+    assert cloudsync.PULL_REACHED is True
+
+
+def test_a_reachable_cloud_leaves_the_pusher_free(server):
+    cloudsync.PULL_REACHED = False
+    blob = persistence.to_save_dict(Pet.from_num(100))
+    blob["_saved_at"] = 9000.0
+    cloudsync.push_save(server, "joel", "secret", blob)
+    cloudsync.sync_down_at_startup(server, "joel", "secret")
+    assert cloudsync.PULL_REACHED is True
+
+
+def test_the_pulled_over_pet_survives_the_next_autosave(server):
+    """save.json.bak is ONE generation and every write rotates it, so the
+    pet a pull replaces used to be gone within ~10s.  The rescue copy stays."""
+    local = persistence.to_save_dict(Pet.from_num(29))   # the pet this device played
+    local["_saved_at"] = 100.0                           # ...and hasn't touched in a while
+    persistence.write_save_dict(local)
+    blob = persistence.to_save_dict(Pet.from_num(100))
+    blob["_saved_at"] = 9000.0
+    cloudsync.push_save(server, "joel", "secret", blob)
+    assert cloudsync.sync_down_at_startup(server, "joel", "secret") == "pulled"
+    # the autosave timer now rolls .bak until nothing of the old pet is left
+    for _ in range(3):
+        persistence.save(Pet.from_num(100))
+    assert json.load(open(persistence.SAVE_PATH))["num"] == 100      # pulled pet
+    assert json.load(open(persistence.SAVE_PATH + ".bak"))["num"] == 100   # rolled
+    rescues = [f for f in os.listdir(persistence.SAVE_DIR)
+               if f.startswith("save.rescue.")]
+    assert rescues, "the pulled-over pet left no rescue copy"
+    saved = json.load(open(os.path.join(persistence.SAVE_DIR, rescues[0])))
+    assert saved["num"] == 29, "the rescue copy is not the pet that was replaced"
+
+
+def test_rescue_copies_are_pruned_not_hoarded(tmp_path, monkeypatch):
+    monkeypatch.setattr(persistence, "SAVE_DIR", str(tmp_path))
+    monkeypatch.setattr(persistence, "SAVE_PATH", str(tmp_path / "save.json"))
+    persistence.save(Pet.from_num(29))
+    for i in range(persistence.RESCUE_KEEP + 3):
+        # the stamp is per-SECOND, so fake it rather than sleep the suite
+        # (patch strftime, not gmtime -- gmtime is what the stamp calls)
+        monkeypatch.setattr(persistence.time, "strftime",
+                            lambda *a, i=i: "20260727-%06d" % i)
+        assert persistence.rescue_copy()
+    kept = [f for f in os.listdir(tmp_path) if f.startswith("save.rescue.")]
+    assert len(kept) == persistence.RESCUE_KEEP, kept
+
+
+def test_rescue_copy_of_nothing_is_harmless(tmp_path, monkeypatch):
+    monkeypatch.setattr(persistence, "SAVE_DIR", str(tmp_path))
+    monkeypatch.setattr(persistence, "SAVE_PATH", str(tmp_path / "save.json"))
+    assert persistence.rescue_copy() == ""          # no save yet: nothing to copy
+
+
 # ---- presence + private messages (online arc 2026-07-05) ---------------------
 
 def _next_of(ws, want, tries=8):

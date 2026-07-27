@@ -672,6 +672,40 @@ def save(pet, path=None):
         album_add(pet.num)            # grow the cross-pet album (gates egg unlocks)
 
 
+RESCUE_KEEP = 5              # how many pre-cloud rescue copies to keep
+
+
+def rescue_copy(path=None):
+    """Snapshot the CURRENT local save somewhere the autosave can never roll
+    over, and return its filename ('' if there was nothing to copy).
+
+    save.json.bak is ONE generation deep and every write rotates it, so a
+    cloud pull that replaces the pet is undoable for about ten seconds --
+    the next autosave turns the rescued pet into the pulled one (the gen-10
+    BlitzGreymon incident, 2026-07-27: a phone pulled a stale desktop pet
+    down over a Mega and the only backup was gone before the player could
+    read the screen).  A pull is the one write that replaces bytes this
+    device never played; it gets a copy that STAYS.
+    """
+    import glob as _glob
+    src = path or SAVE_PATH
+    try:
+        with open(src) as fh:
+            data = json.load(fh)
+    except (ValueError, OSError):
+        return ""                        # no readable save: nothing to rescue
+    stamp = time.strftime("%Y%m%d-%H%M%S", time.gmtime())
+    name = f"save.rescue.{stamp}.json"
+    _atomic_write_json(os.path.join(SAVE_DIR, name), data)
+    old = sorted(_glob.glob(os.path.join(SAVE_DIR, "save.rescue.*.json")))
+    for p in old[:-RESCUE_KEEP]:         # keep the newest few, drop the rest
+        try:
+            os.remove(p)
+        except OSError:
+            pass
+    return name
+
+
 def write_save_dict(data, path=None):
     """Atomically write a raw save dict (e.g. one pulled from the cloud) to disk.
     keep_bak: a cloud pull is the ONE writer that replaces the save with bytes

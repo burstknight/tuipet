@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.290 — YOUR PET IS NOT OVERWRITTEN BY A DEVICE THAT NEVER CHECKED (2026-07-26)
+
+YOUR PET IS NOT OVERWRITTEN BY A DEVICE THAT NEVER CHECKED: a launch whose cloud read failed used to keep uploading anyway, replacing the save a synced device left — one lost a Mega to a months-old pet. That session now saves locally and says so. And a cloud pull sets the replaced pet aside in a rescue copy the autosave can't roll over, so a wrong pull is undoable.
+
 ## 0.5.289 — AN EARNED EGG IS EARNED EVERYWHERE (2026-07-26)
 
 AN EARNED EGG IS EARNED EVERYWHERE: a digitama whose condition you'd met only became yours on paper the next time you opened the carousel — so until then the town shelves, the vendor and the egg guide all still called it unowned, and the shop would happily sell you one you had already earned. Every screen reads the same truth now.
