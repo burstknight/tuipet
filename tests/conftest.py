@@ -118,12 +118,3 @@ def never_run_pip(monkeypatch):
             "(or mock run_upgrade/upgrade_argv) instead")
 
     monkeypatch.setattr(update, "_RUN", _refuse)
-
-
-@pytest.fixture(autouse=True)
-def reset_sync_state(monkeypatch):
-    """cloudsync's launch verdict lives in module globals — one process is one
-    launch, which is right in production and leaks between tests: a test that
-    left PULL_REACHED False made a LATER test read the wrong cloud warning."""
-    from tuipet import cloudsync
-    monkeypatch.setattr(cloudsync, "PULL_REACHED", True)

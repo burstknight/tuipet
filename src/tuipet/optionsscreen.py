@@ -18,11 +18,10 @@ from . import menu, persistence, sound, theme
 from . import update as update_check
 from .themescreen import ThemePanel
 
-_ROWS = ("theme", "sound", "account", "cloud", "rescue", "update", "keys",
-         "new", "erase")
+_ROWS = ("theme", "sound", "account", "cloud", "update", "keys", "new", "erase")
 _LABEL = {"theme": "Theme", "sound": "Sound", "account": "Account",
-          "cloud": "Cloud sync", "rescue": "Rescued pets", "update": "Update",
-          "keys": "Keys", "new": "New egg", "erase": "Erase all data"}
+          "cloud": "Cloud sync", "update": "Update", "keys": "Keys",
+          "new": "New egg", "erase": "Erase all data"}
 # the note line under the list describes the SELECTED row and follows the
 # cursor (Joel's live review 2026-07-07: it sat frozen on the flavour line);
 # action feedback (sound toggled, update verdict...) overrides it until the
@@ -31,7 +30,6 @@ _DESC = {"theme": "recolor the whole game — live preview",
          "sound": "the DVPet chirps — switch + volume",
          "account": "switch login — the pet parks in the cloud",
          "cloud": "cloud saves + offline mail — on or off",
-         "rescue": "a cloud pull replaced your pet? take it back",
          "update": "ENTER checks + installs · A flips launch auto-install",
          "keys": "every binding on one page",
          "new": "retire the pet, hatch the heir",
@@ -130,85 +128,6 @@ class SoundPanel:
         # no in-LCD key footer: the strip owns the keys, and this one was
         # STATIC -- it contradicted the strip on the volume row ("↑↓ pick
         # ENTER go" vs "←→ volume · ENTER hear it").  QOL sweep 2026-07-23.
-        out.right_crop(1)
-        return out
-
-
-class RescuePanel:
-    """The pets a cloud pull replaced, and the way back to one.
-
-    A pull writes save.rescue.<stamp>.json before it overwrites (persistence
-    .rescue_copy) -- but until this page existed the only way to use one was
-    a shell, which on a phone means there is no way at all (2026-07-27:
-    exactly that, on a pet that mattered).  ENTER puts the chosen pet back
-    and restarts, because the pet is loaded once at boot.
-    """
-
-    VISIBLE = 6
-
-    def __init__(self):
-        self.rows = persistence.rescue_list()
-        self.cursor = 0
-        self.top = 0
-        self.msg = ""
-        self.frame_i = 0
-        self.sfx = None
-
-    def anim(self):
-        self.frame_i += 1
-
-    def strip(self):
-        if not self.rows:
-            return menu.hints(("ESC", "back"))
-        return menu.hints(("↑↓", "pick"), ("ENTER", "restore"), ("ESC", "back"))
-
-    def _line(self, blob):
-        import time as _t
-        name = (blob.get("name") or "?")[:12]
-        gen = blob.get("generation")
-        when = _t.strftime("%b %d %H:%M",
-                           _t.localtime(float(blob.get("_saved_at") or 0)))
-        return f"{name:<12} gen {gen if gen is not None else '?':<3} {when}"
-
-    def key(self, k):
-        if not self.rows:
-            if k in ("escape", "g"):
-                return ("done", None)
-            return None
-        if k in ("up", "k"):
-            self.cursor = (self.cursor - 1) % len(self.rows)
-        elif k in ("down", "j"):
-            self.cursor = (self.cursor + 1) % len(self.rows)
-        elif k in ("enter", "space"):
-            fn, _blob = self.rows[self.cursor]
-            back = persistence.rescue_restore(fn)
-            if back is None:
-                self.msg = "couldn't read that copy"
-                self.sfx = "error"
-                return None
-            self.sfx = "reward"
-            return ("done", ("restart",))
-        elif k in ("escape", "g"):
-            return ("done", None)
-        self.top = max(min(self.top, self.cursor), self.cursor - self.VISIBLE + 1)
-        return None
-
-    def text(self):
-        out = menu.header("RESCUED", f"{len(self.rows)}")
-        if not self.rows:
-            out.append_text(menu.blanks(2))
-            out.append_text(menu.note("No rescued pets — nothing has been "
-                                      "replaced by a cloud pull on this device.",
-                                      tick=self.frame_i))
-            out.right_crop(1)
-            return out
-        for i in range(self.top, min(self.top + self.VISIBLE, len(self.rows))):
-            out.append_text(menu.row(self._line(self.rows[i][1]),
-                                     i == self.cursor))
-        out.append_text(menu.blanks(max(0, self.VISIBLE - len(self.rows))))
-        out.append_text(menu.note(
-            self.msg or "ENTER puts this pet back and restarts — the one "
-                        "you're playing is rescued first.", tick=self.frame_i))
         out.right_crop(1)
         return out
 
@@ -370,13 +289,6 @@ class OptionsPanel(menu.SubHost):
                 self._done = ("account",) + tuple(r)   # app does the heavy lifting
             else:
                 self.msg = "kept your account."
-        elif row == "rescue":
-            if r:
-                # ("restart",): the pet is read once at boot, so the restored
-                # save only becomes the pet you're playing on relaunch
-                self._done = tuple(r)
-            else:
-                self.msg = "kept the pet you're playing."
 
     def key(self, k):
         if self.sub_key(k, self._sub_done):
@@ -444,9 +356,6 @@ class OptionsPanel(menu.SubHost):
                 self.msg = ("cloud sync on — saves follow your account"
                             if on else "cloud sync off — this device saves locally only")
                 self.sfx = "confirm"
-            elif row == "rescue":
-                self._sub_row = row
-                self.sub = RescuePanel()
             elif row == "update":
                 # first ENTER checks; with a newer release known, the second
                 # ENTER actually INSTALLS it (Joel 2026-07-13: "make the update
@@ -498,9 +407,6 @@ class OptionsPanel(menu.SubHost):
             if _o.environ.get("TUIPET_NO_SYNC"):
                 return "off (TUIPET_NO_SYNC)"   # the env override outranks the toggle
             return "on" if persistence.get_cloud_sync() else "off"
-        if row == "rescue":
-            n = len(persistence.rescue_list())
-            return f"{n} saved" if n else "none"
         if row == "update":
             if self._installing:
                 return "updating…"

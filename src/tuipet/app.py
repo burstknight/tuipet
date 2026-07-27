@@ -144,12 +144,11 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("A FRESH ACCOUNT CAN SAVE TO THE CLOUD AGAIN: the guard "
-                 "added last release couldn't tell 'the cloud is down' from "
-                 "'this account has no save yet' and refused to upload in "
-                 "both cases — so a new or cleared login never got a cloud "
-                 "save at all. It asks properly now: an empty cloud is "
-                 "something to fill, not a reason to stop.")
+    WHATS_NEW = ("CLOUD SAVE IS BACK TO PLAIN AND SIMPLE: the rescue copies, "
+                 "the Rescued pets page and the sync guards added over the "
+                 "last four releases are all gone. Newest save wins, the way "
+                 "it did before — one pet, following your account between "
+                 "devices, with nothing to read and nothing to choose.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the
@@ -348,16 +347,7 @@ class TuiPetApp(ActionsMixin, App):
             self._sync_worker = None
 
     def _push_cloud(self):
-        """Queue the current pet's save for upload (no-op until the account/sync exists).
-
-        A session whose startup pull never reached the cloud pushes NOTHING:
-        it cannot know whether it holds the account's newest pet, and the
-        server is last-write-wins, so pushing blind overwrites whatever a
-        device that DID sync left there (the gen-10 incident, 2026-07-27).
-        The quit flush still runs — push_save compares timestamps itself.
-        """
-        if not cloudsync.PULL_REACHED:
-            return
+        """Queue the current pet's save for upload (no-op until the account/sync exists)."""
         if self._sync is not None and self.pet is not None and persistence.sync_enabled():
             self._sync.push_save(persistence.to_save_dict(self.pet))
 
@@ -477,16 +467,6 @@ class TuiPetApp(ActionsMixin, App):
         we used to never mention it (swallowed-failure sweep 2026-07-13), or
         worse, blame "a newer session" for every cause (audit 2026-07-18:
         format rejections and oversized saves wore the wrong warning)."""
-        if not cloudsync.PULL_REACHED:
-            msg = ("⚠ Cloud sync paused — the cloud holds a different pet. "
-                   "Play the device you want to keep; this one saves locally."
-                   if cloudsync.DIVERGED else
-                   "⚠ Cloud sync paused — couldn't read the cloud save at "
-                   "launch. This device saves locally only.")
-            if getattr(self, "_cloud_warned", None) != msg:
-                self._cloud_warned = msg
-                self.flash(f"[{theme.NEG}]{msg}[/]")
-            return
         sync = getattr(self, "_sync", None)
         if sync is None:
             return

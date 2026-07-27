@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.294 — CLOUD SAVE IS BACK TO PLAIN AND SIMPLE (2026-07-27)
+
+CLOUD SAVE IS BACK TO PLAIN AND SIMPLE: the rescue copies, the Rescued pets page and the sync guards added over the last four releases are all gone. Newest save wins, the way it did before — one pet, following your account between devices, with nothing to read and nothing to choose.
+
 ## 0.5.293 — A FRESH ACCOUNT CAN SAVE TO THE CLOUD AGAIN (2026-07-27)
 
 A FRESH ACCOUNT CAN SAVE TO THE CLOUD AGAIN: the guard added last release couldn't tell 'the cloud is down' from 'this account has no save yet' and refused to upload in both cases — so a new or cleared login never got a cloud save at all. It asks properly now: an empty cloud is something to fill, not a reason to stop.

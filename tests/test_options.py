@@ -32,10 +32,8 @@ def _to(pan, row):
 def test_row_surface_and_order():
     """The full switchboard, dangerous rows last (a fat-finger past 'new'
     must never land on the erase gate's neighbour)."""
-    # "rescue" sits beside "cloud" -- it undoes what a cloud pull did, and
-    # it is SAFE, so it stays well clear of the destructive tail
-    assert _ROWS == ("theme", "sound", "account", "cloud", "rescue", "update",
-                     "keys", "new", "erase")
+    assert _ROWS == ("theme", "sound", "account", "cloud", "update", "keys",
+                     "new", "erase")
     pan, _ = _panel()
     _fits(pan)
     for _ in _ROWS:                        # every cursor position renders in budget
