@@ -165,9 +165,12 @@ def item_icon(e):
     elif e:
         from . import data
         fr = data.load_icons().get(e.get("key"))
+    from . import shop
+    art = shop.icon_art(e.get("key")) if e else None
+    if art:                       # a substitute rip outranks the sheet frame
+        return icon_cell(art)     # (and works even for a key with no sheet)
     if not fr:
         return [" " * IC_W] * IC_ROWS
-    from . import shop
     return icon_cell(fr[shop.icon_frame(e.get("key")) % len(fr)])
 
 

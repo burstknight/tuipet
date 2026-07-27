@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.296 — THE MUSIC PLAYER FINALLY LOOKS LIKE MUSIC (2026-07-27)
+
+THE MUSIC PLAYER FINALLY LOOKS LIKE MUSIC: the shop and bag now show the beamed-note orb — the one music-shaped sprite that actually fits the icon cell — instead of the box crushed to a smudge. And the show is the box alone, playing its own rising notes, with the bolted-on extra notes removed. The sheet had it right all along.
+
 ## 0.5.295 — THE ITEM REFACTOR (2026-07-27)
 
 THE ITEM REFACTOR — every item earns its place now. 18 do-nothing and duplicate items retired (your copies convert to their heirs — nobody loses goods), and every shelf is sorted by what you WANT: Feed, Rest, Cure, Drill, Manners, Power, Treasure, Evolve, Road. The home shop is a real store at last — staples always, everything else on a rotating daily shelf that deals the whole catalog across the week. New: the Cold Compress, a cheaper way to erase a care slip that costs energy instead of bits alone. And the mood meter, long dead, is buried — manners rule.

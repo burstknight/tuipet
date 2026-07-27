@@ -68,18 +68,17 @@ SCRIPTS = {
     "InteractXylophone": _interact({6: "select", 12: "select", 18: "select",
                                     24: "click", 30: "click",
                                     36: "select", 42: "select"}),
-    # THE MUSIC BOX (Joel 2026-07-27: "i wanna redo that music player... the
-    # icon shpuld be what the other frame is, and the icon shouldnt even be
-    # used... theres a music note orb sprite we can utilize").
-    #
-    # i:9's sheet leads with a generic disc that is NOT the item -- the box
-    # itself is frames 1-3 (a keyed box, with its own notes lifting off it).
-    # Canon's cycleItemFrames walks 1..8 through `_fr` ((n-1) % 4), so the
-    # disc opened the show and came back round twice more.  This script names
-    # its frames outright and never touches frame 0.  `notes` hangs the
-    # rising orbs on it (arenafx._fxk_item): special orb 42, the beamed pair
-    # Gekomon's horn fires -- a real rip, nothing drawn.
-    "MusicBox": {"steps": 49, "end": "cheer", "layout": "floor", "notes": True,
+    # THE MUSIC BOX (Joel 2026-07-27 "i wanna redo that music player";
+    # settled 2026-07-28).  i:9's sheet leads with a generic disc that is
+    # NOT the item -- the box is frames 1-3, each with its OWN note trail
+    # rising off the keys.  Canon's cycleItemFrames walks 1..8 through
+    # `_fr` ((n-1) % 4), so the disc opened the show and returned twice;
+    # this script names its frames outright and never touches frame 0.
+    # A drifting-orb overlay was tried on top and CUT (Joel: "the music
+    # box sprite already has notes") -- the orb's job is the still CELL
+    # (shop.icon_art), where no frame of the 13px sheet survives the
+    # 10-column crunch.  The show is the box, whole.
+    "MusicBox": {"steps": 49, "end": "cheer", "layout": "floor",
                  "snds": {6: "select", 12: "select", 18: "select",
                           24: "click", 30: "click",
                           36: "select", 42: "select"},

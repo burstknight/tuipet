@@ -501,6 +501,27 @@ def key_for_icon(icon):
 # skips the disc too, so frame 0 of i:9 is now drawn nowhere.
 _ICON_FRAME = {"music_player": 1}
 
+# ...and when NO frame of an item's sheet can survive the 10-column cell,
+# the cell borrows a DIFFERENT rip outright (Joel 2026-07-28: "use the orb").
+# i:9's box is 13px wide with a note-trail overhead -- at cell scale it
+# crunched to a smudge; the beamed-note orb (special 42, Gekomon's own shot,
+# the same rip the MusicBox show flies) is natively 8x8 and fits the cell
+# 1:1.  Still-cells only: the SHOW keeps playing the box's real frames.
+_ICON_ART = {"music_player": ("special", "42")}
+
+
+def icon_art(key):
+    """A still-cell's substitute sprite for `key` (catalog key or raw icon
+    key), or None to use the sheet frame.  Falls back to None if the orb
+    bank is missing so the frame path always still renders something."""
+    k = key if key in CATALOG else (key_for_icon(key) or "")
+    ref = _ICON_ART.get(k)
+    if not ref:
+        return None
+    from . import data_world
+    group, idx = ref
+    return (data_world.load_orbs().get(group) or {}).get(idx)
+
 
 def icon_frame(key):
     """The display frame for a CATALOG key or a raw icon key ('i:9')."""

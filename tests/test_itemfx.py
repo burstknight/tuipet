@@ -429,32 +429,33 @@ def test_the_music_player_plays_its_own_music_box_show():
     assert shop.item_script("music_player") == "MusicBox"
     assert shop.item_script("xylophone") == "InteractXylophone"
     sc = itemfx.SCRIPTS["MusicBox"]
-    assert sc["end"] == "cheer" and sc["notes"] is True
+    assert sc["end"] == "cheer" and "notes" not in sc   # overlay cut 07-28
     # THE POINT OF THE REDO: frame 0 of i:9 is a generic disc, not the box.
     # The show must never land on it -- canon's cycleItemFrames did, twice.
     assert 0 not in {r["i"] for r in sc["rows"].values()}, sc["rows"]
     assert {r["i"] for r in sc["rows"].values()} <= {1, 2, 3}
 
 
-def test_the_music_players_icon_is_the_box_not_the_disc():
-    """Every still cell that shows the item shows frame 1 (the box)."""
-    from tuipet import data, shop
-    assert shop.icon_frame("music_player") == 1
-    assert shop.icon_frame("i:9") == 1          # by raw icon key too
-    assert shop.icon_frame("vitamin") == 0      # everything else is unchanged
-    assert len(data.load_icons()["i:9"]) == 4   # the sheet the frames index
+def test_the_music_players_cell_is_the_note_orb():
+    """The cell art saga, third and final ruling (Joel 2026-07-28: "use the
+    orb").  Frame 0 is a disc, frame 1 is the box under a note-trail --
+    and at the 10-column cell size NO frame of the 13px-wide sheet
+    survives the crunch (0.5.291 verified 'the box' at full size only,
+    never at the one size the shelf renders: the smoke-walk lesson).  The
+    still cells show the natively-8x8 beamed-note orb; the SHOW still
+    plays the box's real frames."""
+    from tuipet import data, data_world, shop
+    assert shop.icon_art("music_player") == data_world.load_orbs()["special"]["42"]
+    assert shop.icon_art("i:9") is not None     # by raw icon key too
+    assert shop.icon_art("vitamin") is None     # everything else: sheet frame
+    assert shop.icon_frame("music_player") == 1  # the fallback if the bank dies
+    assert len(data.load_icons()["i:9"]) == 4   # the sheet the SHOW indexes
 
 
-def test_the_notes_stay_out_of_the_pets_sprite():
-    """The drifting notes ride the sky strip (above grid.TOP), the way the
-    Zzz and the sick mark do -- never over the 16px mon."""
-    from tuipet import arenafx, grid
-    w = object.__new__(arenafx.FxMixin)
-    for step in range(itemfx.SCRIPTS["MusicBox"]["steps"]):
-        for _x, y in w._fx_notes(step, 4, 6, 13):
-            assert y < grid.TOP, f"a note fell into the band at step {step}"
-            assert y >= 0, f"a note left the window at step {step}"
-
+# test_the_notes_stay_out_of_the_pets_sprite RETIRED 2026-07-28: the orb
+# overlay it pinned was cut on Joel's order ("the music box sprite already
+# has notes") -- frames 1-3 carry their own trail, and the orb now lives
+# only in the still cell (pinned above).
 
 def test_the_override_is_ONLY_the_deliberate_remaps():
     """A guard: the remap must not silently swallow a real ItemEvol path

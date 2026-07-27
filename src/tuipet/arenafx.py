@@ -24,13 +24,6 @@ from .theme import LCD_BG, LCD_ON, SIL_SCENE, SIL_LIGHTSOFF, VOID, FLASH  # noqa
 
 SCREEN_COLS, SCREEN_ROWS = 40, 12
 
-# The MusicBox show's drifting notes (2026-07-27): special orb 42 is the
-# beamed pair of eighth notes -- Gekomon's own shot, read off its
-# attack_index (digimon.csv col 55).  A real rip, picked not drawn.
-NOTE_ORB = "42"
-NOTE_STARTS = (0, 9, 18)         # beats the three notes leave the box
-NOTE_TRIP = 27                   # beats one note takes to cross the sky
-
 
 SPRITE_W = 16                                   # native creature sprite width
 
@@ -851,41 +844,10 @@ class FxMixin:
             bm = frames[fr % len(frames)]
             # bottom-anchor: shorter frames sit ON the floor line, not above it
             c.overlay += _blit(bm, ix, iy + ih - len(bm))   # _stamp clips
-        if itemfx.SCRIPTS[fx["script"]].get("notes"):
-            c.overlay += self._fx_notes(step, ix, iy, iw)
 
     # the beamed pair of eighth notes in the special-orb bank -- Gekomon's
     # own shot (its attack_index, digimon.csv col 55).  A REAL rip: the note
     # is picked out of the bank, never drawn (Joel's standing art law).
-    def _fx_notes(self, step, ix, iy, iw):
-        """The song CROSSING the room: notes drift from the box to the pet
-        along the sky strip, bobbing a pixel as they go.
-
-        They travel sideways, not upward, because the arena has no headroom
-        to climb in: a 16px pet under a 24px ceiling leaves only the 6 rows
-        above grid.TOP -- the strip the Zzz and the sick mark already live
-        in.  Width is the one axis with room, so the music uses it.  Halved
-        to 4x4 for the same reason (the bank's orbs are 8x8, which does not
-        fit the sky); the shape still reads as the beamed pair it is.
-        """
-        bank = (data.load_orbs().get("special") or {}).get(NOTE_ORB)
-        if not bank:
-            return []
-        from . import itemfx
-        from .render import downsample
-        orb = downsample(bank, 2)
-        x0 = ix + iw // 2                       # lifting off the keys...
-        span = itemfx.PET_X + 6 - x0            # ...and over to the listener
-        pts = []
-        for t0 in NOTE_STARTS:
-            t = step - t0
-            if not 0 <= t < NOTE_TRIP:
-                continue
-            x = x0 + (span * t) // NOTE_TRIP
-            y = (grid.TOP - 6) + (1 if (t // 3) % 2 else 0)   # the bob
-            pts += _blit(orb, x, y)
-        return pts
-
     def _fxk_jeer(self, pet, fx, step, c):
         # DVPet jeer(goodScold): the SCOLD reaction -- pose alternates down(+4)/up(+6)
         # every 6 intervals, leading DOWN, with the frustration emote riding the

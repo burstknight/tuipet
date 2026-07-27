@@ -419,9 +419,10 @@ class AdventurePanel(menu.SubHost):
         speck, never drawn as big as the pet)."""
         from . import shop
         from .render import downsample
+        art = shop.icon_art(key)
         raw = [f for f in (data.load_icons().get(shop.ICON_KEYS.get(key)) or [])
                if f]
-        icon = raw[shop.icon_frame(key) % len(raw)] if raw else None
+        icon = art or (raw[shop.icon_frame(key) % len(raw)] if raw else None)
         if icon:
             dim = max(len(icon), max(len(r) for r in icon))
             if dim > 8:
