@@ -167,7 +167,8 @@ def item_icon(e):
         fr = data.load_icons().get(e.get("key"))
     if not fr:
         return [" " * IC_W] * IC_ROWS
-    return icon_cell(fr[0])
+    from . import shop
+    return icon_cell(fr[shop.icon_frame(e.get("key")) % len(fr)])
 
 
 def icon_info(out, icon, info):

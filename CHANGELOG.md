@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.291 — THE MUSIC PLAYER GETS ITS SONG (2026-07-27)
+
+THE MUSIC PLAYER GETS ITS SONG: the box was showing you a blank disc — the first frame of its sheet isn't the item at all, and the old show walked straight through it twice. Now the real box plays, its keys working, and the notes drift across the room to your pet. The shop and bag show the box too. Wake it and watch.
+
 ## 0.5.290 — YOUR PET IS NOT OVERWRITTEN BY A DEVICE THAT NEVER CHECKED (2026-07-26)
 
 YOUR PET IS NOT OVERWRITTEN BY A DEVICE THAT NEVER CHECKED: a launch whose cloud read failed used to keep uploading anyway, replacing the save a synced device left — one lost a Mega to a months-old pet. That session now saves locally and says so. And a cloud pull sets the replaced pet aside in a rescue copy the autosave can't roll over, so a wrong pull is undoable.

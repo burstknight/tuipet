@@ -68,6 +68,25 @@ SCRIPTS = {
     "InteractXylophone": _interact({6: "select", 12: "select", 18: "select",
                                     24: "click", 30: "click",
                                     36: "select", 42: "select"}),
+    # THE MUSIC BOX (Joel 2026-07-27: "i wanna redo that music player... the
+    # icon shpuld be what the other frame is, and the icon shouldnt even be
+    # used... theres a music note orb sprite we can utilize").
+    #
+    # i:9's sheet leads with a generic disc that is NOT the item -- the box
+    # itself is frames 1-3 (a keyed box, with its own notes lifting off it).
+    # Canon's cycleItemFrames walks 1..8 through `_fr` ((n-1) % 4), so the
+    # disc opened the show and came back round twice more.  This script names
+    # its frames outright and never touches frame 0.  `notes` hangs the
+    # rising orbs on it (arenafx._fxk_item): special orb 42, the beamed pair
+    # Gekomon's horn fires -- a real rip, nothing drawn.
+    "MusicBox": {"steps": 49, "end": "cheer", "layout": "floor", "notes": True,
+                 "snds": {6: "select", 12: "select", 18: "select",
+                          24: "click", 30: "click",
+                          36: "select", 42: "select"},
+                 "rows": {0: {"i": 1, "p": 0}, 6: {"i": 2, "p": 1},
+                          12: {"i": 3, "p": 1}, 18: {"i": 2, "p": 5},
+                          24: {"i": 3, "p": 1}, 30: {"i": 2, "p": 5},
+                          36: {"i": 3, "p": 1}, 42: {"i": 2, "p": 5}}},
     # tvStatic (wash) at 1/2/7, monitorBeep (refuse) at 3..6
     "InteractTelevision": _interact({6: "wash", 12: "wash", 18: "refuse",
                                      24: "refuse", 30: "refuse", 36: "refuse",
@@ -191,7 +210,7 @@ _SCRIPT_OVERRIDE = {"dna_crystal": "Study", "x_antibody": "Study",
                     "trampoline": "Bounce",       # canon Jump
                     "toilet": "PortToilet",       # canon Toilet
                     "x_program": "Study",         # canon X_Program
-                    "music_player": "InteractXylophone"}
+                    "music_player": "MusicBox"}
 
 # AnimationTypes that deliberately have NO item fx: Idling (canon plays
 # nothing), plus every system with its own door (transports / ItemEvol /

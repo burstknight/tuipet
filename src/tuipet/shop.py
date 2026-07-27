@@ -513,6 +513,22 @@ def key_for_icon(icon):
     """The CATALOG key whose sprite is `icon`, or None (unmapped loot)."""
     return _BY_ICON.get(icon)
 
+
+# Which frame of an item's sheet IS the item, for every still cell that
+# shows one (shop row, bag row, adventure find).  Frame 0 otherwise.
+#
+# The Music Player's sheet leads with a generic disc that isn't the item at
+# all -- the box is frame 1 (Joel 2026-07-27: "the icon shpuld be what the
+# other frame is, and the icon shouldnt even be used").  The MusicBox fx
+# skips the disc too, so frame 0 of i:9 is now drawn nowhere.
+_ICON_FRAME = {"music_player": 1}
+
+
+def icon_frame(key):
+    """The display frame for a CATALOG key or a raw icon key ('i:9')."""
+    k = key if key in CATALOG else (key_for_icon(key) or "")
+    return _ICON_FRAME.get(k, 0)
+
 # compat views over the one table (shelf text / icons / tests import these)
 EFFECTS = {k: v.effect for k, v in CATALOG.items()}
 ICON_KEYS = {k: v.icon for k, v in CATALOG.items()}

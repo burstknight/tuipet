@@ -144,13 +144,12 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("YOUR PET IS NOT OVERWRITTEN BY A DEVICE THAT NEVER "
-                 "CHECKED: a launch whose cloud read failed used to keep "
-                 "uploading anyway, replacing the save a synced device left "
-                 "— one lost a Mega to a months-old pet. That session now "
-                 "saves locally and says so. And a cloud pull sets the "
-                 "replaced pet aside in a rescue copy the autosave can't "
-                 "roll over, so a wrong pull is undoable.")
+    WHATS_NEW = ("THE MUSIC PLAYER GETS ITS SONG: the box was showing you a "
+                 "blank disc — the first frame of its sheet isn't the item "
+                 "at all, and the old show walked straight through it twice. "
+                 "Now the real box plays, its keys working, and the notes "
+                 "drift across the room to your pet. The shop and bag show "
+                 "the box too. Wake it and watch.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the

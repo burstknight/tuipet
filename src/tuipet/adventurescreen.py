@@ -421,7 +421,7 @@ class AdventurePanel(menu.SubHost):
         from .render import downsample
         raw = [f for f in (data.load_icons().get(shop.ICON_KEYS.get(key)) or [])
                if f]
-        icon = raw[0] if raw else None
+        icon = raw[shop.icon_frame(key) % len(raw)] if raw else None
         if icon:
             dim = max(len(icon), max(len(r) for r in icon))
             if dim > 8:

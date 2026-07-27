@@ -454,7 +454,7 @@ class ShopPanel:
         if ak:
             fr = data.load_icons().get(ak)
             if fr:
-                return menu.icon_cell(fr[0])
+                return menu.icon_cell(fr[shop.icon_frame(key) % len(fr)])
         return menu.item_icon(sel)
 
     def _info(self, sel, tw):
