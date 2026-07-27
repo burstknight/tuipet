@@ -73,6 +73,55 @@ def test_ownable_town_eggs_still_sell():
     assert idx in persistence.get_eggs_owned()
 
 
+# ---- E4: an EARNED egg reads owned everywhere, before it is banked -------
+# (bug report 2026-07-27, v0.5.288: "breakdra egg in mountain shop didnt say
+# owned when i own it")  auto_owned only STICKS when EggSelectPanel is built,
+# so between meeting a permanent condition and next opening the carousel the
+# persisted set is stale -- and the shelf, reading it raw, priced an egg the
+# player had already earned.
+
+def _earned_but_unbanked():
+    """An egg whose permanent condition is met but which nothing has banked:
+    Breakdra's row is `MegaKills 3`, so 3 Mega-class kills earn it."""
+    rules = data.load_egg_unlock()
+    idx = next(i for i, r in rules.items()
+               if r["can_perm"] and not r["start"] and r.get("mega"))
+    persistence.mega_kills_add(rules[idx]["mega"])
+    assert idx not in persistence.get_eggs_owned(), "banked already — bad pin"
+    return idx
+
+
+def test_an_earned_egg_reads_owned_before_the_carousel_banks_it():
+    idx = _earned_but_unbanked()
+    assert idx in egg_mod.owned_now()
+    # ...and the shelf that stocks it agrees
+    town = next((t for t in range(30) if idx in shop.town_egg_stock(t)), None)
+    assert town is not None, f"egg {idx} is stocked nowhere — re-audit this pin"
+    row = next(r for r in shop.town_egg_rows(town) if r["egg_idx"] == idx)
+    assert row["owned"], "the shelf priced an egg already earned"
+
+
+def test_the_buy_door_refuses_an_earned_but_unbanked_egg():
+    """The bits half of the same defect: it would have SOLD it."""
+    idx = _earned_but_unbanked()
+    p = Pet(num=1455, stage="Champion")
+    p.bits = 99999
+    msg, sfx = shop.town_egg_buy(p, idx)
+    assert sfx == "error", msg
+    assert p.bits == 99999, "sold an egg the player had already earned"
+
+
+def test_reading_ownership_never_writes_the_save():
+    """owned_now is a READ: a shop row must not bank eggs as a side effect
+    (the egg screen is what banks them)."""
+    idx = _earned_but_unbanked()
+    before = persistence.get_eggs_owned()
+    egg_mod.owned_now()
+    shop.town_egg_rows(0)
+    assert persistence.get_eggs_owned() == before
+    assert idx not in persistence.get_eggs_owned()
+
+
 # ---- E2/E3: the egg re-roll is a re-pick, not a generation ---------------
 
 class _Shim:

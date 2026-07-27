@@ -214,6 +214,24 @@ def auto_owned(prog, owned):
     return out
 
 
+def owned_now():
+    """Every egg the player HAS right now: the persisted set PLUS the ones
+    whose permanent condition is already met but that no egg-select visit
+    has banked yet.
+
+    auto_owned only STICKS when EggSelectPanel is built (its one caller),
+    so between earning an egg and next opening the carousel the persisted
+    set is stale -- and the town shelf, reading it raw, offered to SELL a
+    digitama already earned (bug report 2026-07-27, v0.5.288: "breakdra egg
+    in mountain shop didnt say owned when i own it").  Read-only on purpose:
+    a shop row must not write the save file; the egg screen still does the
+    banking.
+    """
+    from . import persistence
+    owned = persistence.get_eggs_owned()
+    return owned | set(auto_owned(persistence.get_progress(), owned))
+
+
 def hatchable_eggs(prog, owned):
     """Eggs ready to hatch right now (owned + temp) -- what the egg select shows."""
     st = egg_states(prog, owned)

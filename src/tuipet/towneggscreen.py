@@ -7,7 +7,7 @@ joins your hatch carousel.  Eggs still unlock FREE by condition elsewhere;
 this is the road shortcut, priced.  ←→ ↑↓ browse, ENTER buy, ESC leave."""
 from __future__ import annotations
 from rich.text import Text
-from . import egg as egg_mod, menu, persistence, shop
+from . import egg as egg_mod, menu, shop
 from .render import downsample
 from .theme import LCD_ON, LCD_BG  # noqa: F401  (theme.apply propagation)
 
@@ -20,7 +20,7 @@ class TownEggPanel:
         self.pet = pet
         self.town_id = town_id
         self.stock = shop.town_egg_stock(town_id)      # egg indices this town sells
-        self.owned = set(persistence.get_eggs_owned())
+        self.owned = egg_mod.owned_now()      # earned-but-unbanked reads owned
         self.n = len(self.stock)
         self.i = 0
         self.frame_i = 0

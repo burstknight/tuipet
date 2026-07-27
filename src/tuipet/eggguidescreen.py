@@ -47,7 +47,7 @@ class EggGuidePanel:
     def __init__(self, pet=None):
         self.pet = pet
         self.prog = persistence.get_progress()
-        owned = persistence.get_eggs_owned()
+        owned = egg_mod.owned_now()           # earned-but-unbanked reads owned
         self.states = egg_mod.egg_states(self.prog, owned)
         self.rules = data.load_egg_unlock()
         self.n = egg_mod.count()

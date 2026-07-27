@@ -144,12 +144,12 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE SLEEP PILL SWALLOWS IN THE LIGHT: the 300-bit pill "
-                 "killed the lights the instant you picked it, and the "
-                 "lights-out cover is opaque — so its whole eating "
-                 "animation played behind a black screen you never saw. "
-                 "The pill goes down lit now, and the room drops on the "
-                 "beat the show ends.")
+    WHATS_NEW = ("AN EARNED EGG IS EARNED EVERYWHERE: a digitama whose "
+                 "condition you'd met only became yours on paper the next "
+                 "time you opened the carousel — so until then the town "
+                 "shelves, the vendor and the egg guide all still called it "
+                 "unowned, and the shop would happily sell you one you had "
+                 "already earned. Every screen reads the same truth now.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the

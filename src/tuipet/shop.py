@@ -1248,8 +1248,8 @@ def town_egg_rows(town_id):
     normal shops, why arent these things modulized").  Same entry shape
     the shelf renders everywhere; `egg_idx` rides the existing menu icon
     plumbing (shop eggs draw their real egg frames)."""
-    from . import egg as egg_mod, persistence
-    owned = persistence.get_eggs_owned()
+    from . import egg as egg_mod
+    owned = egg_mod.owned_now()          # earned-but-unbanked counts as owned
     return [{"key": f"egg:{i}", "name": egg_mod.hatch_name(i)[:18],
              "price": egg_price(i), "category": "Digitama",
              "egg_idx": i, "owned": i in owned, "town_id": town_id}
@@ -1266,8 +1266,8 @@ def town_egg_buy(pet, idx):
         # the single buy path guards what the shelf filter promises: a
         # lineage egg is never permanently ownable (egg audit 2026-07-25)
         return ("A lineage egg — it hatches for those who earn it.", "error")
-    if idx in persistence.get_eggs_owned():
-        return ("You already own that egg.", "error")
+    if idx in egg_mod.owned_now():       # same read as the shelf: never sell
+        return ("You already own that egg.", "error")   # what's already earned
     price = egg_price(idx)
     if not pet.spend_bits(price):
         return (f"{price}b — not enough bits.", "error")
