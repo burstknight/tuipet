@@ -29,9 +29,14 @@ COLS, SPRITE_W = 40, 16
 PET_X = grid.X1 - SPRITE_W           # the right wall, flush inside the window
 ITEM_X = grid.X0                     # the left wall (canon setLoc(3, floor))
 
-# canon frame n (1-based, up to 8) -> our extracted-strip index
+# canon frame n -> strip index: IDENTITY since the 9-row re-extraction
+# (item-frame audit 2026-07-28).  The sheet's row 0 is the INVENTORY ICON --
+# canon cycleItemFrames walks drawNumMirror(1..8) and never draws it -- and
+# rows 1..8 are the show.  The old (n-1)%4 wrap was an off-by-one against a
+# 4-row extraction: it put the icon cell into every script's walk.  Kept as
+# a function so scripts still read in canon frame numbers.
 def _fr(n):
-    return (n - 1) % 4
+    return n
 
 
 def _interact(snds):
@@ -69,11 +74,11 @@ SCRIPTS = {
                                     24: "click", 30: "click",
                                     36: "select", 42: "select"}),
     # THE MUSIC BOX (Joel 2026-07-27 "i wanna redo that music player";
-    # settled 2026-07-28).  i:9's sheet leads with a generic disc that is
-    # NOT the item -- the box is frames 1-3, each with its OWN note trail
-    # rising off the keys.  Canon's cycleItemFrames walks 1..8 through
-    # `_fr` ((n-1) % 4), so the disc opened the show and returned twice;
-    # this script names its frames outright and never touches frame 0.
+    # settled 2026-07-28).  i:9's sheet leads with a generic disc -- now
+    # understood as the strip's ICON ROW (item-frame audit 2026-07-28) --
+    # and the box is frames 1-3, each with its OWN note trail rising off
+    # the keys.  The old (n-1)%4 wrap opened the show on the disc; this
+    # script names its frames outright and never touches frame 0.
     # A drifting-orb overlay was tried on top and CUT (Joel: "the music
     # box sprite already has notes") -- the orb's job is the still CELL
     # (shop.icon_art), where no frame of the 13px sheet survives the
@@ -109,16 +114,17 @@ SCRIPTS = {
     # drops back, twice (canon 16px -> our 6)
     "Lift": {"steps": 31, "end": "cheer", "layout": "floor",
              "snds": {6: "wash", 18: "wash"},
-             "rows": {0: {"i": 0, "p": 1}, 6: {"i": 0, "p": 8, "iy": -6},
-                      12: {"i": 0, "p": 1, "iy": 0}, 18: {"i": 0, "p": 8, "iy": -6},
-                      24: {"i": 0, "p": 1, "iy": 0}}},
+             "rows": {0: {"i": 1, "p": 1}, 6: {"i": 1, "p": 8, "iy": -6},
+                      12: {"i": 1, "p": 1, "iy": 0}, 18: {"i": 1, "p": 8, "iy": -6},
+                      24: {"i": 1, "p": 1, "iy": 0}}},
     # bathing(): the tub sits at the pet's feet, the pet scrubs 9<->10;
-    # bathing (wash) on each scrub beat
+    # bathing (wash) on each scrub beat -- canon alternates frames 1<->2
+    # (the old 0/1 pair leaked the icon row: item-frame audit 2026-07-28)
     "Bathe": {"steps": 37, "end": "cheer", "layout": "feet",
               "snds": {6: "wash", 18: "wash", 30: "wash"},
-              "rows": {0: {"i": 0, "p": 9}, 6: {"i": 1, "p": 10},
-                       12: {"i": 0, "p": 9}, 18: {"i": 1, "p": 10},
-                       24: {"i": 0, "p": 9}, 30: {"i": 1, "p": 10}}},
+              "rows": {0: {"i": 1, "p": 9}, 6: {"i": 2, "p": 10},
+                       12: {"i": 1, "p": 9}, 18: {"i": 2, "p": 10},
+                       24: {"i": 1, "p": 9}, 30: {"i": 2, "p": 10}}},
     # showering(): the shower head beside the pet runs its frames while the
     # pet shivers under it (pose 9, a 1px jiggle); showerOn -> washes ->
     # showerEnd (error) with the shake-off pose
@@ -135,7 +141,7 @@ SCRIPTS = {
     # mid-ride (canon beat 20), cheer at the end
     "Ride": {"steps": 36, "end": "cheer", "layout": "near",
              "snds": {6: "wash", 20: "happy"},
-             "rows": {0: {"i": 0, "p": 1}, 6: {"p": 0}, 14: {"p": 1},
+             "rows": {0: {"i": 1, "p": 1}, 6: {"p": 0}, 14: {"p": 1},
                       20: {"p": 5}, 26: {"p": 1}},
              "every": {(6, 9): {"pdy": -1, "pdx": -1},
                        (10, 11): {"pdx": -1},
@@ -146,7 +152,7 @@ SCRIPTS = {
     # settles down-left off the arena; cheer at the end
     "Bounce": {"steps": 32, "end": "cheer", "layout": "drop",
                "snds": {14: "click"},
-               "rows": {0: {"i": _fr(2), "p": 1}, 14: {"p": 5}, 26: {"p": 1}},
+               "rows": {0: {"i": _fr(1), "p": 1}, 14: {"p": 5}, 26: {"p": 1}},
                "every": {(6, 13): {"idy": 2, "icyc": 1},
                          (14, 18): {"idy": -1, "idx": -2, "icyc": 1},
                          (19, 20): {"idx": -2, "icyc": 1},
@@ -222,9 +228,14 @@ _SCRIPT_OVERRIDE = {"dna_crystal": "Study", "x_antibody": "Study",
 NO_FX = {"Idling"}
 
 
-def state(action, step, iw, ih, px_h):
+def state(action, step, iw, ih, px_h, n=9):
     """Replay a script to `step`: (item_frame, pet_pose, item_x, item_y,
-    pet_dx, pet_dy).  Geometry: item icon iw x ih on a COLS x px_h arena."""
+    pet_dx, pet_dy).  Geometry: item icon iw x ih on a COLS x px_h arena.
+    `n` is the item's REAL strip length (icon + anim frames): any frame
+    walk wraps within 1..n-1, exactly canon's per-item behaviour -- the
+    ball's 6-row strip cycles its 5 roll frames, the skateboard's 3-row
+    strip alternates its 2, and no strip ever shows its icon row or the
+    sheet's black padding (item-frame audit 2026-07-28)."""
     sc = SCRIPTS[action]
     floor = px_h - ih - 2            # grounded 2px above the border, like the pet
     lay = sc["layout"]
@@ -240,7 +251,9 @@ def state(action, step, iw, ih, px_h):
         ix, iy = max(grid.X0, PET_X - iw - 2), floor   # never past the wall
     else:                                    # "drop": above the arena
         ix, iy = 13, -ih
-    frame, pose, pdx, pdy, cyc = 0, 1, 0, 0, 0
+    # frame defaults to 1, the strip's first ANIM row -- 0 is the inventory
+    # icon, shown only when a script asks for it outright (Bandaging)
+    frame, pose, pdx, pdy, cyc = 1, 1, 0, 0, 0
     for b in range(step + 1):
         row = sc.get("rows", {}).get(b)
         if row:
@@ -257,7 +270,7 @@ def state(action, step, iw, ih, px_h):
                 pdx += d.get("pdx", 0)
                 pdy += d.get("pdy", 0)
                 cyc += d.get("icyc", 0)
-    if cyc:
-        frame = (frame + cyc) % 4
+    if frame + cyc > 0:                      # frame 0 stays 0 (Bandaging's
+        frame = (frame + cyc - 1) % max(1, n - 1) + 1   # canon held-up med)
     iy = min(iy, floor)                      # the ball never sinks through the floor
     return frame, pose, ix, iy, pdx, pdy

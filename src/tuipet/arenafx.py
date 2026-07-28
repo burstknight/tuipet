@@ -17,7 +17,7 @@ from . import data
 from . import egg as egg_mod
 from . import grid
 from . import theme  # noqa: F401  (theme.apply propagation)
-from .pet import POOP_MAX_PILES
+from .petbase import POOP_MAX_PILES     # its true home (pet re-exports via *)
 from .render import blit as _blit
 from .theme import LCD_BG, LCD_ON, SIL_SCENE, SIL_LIGHTSOFF, VOID, FLASH  # noqa: F401
 
@@ -836,10 +836,14 @@ class FxMixin:
             frames = [f for f in frames if f]
             if frames:
                 # canon _itemLabel: frame 1 while the pet is AIRBORNE (rise
-                # start -> landing), frame 2 while it rests between hops.
-                # RAW frames -- the /3 downsample crushed the toy to 2px
-                # (item-anim audit 2026-07-07)
-                toy = frames[(0 if air else 1) % len(frames)]
+                # start -> landing), frame 2 while it rests between hops --
+                # wrapped within the strip's ANIM rows (1..n-1) so row 0,
+                # the inventory icon, never plays (item-frame audit
+                # 2026-07-28).  RAW frames -- the /3 downsample crushed
+                # the toy to 2px (item-anim audit 2026-07-07)
+                want = 1 if air else 2
+                toy = frames[(want - 1) % max(1, len(frames) - 1) + 1
+                             if len(frames) > 1 else 0]
                 if toy:
                     # BESIDE the feet (the eat fx's item-side convention):
                     # canon keeps the pet elevated over the toy for the whole
@@ -859,7 +863,8 @@ class FxMixin:
         frames = [f for f in (data.load_icons().get(fx["icon"]) or []) if f]
         iw = max((max(len(r) for r in f) for f in frames), default=8)
         ih = max((len(f) for f in frames), default=8)   # tallest frame owns the floor
-        fr, pose, ix, iy, pdx, pdy = itemfx.state(fx["script"], step, iw, ih, c.px_h)
+        fr, pose, ix, iy, pdx, pdy = itemfx.state(fx["script"], step, iw, ih,
+                                                  c.px_h, n=max(2, len(frames)))
         c.rows = self._pose_rows_idx(pet, pose)
         c.xshift = itemfx.PET_X - PET_BASE_X + pdx
         c.yshift = -pdy

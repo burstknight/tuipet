@@ -21,7 +21,11 @@ def test_every_script_is_well_formed():
         assert max(sc.get("rows", {}), default=0) < sc["steps"], act
         assert all(b < sc["steps"] for b in sc["snds"]), act
         for row in sc.get("rows", {}).values():
-            assert 0 <= row.get("i", 0) <= 3, act          # 4 extracted frames
+            # canon frame numbers: 1..8 anim rows; frame 0 (the strip's
+            # INVENTORY ICON) belongs to Bandaging alone -- canon bandage()
+            # opens on the held-up med (item-frame audit 2026-07-28)
+            lo = 0 if act == "Bandaging" else 1
+            assert lo <= row.get("i", lo) <= 8, act
         # replay every step: geometry math must never crash, and the item
         # must never sink through the floor
         for step in range(sc["steps"]):
@@ -492,3 +496,61 @@ def test_a_bag_use_fires_the_show_for_all_three():
     for k in ("dna_crystal", "x_antibody"):
         r = use(k)
         assert r[1][0] == "item_use" and r[1][2] == "Study", k
+
+
+def test_the_shows_walk_the_real_strips_never_the_icon_row():
+    """THE ITEM-FRAME LAW (audit 2026-07-28, Joel: "that first frame is not
+    capsules... make sure other animations arent goofed up as well").  The
+    9-row sheet's row 0 is the INVENTORY ICON -- canon cycleItemFrames walks
+    drawNumMirror(1..8) and never draws it -- and short strips trail off in
+    solid-black padding.  The old 4-row extraction + (n-1)%4 wrap flashed
+    the icon mid-show and, on the trampoline, a 16x16 black square.  Pins:
+    every scripted item's whole show stays inside its strip's ANIM rows
+    (Bandaging's authored frame-0 med excepted), and the bank holds the
+    full strips with the padding stripped."""
+    from tuipet import shop
+
+    icons = data.load_icons()
+    # the re-extraction: full strips, canon row numbering, no filler
+    assert len(icons["i:78"]) == 9      # grow capsule: the whole sponge story
+    assert len(icons["i:3"]) == 6       # ball: icon + the 5 canon roll frames
+    assert len(icons["i:13"]) == 3      # trampoline: padding stripped
+    assert len(icons["i:7"]) == 2       # dumbbell: icon + its single frame
+    for key, fr in icons.items():
+        if key.startswith("i:"):
+            assert not any(len(f) == 16 and all(r == "1" * 16 for r in f)
+                           for f in fr), f"{key}: filler block in the bank"
+    # every scripted item, every beat: anim rows only, in range
+    for key in sorted(shop.CATALOG):
+        sc_name = shop.item_script(key)
+        ik = shop.ICON_KEYS.get(key, "")
+        if not sc_name or not ik.startswith("i:"):
+            continue
+        frames = [f for f in (icons.get(ik) or []) if f]
+        assert frames, key
+        n = max(2, len(frames))
+        sc = itemfx.SCRIPTS[sc_name]
+        for step in range(sc["steps"]):
+            fr = itemfx.state(sc_name, step, 8, 8, 24, n=n)[0]
+            assert 1 <= fr < len(frames), (key, sc_name, step, fr)
+    # the one authored exception: canon bandage() opens on the held-up med
+    assert itemfx.state("Bandaging", 0, 8, 8, 24, n=5)[0] == 0
+    assert itemfx.state("Bandaging", 20, 8, 8, 24, n=5)[0] == 3
+
+
+def test_the_grow_capsule_plays_its_whole_sponge_story():
+    """The bug that opened the audit (Joel 2026-07-28: "that animation is
+    sloppy").  i:78's strip is the full toy-capsule tale -- drop (1), fizz
+    (2-3), the water draining as the sponge drinks it (4-6), the grown
+    sponge popping out and hopping off (7-8) -- and the old extraction cut
+    it at the fizz.  The Study walk now visits every row once, opening on
+    the drop, never on row 0 (which is a sprig icon, not capsules)."""
+    from tuipet import shop
+    assert shop.item_script("grow_capsule") == "Study"
+    frames = data.load_icons()["i:78"]
+    seen = [itemfx.state("Study", step, 8, 8, 24, n=len(frames))[0]
+            for step in sorted(itemfx.SCRIPTS["Study"]["rows"])]
+    assert seen == [1, 2, 3, 4, 5, 6, 7, 8]
+    # the still cell keeps the icon row untouched ("keep the item shop icon")
+    assert shop.icon_frame("grow_capsule") == 0
+    assert shop.icon_art("grow_capsule") is None

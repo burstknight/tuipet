@@ -21,12 +21,23 @@ def _mask(cell):
 def _icon(sheet, col, row, gut, size):
     x0 = gut + (gut + size) * col
     y0 = gut + (gut + size) * row
-    m = _mask(sheet[y0:y0+size, x0:x0+size])
+    cell = sheet[y0:y0+size, x0:x0+size]
+    if _filler(cell):
+        return None
+    m = _mask(cell)
     if not m.any():
         return None
     ys, xs = np.where(m)
     crop = m[ys.min():ys.max()+1, xs.min():xs.max()+1]
     return ["".join("1" if v else "0" for v in r) for r in crop]
+
+
+def _filler(cell):
+    """A solid opaque-black cell is sheet PADDING, not art: every real sprite
+    keeps background pixels around it.  spritesItems0 pads short strips with
+    these (music player rows 4-8, trampoline 3-8...) and shipping them drew
+    16x16 black squares mid-show (item-frame audit 2026-07-28)."""
+    return bool((cell[:, :, :3] == 0).all() and (cell[:, :, 3] == 255).all())
 
 
 def run():
@@ -46,11 +57,20 @@ def run():
             iid = int(r["ItemIdentificationNum"]); col = int(r["SpriteNum"]) // 9
         except (KeyError, ValueError):
             continue
-        # 4 frames like the foods: DVPet's item ANIMS step down the strip
-        # (bandage() drawNumMirror 0..3 = the wrap sequence).  Frame 0 stays
-        # the plain icon, so single-frame users are unaffected.
-        frames = [_icon(items, col, fr, 1, 16) for fr in range(4)]
-        frames = [f for f in frames if f]
+        # THE FULL 9-ROW STRIP (item-frame audit 2026-07-28): row 0 is the
+        # INVENTORY ICON -- canon's cycleItemFrames walks drawNumMirror(1..8)
+        # and NEVER draws row 0 in a show -- and rows 1..8 are the animation.
+        # The old "4 frames like the foods" read cut the strip at row 3, which
+        # both lost frames 4-8 (the grow capsule's whole sponge-pop story) and
+        # made every (n-1)%4 walk flash the icon mid-show.  Truncate at the
+        # first dead row (empty or black filler -- dead rows only ever trail),
+        # so frames[n] stays canon frame n for every real n.
+        frames = []
+        for fr in range(9):
+            f = _icon(items, col, fr, 1, 16)
+            if not f:
+                break
+            frames.append(f)
         if frames:
             icons[f"i:{iid}"] = frames
     with gzip.open(os.path.join(OUT, "icons.json.gz"), "wt") as fh:

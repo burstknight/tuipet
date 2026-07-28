@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.302 — ITEM SHOWS, UN-GOOFED (2026-07-28)
+
+ITEM SHOWS, UN-GOOFED: the sprite sheet's first row is the shop icon, not animation art — and every item show was flashing it mid-play, while frames past the fourth were never extracted at all. Full strips ripped, canon frame walks restored: the Grow Capsule now plays its whole story (drop, fizz, the water draining, the grown sponge popping out), the ball rolls all five frames, and the trampoline no longer flashes a black square. Shop icons unchanged.
+
 ## 0.5.301 — SLEEP AUDIT, ROUND TWO (2026-07-28)
 
 SLEEP AUDIT, ROUND TWO: the whole night measured again — bedtimes, the recovery doze, the futon's deep sleep, the pill, every disturb, every save. One flaw found and fixed: waking a pet mid-way through its sleeping pill could leave the room switching itself dark afterwards. A wake now cancels the pending lights, every time.
