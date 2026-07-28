@@ -180,6 +180,11 @@ class Pet(CareMixin, DnaMixin, BattleMixin, BodyMixin):
     # length of one animation, so it is NOT saved -- a quit mid-show leaves a
     # sleeper under a lit room, which the next lights press (or bedtime) fixes.
     pending_lights_out: bool = False
+    # THE PRIZE REVEAL (Joel 2026-07-28: "shouldnt we see the prize
+    # sprite? not just an announcement?").  A surprise-opener (capsule,
+    # chocolate egg) parks its prize key here; the app's fx-end hook hands
+    # it to the following cheer, which holds the sprite beside the pet.
+    pending_prize: str = ""
     free_style: bool = False        # _isFree: Battle Style toggle (Free vs Orders)
     gift: str = ""                  # pending gift-call present (consumable key; "" = none)
     # the DSprite item timers (BASIC VPET 2026-07-16, cloned from v0.4.x):

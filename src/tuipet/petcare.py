@@ -1224,6 +1224,7 @@ class CareMixin:
         while prize in self._CAPSULE_KEYS or prize in self._PRANK_CAPSULES:
             prize = self._pick_gift()        # never a box inside a box
         self.add_item(prize)
+        self.pending_prize = prize           # the cheer SHOWS it (app hook)
         e = shop.entry(prize) or {}
         name = e.get("name", "something")
         if key in self._PRANK_CAPSULES:
@@ -1251,6 +1252,7 @@ class CareMixin:
                 and v.category != "Feed"]
         prize = random.choice(pool)
         self.add_item(prize)
+        self.pending_prize = prize           # the cheer SHOWS it (app hook)
         e = shop.entry(prize) or {}
         return f"Munch — a toy inside: {e.get('name', 'something')}!"
 

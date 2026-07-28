@@ -30,6 +30,7 @@ from . import deathscreen
 from . import sound
 from . import update as update_check
 from . import cloudsync
+from . import shop
 from .pet import Pet
 from .petbase import POOPDANCE_AT
 
@@ -144,11 +145,10 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE CHOCOLATE EGG KEEPS ITS PROMISE: 'a toy inside' meant "
-                 "it — but most of the time it paid out more food, sometimes "
-                 "another chocolate egg. Now every egg cracks open on a real "
-                 "item: a ball, a music player, a pill for the road. The "
-                 "snack half is unchanged.")
+    WHATS_NEW = ("YOU SEE WHAT YOU WON: cracking a capsule or a chocolate "
+                 "egg now shows the prize itself — the pet cheers with it "
+                 "sitting right there beside it, not just a line of text. "
+                 "Every surprise in the game opens with its sprite in hand.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the
@@ -1000,6 +1000,20 @@ class TuiPetApp(ActionsMixin, App):
         if sc.fx:
             sc.advance_fx()
             sc.paint(self.pet)
+            if sc.fx and sc.fx["kind"] == "cheer" and sc.fx["step"] == 0 \
+                    and not sc.fx.get("icon") and self.pet.pending_prize:
+                # a surprise-opener's show just chained into its cheer: the
+                # cheer HOLDS the prize sprite (Joel 2026-07-28) -- attach
+                # at beat 0 so the whole celebration shows what was won
+                sc.fx["icon"] = shop.ICON_KEYS.get(self.pet.pending_prize)
+                self.pet.pending_prize = ""
+            elif not sc.fx and self.pet.pending_prize:
+                # ...and a show that ends WITHOUT a chained cheer (the
+                # chocolate egg's eat) gets one, carrying the prize
+                icon = shop.ICON_KEYS.get(self.pet.pending_prize)
+                self.pet.pending_prize = ""
+                sc.start_fx("cheer", icon=icon)
+                sc.paint(self.pet)
             if not sc.fx and self.pet.pending_lights_out:
                 # the Sleep Pill's room drops HERE, on the beat its eat show
                 # ends (bug report 2026-07-26) -- deliberately NOT part of the

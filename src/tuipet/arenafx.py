@@ -751,6 +751,21 @@ class FxMixin:
             c.rows = self._pose_rows_idx(pet, 5 if up else 7)
         else:
             c.rows = self._pose_rows_idx(pet, 6 if up else 4)
+        if fx.get("icon"):
+            # THE PRIZE IN HAND (Joel 2026-07-28: "shouldnt we see the prize
+            # sprite?") -- a surprise-opener's cheer holds what was won,
+            # beside the pet at hand size (the adventure-find scale rule:
+            # never crushed to a speck, never as big as the pet)
+            raw = [f for f in (data.load_icons().get(fx["icon"]) or []) if f]
+            if raw:
+                ic = raw[0]
+                dim = max(len(ic), max(len(r) for r in ic))
+                if dim > 8:
+                    from .render import downsample
+                    ic = downsample(ic, -(-dim // 8))
+                ih = len(ic)
+                c.overlay += _blit(ic, PET_BASE_X - len(ic[0]) - 2,
+                                   c.px_h - 2 - ih)
         if up:
             hap = data.load_effects().get("happy")
             if hap:

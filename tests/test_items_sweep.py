@@ -216,6 +216,8 @@ def test_every_raid_prize_key_resolves_to_a_shelf_NAME():
 _BOOKKEEPING = frozenset({
     "anim", "anim_t", "anim_ttl", "anim_until", "idle_fx", "_fx_busy",
     "inventory", "gift",
+    "pending_prize",   # reveal plumbing (2026-07-28): the cheer's hand-off,
+    #                    not an effect -- the prize itself lands in inventory
 })
 # The shared helpers' OWN billing, which shop._TOUCHES deliberately does
 # not list ("those belong to those helpers, not to the item"): _set_energy

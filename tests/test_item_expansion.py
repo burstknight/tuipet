@@ -363,3 +363,47 @@ def test_the_chocolate_egg_pays_a_toy_never_a_food():
         assert v.category != "Feed", f"the egg paid food: {prize}"
         assert v.price is not None and v.tier == "common", prize
     assert len(seen) >= 4, "the toy pool collapsed to a coin flip"
+
+
+def test_the_surprise_cheer_holds_the_prize_sprite():
+    """Joel 2026-07-28: "shouldnt we see the prize sprite? not just an
+    announcement?"  A capsule or chocolate egg parks its prize on
+    pet.pending_prize; the following cheer carries the icon and the painter
+    grounds it beside the pet at hand size -- LEFT floor, clear of the
+    16px mon and the right-edge emote."""
+    from tuipet import arenafx
+    from tuipet.arenafx import _FxCtx, PET_BASE_X, SCREEN_ROWS
+    from tuipet.pet import Pet
+    p = Pet(num=29, stage="Rookie", attribute="Vaccine")
+    p.name, p.line_id = "T", ""
+    w = object.__new__(arenafx.FxMixin)
+    c = _FxCtx(); c.px_h = SCREEN_ROWS * 2
+    c.overlay = []; c.free = []; c.xshift = 0; c.yshift = 0; c.mirror = False
+    arenafx.FxMixin._fxk_cheer(w, p, {"kind": "cheer", "step": 0,
+                                      "icon": "i:2", "good": True}, 0, c)
+    prize = [(x, y) for x, y in c.overlay if x < PET_BASE_X]
+    assert prize, "no prize pixels beside the pet"
+    assert all(x < PET_BASE_X - 1 for x, _y in prize), "prize touches the mon"
+    assert max(y for _x, y in prize) <= c.px_h - 2, "prize sank through the floor"
+    # ...and a cheer WITHOUT an icon is untouched (every other cheer in the game)
+    c2 = _FxCtx(); c2.px_h = SCREEN_ROWS * 2
+    c2.overlay = []; c2.free = []; c2.xshift = 0; c2.yshift = 0; c2.mirror = False
+    arenafx.FxMixin._fxk_cheer(w, p, {"kind": "cheer", "step": 6, "good": True}, 6, c2)
+    assert not [pt for pt in c2.overlay if pt[0] < PET_BASE_X]
+
+
+def test_the_openers_park_their_prize_for_the_cheer():
+    import random
+    from tuipet.pet import Pet
+    random.seed(5)
+    p = Pet(num=100, stage="Rookie", attribute="Vaccine")
+    p.name, p.line_id = "T", ""
+    p.hunger = 2
+    p.add_item("chocolate_egg")
+    p.use_item("chocolate_egg")
+    assert p.pending_prize and p.pending_prize in p.inventory
+    q = Pet(num=100, stage="Rookie", attribute="Vaccine")
+    q.name, q.line_id = "T", ""
+    q.add_item("capsule_a")
+    q.use_item("capsule_a")
+    assert q.pending_prize and q.pending_prize in q.inventory

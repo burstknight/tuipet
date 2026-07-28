@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.299 — YOU SEE WHAT YOU WON (2026-07-27)
+
+YOU SEE WHAT YOU WON: cracking a capsule or a chocolate egg now shows the prize itself — the pet cheers with it sitting right there beside it, not just a line of text. Every surprise in the game opens with its sprite in hand.
+
 ## 0.5.298 — THE CHOCOLATE EGG KEEPS ITS PROMISE (2026-07-27)
 
 THE CHOCOLATE EGG KEEPS ITS PROMISE: 'a toy inside' meant it — but most of the time it paid out more food, sometimes another chocolate egg. Now every egg cracks open on a real item: a ball, a music player, a pill for the road. The snack half is unchanged.
