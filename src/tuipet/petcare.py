@@ -853,6 +853,8 @@ class CareMixin:
         self.asleep = False
         self.nap = False
         self.lights = True
+        self.pending_lights_out = False   # the pill's debt dies with the sleep
+        #                                   it served (sleep audit r2, 07-28)
         self.awake_lapse = 0.0
         if self._in_sleep_window() is not None and not was_nap:
             self._bed_postpone_t = float(random.randint(*DISTURB_POSTPONE))

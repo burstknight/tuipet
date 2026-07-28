@@ -145,11 +145,12 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("TWO FIXES: the road's march hint no longer flashes a bare "
-                 "'SPACE ESC' — every beat names its key (SPACE walk, T warp, "
-                 "ESC home). And the capsule prize no longer clips at the "
-                 "window's edge: the prize sits whole against the wall and "
-                 "your pet steps aside to show it off.")
+    WHATS_NEW = ("SLEEP AUDIT, ROUND TWO: the whole night measured again — "
+                 "bedtimes, the recovery doze, the futon's deep sleep, the "
+                 "pill, every disturb, every save. One flaw found and fixed: "
+                 "waking a pet mid-way through its sleeping pill could leave "
+                 "the room switching itself dark afterwards. A wake now "
+                 "cancels the pending lights, every time.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the
@@ -1015,6 +1016,11 @@ class TuiPetApp(ActionsMixin, App):
                 self.pet.pending_prize = ""
                 sc.start_fx("cheer", icon=icon)
                 sc.paint(self.pet)
+            if not sc.fx and self.pet.pending_lights_out \
+                    and not self.pet.asleep:
+                # the debt outlived its sleep some OTHER way: drop it, a
+                # dark room around an awake pet serves nobody (audit r2)
+                self.pet.pending_lights_out = False
             if not sc.fx and self.pet.pending_lights_out:
                 # the Sleep Pill's room drops HERE, on the beat its eat show
                 # ends (bug report 2026-07-26) -- deliberately NOT part of the

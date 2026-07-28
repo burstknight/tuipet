@@ -731,6 +731,7 @@ class BodyMixin:
         self.dead = True
         self.death_cause = cause or self.death_cause   # first cause wins
         self.asleep = False
+        self.pending_lights_out = False   # no debts on the departed (audit r2)
         self.hatching = False
         self._set_anim("idle", 0)
 
@@ -806,6 +807,10 @@ class BodyMixin:
         self.asleep = False
         self.nap = False
         self.futon_doze = False          # the futon's deep doze is spent on wake
+        # a pill's owed lights-out dies with the sleep it served (sleep audit
+        # r2, 2026-07-28: waking mid-show left the debt armed, and the fx-end
+        # hook then darkened the room on an AWAKE pet)
+        self.pending_lights_out = False
         self.awake_lapse = 0.0
         self.sleep_limit = DAY_MINUTES - self.awake_limit
         # a MORNING wake lights the room (canon setLights(true)); a NAP wake

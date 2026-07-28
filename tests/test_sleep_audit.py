@@ -384,3 +384,19 @@ def test_the_sleep_status_card_fits_its_box(state):
     lines += list(statusbox.home_lines(p))
     for line in lines:
         assert len(Text.from_markup(str(line)).plain) <= statusbox.CARD_W
+
+
+def test_a_wake_cancels_the_pills_owed_lights_out():
+    """Sleep audit r2 (2026-07-28): the pill owes the room to its eat show
+    (0.5.288) -- but a wake DURING the show (alarm, disturb) left the debt
+    armed, and the fx-end hook then darkened the room on an AWAKE pet."""
+    p = _sleeper()
+    p._wake()                                     # any wake path funnels here
+    p.add_item("sleeping_pill")
+    p.use_item("sleeping_pill")
+    assert p.asleep and p.pending_lights_out and p.lights
+    p.add_item("music_player")
+    p.use_item("music_player")                    # the clean wake, mid-show
+    assert not p.asleep
+    assert not p.pending_lights_out, "the debt outlived the sleep it served"
+    assert p.lights, "the room must stay lit around an awake pet"

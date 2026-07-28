@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.301 — SLEEP AUDIT, ROUND TWO (2026-07-28)
+
+SLEEP AUDIT, ROUND TWO: the whole night measured again — bedtimes, the recovery doze, the futon's deep sleep, the pill, every disturb, every save. One flaw found and fixed: waking a pet mid-way through its sleeping pill could leave the room switching itself dark afterwards. A wake now cancels the pending lights, every time.
+
 ## 0.5.300 — TWO FIXES (2026-07-27)
 
 TWO FIXES: the road's march hint no longer flashes a bare 'SPACE ESC' — every beat names its key (SPACE walk, T warp, ESC home). And the capsule prize no longer clips at the window's edge: the prize sits whole against the wall and your pet steps aside to show it off.
