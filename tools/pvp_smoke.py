@@ -25,6 +25,10 @@ Notes for the next reader:
     "Opponent left" (the first flight's face-plant).
   * The bots appear briefly in the public roster as smkA…/smkB… — real
     players in the room will see them join and leave.  Keep it brief.
+  * The smk prefix is load-bearing: server._ladder_report drops any bout
+    with an smk* name on either side, so smoke wins never rank (2026-07-28:
+    11 rigs sat on the live season ladder the day the ads went out).  Name
+    the bots anything else and they WILL climb the real ladder.
 """
 from __future__ import annotations
 

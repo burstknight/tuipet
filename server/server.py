@@ -388,6 +388,10 @@ LADDER_PATH = os.environ.get(
 LADDER_PAYOUT = {1: 25000, 2: 10000, 3: 5000}
 LADDER_PAIR_CAP = 3
 LADDER_CONFIRM_S = 90.0
+SMOKE_PREFIX = "smk"      # tools/pvp_smoke.py account tag -- test bouts are real
+#                           lobby traffic but must never rank (Joel 2026-07-28:
+#                           11 smoke rigs sat on the live season the day the
+#                           Facebook ads went out)
 
 
 def _load_ladder():
@@ -448,6 +452,9 @@ def _ladder_report(name, won, opp, now=None):
     now = time.time() if now is None else now
     if not opp or opp == name:
         return
+    if (name.lower().startswith(SMOKE_PREFIX)
+            or opp.lower().startswith(SMOKE_PREFIX)):
+        return                    # smoke rigs never touch the season
     key = (name, opp) if won else (opp, name)    # always (winner, loser)
     mine = _ladder_pending if won else _ladder_confirm
     theirs = _ladder_confirm if won else _ladder_pending
