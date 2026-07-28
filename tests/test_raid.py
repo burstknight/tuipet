@@ -9,8 +9,10 @@ Covered here, all four layers:
    10-round volley cutoff reporting raw damage, the claim applying bits /
    items / KO6 / the raids channel
  * sim + eggs: a raid bout writes NOTHING on the pet's record (the clone's
-   generate_raid contract), and the old MapComplete rows gate on felled
-   raids now (map N -> N+1 bosses)
+   generate_raid contract) -- but a THROWN volley bills the BODY at the
+   report seam (Joel 2026-07-28: "bill the body only", the L17 online
+   shape) -- and the old MapComplete rows gate on felled raids now
+   (map N -> N+1 bosses)
 """
 import json
 import os
@@ -325,15 +327,66 @@ def test_an_escape_rotation_stays_quiet():
 
 
 def test_a_raid_bout_writes_nothing_on_the_pet():
+    """The BOUT OBJECT stays pure (the clone's generate_raid contract):
+    replaying it touches no counter AND no body stat.  The body bill lives
+    at the panel's report seam alone (Joel 2026-07-28 "bill the body
+    only" -- see test_a_thrown_volley_bills_the_body_only), so a
+    precompute, a preview or a test replay can never double-bill."""
     from tuipet import battle as battle_mod
     import random
     random.seed(3)
     p = _pet()
-    before = (p.battles, p.wins, p.exercise_today)
+    before = (p.battles, p.wins, p.exercise_today, p.energy, p.weight)
     bout = battle_mod.RaidBout(p, {"num": _mega(), "stage": "Mega", "boss": True})
     while not bout.over:
         bout.play_round()
-    assert (p.battles, p.wins, p.exercise_today) == before
+    assert (p.battles, p.wins, p.exercise_today, p.energy, p.weight) == before
+
+
+def test_a_thrown_volley_bills_the_body_only():
+    """Joel 2026-07-28 ("shouldnt participating in a raid drain enrgy?" ->
+    "yeah do it, bill the body only").  A raid was the ONE fight door that
+    spent nothing bodily; now a THROWN volley pays exactly the L17 online
+    shape -- BATTLE_ENERGY_COST energy + weight-to-base, and NOT ONE
+    progression channel (battles, log, exp, trainings, injury roll) --
+    while the walk-away before the bell still costs nothing at all."""
+    import random
+    from tuipet.petbase import BATTLE_ENERGY_COST, BATTLE_WEIGHT_COST
+
+    random.seed(3)
+    pan = _panel()
+    pan.client.raid = _view(_mega())
+    # walk away at the ready bar: no bill, no report
+    pan.key("space")
+    p = pan.pet
+    e0, w0 = p.energy, p.weight
+    before = (p.battles, p.stage_battles, tuple(p.battle_log), p.exp,
+              p.stage_trainings, p.total_trainings, p.wins)
+    pan.sub.key("space")                                    # skip the intro
+    for _ in range(6):
+        pan.sub.anim()                                      # past the mash-arm window
+    pan.key("escape")                                       # walked away before the bell
+    assert pan.sub is None
+    assert (p.energy, p.weight) == (e0, w0), "the walk-away was billed"
+    # throw the volley for real
+    pan.key("space")
+    pan.sub.key("space")
+    for _ in range(6):
+        pan.sub.anim()
+    pan.sub.bar = (pan.sub.mega_lo + pan.sub.mega_hi) // 2
+    pan.sub.key("space")                                    # lock: RaidBout builds
+    for _ in range(3000):
+        pan.sub.anim()
+        if pan.sub.phase == "result":
+            break
+    pan.key("space")                                        # close -> report seam
+    assert pan.sub is None
+    assert p.energy == max(0, e0 - BATTLE_ENERGY_COST), "the volley did not bill energy"
+    assert p.weight == max(p._base_weight(), w0 - BATTLE_WEIGHT_COST), \
+        "the volley did not bill weight (base-floored)"
+    assert (p.battles, p.stage_battles, tuple(p.battle_log), p.exp,
+            p.stage_trainings, p.total_trainings, p.wins) == before, \
+        "a raid volley fed a progression channel"
 
 
 def test_claim_pays_bits_items_ko6_and_the_raids_channel():
@@ -410,7 +463,8 @@ def test_the_panel_reports_honestly_and_stays_live():
                              raid_get=lambda: calls.append("get"),
                              raid_hit=lambda d: calls.append(("hit", d)))
     pan = RaidPanel.__new__(RaidPanel)
-    pan.pet = SimpleNamespace(stage="Mega", bits=0)
+    pan.pet = SimpleNamespace(stage="Mega", bits=0,
+                              record_battle=lambda *a, **k: "")
     pan.sub = None
     pan.frame_i = 0
     pan.sfx = None

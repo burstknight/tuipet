@@ -145,14 +145,12 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("ITEM SHOWS, UN-GOOFED: the sprite sheet's first row is the "
-                 "shop icon, not animation art — and every item show was "
-                 "flashing it mid-play, while frames past the fourth were "
-                 "never extracted at all. Full strips ripped, canon frame "
-                 "walks restored: the Grow Capsule now plays its whole story "
-                 "(drop, fizz, the water draining, the grown sponge popping "
-                 "out), the ball rolls all five frames, and the trampoline "
-                 "no longer flashes a black square. Shop icons unchanged.")
+    WHATS_NEW = ("RAIDS COST WHAT FIGHTS COST: a raid volley was the one "
+                 "fight in the game that spent nothing — now a thrown volley "
+                 "bills the body like every other bout (energy and a little "
+                 "weight), and nothing else: no records, no injury risk. "
+                 "Walking away before the bell still costs nothing. Three "
+                 "attempts a day is a real commitment now.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the

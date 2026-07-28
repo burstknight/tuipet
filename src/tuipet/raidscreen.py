@@ -202,6 +202,16 @@ class RaidPanel(menu.SubHost):
             # (raid round 2026-07-19)
             self.msg = "You back off. The attempt keeps."
             return
+        # THE VOLLEY BILLS THE BODY (Joel 2026-07-28: "bill the body only").
+        # A raid was the ONE fight door that spent nothing -- RaidBout writes
+        # no record by design, so the pet threw itself at a Mega for free
+        # while every sibling bout (home key, cups, even L17 lobby duels)
+        # paid energy+weight.  Same single source as the lobby:
+        # record_battle(online=True) bills the body and touches no
+        # progression counter, no injury roll, no rolling log.  This seam
+        # fires exactly once per THROWN volley -- the walk-away above hands
+        # back None, and an ESC mid-show fast-runs the bout to completion.
+        self.pet.record_battle(bool(getattr(b, "won", False)), online=True)
         dealt = int(getattr(b, "dealt", 0) or 0)
         if dealt > 0 and self.view:
             self.client.raid_hit(dealt)
