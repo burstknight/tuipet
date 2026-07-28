@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.307 — KEYS THAT SPELL THEMSELVES, round two (2026-07-28)
+
+KEYS THAT SPELL THEMSELVES, round two: E is the Eggs guide now and N the scene picker — joining yesterday's S shop, B bag, O lights and I bug. Every door you open often wears its own letter; the bar, help and Options→Keys all tell the same story. (At the grave, N still starts the next egg — that promise is older than the remap.)
+
 ## 0.5.306 — KEYS THAT SPELL THEMSELVES (a player asked) (2026-07-28)
 
 KEYS THAT SPELL THEMSELVES (a player asked): S is the Shop and B is the Bag now — the two doors you open most wear their own letters. Lights moved to O (it's an on/off switch) and the bug reporter to I (an issue). Everything else is where you left it; the bar, help and Options→Keys all tell the new story.

@@ -53,4 +53,6 @@ def test_panel_walks_previews_and_commits():
 
 def test_home_screen_binding():
     from tuipet.app import TuiPetApp
-    assert any(b[:2] == ("e", "scenes") for b in TuiPetApp.BINDINGS)
+    # was e until the mnemonic remap 2026-07-28 (e = eggs' own letter;
+    # scenes, the rarest door, took the junk letter n)
+    assert any(b[:2] == ("n", "scenes") for b in TuiPetApp.BINDINGS)

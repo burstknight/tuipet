@@ -72,14 +72,14 @@ class EggSelectPanel:
         """The message-box line: a fresh verdict, then the unlock tease on
         its beat, then the hints (carousel redo 2026-07-19: the LCD is pure
         scene now -- the dossier lives on the STATUS card, the words live
-        HERE; the box's own marquee carries over-wide lines).  N advertises
+        HERE; the box's own marquee carries over-wide lines).  E advertises
         the egg guide -- the pick is permanent for the generation."""
         if self.msg:
             return self.msg
         if (self.locked > 0 and self.hint
                 and self.frame_i % (2 * TEASE_BEAT) >= TEASE_BEAT):
             return f"{self.locked} more out there · {self.hint}"
-        return menu.hints(("←→", "browse"), ("ENTER", "pick"), ("N", "guide"))
+        return menu.hints(("←→", "browse"), ("ENTER", "pick"), ("E", "guide"))
 
     def key(self, k):
         if k in ("right", "l", "down", "j"):
@@ -98,7 +98,7 @@ class EggSelectPanel:
             if not self.n:
                 return None
             return ("done", self.carousel[self.i])     # hatch the centred egg
-        elif k == "n":
+        elif k == "e":
             return ("done", "guide")                   # consult the egg guide first
         elif k == "escape":
             return ("done", None)                      # back out without choosing

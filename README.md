@@ -113,10 +113,10 @@ explore, then grow, then manage:
 |-----|--------|-----|--------|
 | **f** | feed | **x** | DNA |
 | **h** | heal an injury | **d** | DigiCore |
-| **c** | clean | **n** | digitama guide |
+| **c** | clean | **e** | digitama guide |
 | **o** | lights | **s** | shop |
 | **v** | AI assistant | **b** | bag |
-| **m** | battle | **e** | scenes |
+| **m** | battle | **n** | scenes |
 | **a** | adventure | **g** | options |
 | **r** | raid | **i** | bug report |
 | **u** | tournament cup | **?** | help |
@@ -205,7 +205,7 @@ everywhere.
 
 ## Scenes
 
-Press **e** to change the backdrop — real ripped scenes, and each egg comes
+Press **n** to change the backdrop — real ripped scenes, and each egg comes
 wired to its own home scene, so the digitama you choose decides the view
 your pet grows up with (until you repaint it).
 

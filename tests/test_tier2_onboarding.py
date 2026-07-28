@@ -84,7 +84,9 @@ def test_dead_pet_and_egg_hand_off_without_ceremony():
 def test_egg_picker_offers_the_guide():
     pan = EggSelectPanel(Pet.new_egg())
     assert "guide" in pan.strip()                  # hints() returns markup text
-    assert pan.key("n") == ("done", "guide")
+    # the guide detour rides the guide's own key (e since the 2026-07-28
+    # mnemonic remap; was n)
+    assert pan.key("e") == ("done", "guide")
 
 
 def test_fresh_egg_flash_points_at_help():

@@ -120,12 +120,14 @@ def test_strip_follows_the_hint_convention():
 
 
 def test_home_screen_binding():
+    # was n until the mnemonic remap 2026-07-28 (e = eggs' own letter;
+    # n took scenes, the rarest door)
     from tuipet.app import TuiPetApp
-    assert any(b[:2] == ("n", "eggguide") for b in TuiPetApp.BINDINGS)
+    assert any(b[:2] == ("e", "eggguide") for b in TuiPetApp.BINDINGS)
 
 
-def test_n_opens_the_guide_in_the_real_app():
-    """The home-screen binding, driven through the actual app: n opens the
+def test_e_opens_the_guide_in_the_real_app():
+    """The home-screen binding, driven through the actual app: e opens the
     guide, ESC closes it (the fresh-profile account gate may sit between the
     title and home -- escape past it)."""
     import asyncio
@@ -141,7 +143,7 @@ def test_n_opens_the_guide_in_the_real_app():
             await pilot.press("enter"); await pilot.pause()
             if app.mode is not None:               # account gate on a fresh profile
                 await pilot.press("escape"); await pilot.pause()
-            await pilot.press("n"); await pilot.pause()
+            await pilot.press("e"); await pilot.pause()
             opened = type(app.mode).__name__
             await pilot.press("escape"); await pilot.pause()
             return opened, app.mode

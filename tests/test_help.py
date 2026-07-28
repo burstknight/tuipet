@@ -300,6 +300,8 @@ def test_the_keys_spell_themselves():
     assert keys["b"] == "inventory"
     assert keys["o"] == "sleep"          # the Lights toggle
     assert keys["i"] == "bug"
+    assert keys["e"] == "eggguide"       # eggs' own letter (round 2)
+    assert keys["n"] == "scenes"         # the rarest door takes the junk letter
     readme = README.read_text(encoding="utf-8")
     assert "| **s** | shop |" in readme
     assert "| **v** | AI assistant | **b** | bag |" in readme

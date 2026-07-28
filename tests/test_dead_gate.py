@@ -51,9 +51,14 @@ def test_every_binding_leads_a_dead_pet_to_the_memorial():
     lobby_open = results.pop("_lobby_open")
     # the ONE sanctioned exit: the bare grave card says "press N for a new
     # egg", and N delivers the carousel once the ceremony is banked
-    # (QOL 2026-07-23) -- every other key still leads to the memorial
-    assert results.pop("eggguide") == "EggSelectPanel", \
+    # (QOL 2026-07-23).  The exit belongs to the KEY N (app.on_key's dead
+    # chokepoint), not to whichever binding wears n -- the mnemonic remap
+    # 2026-07-28 moved eggguide to e (memorial like every care key) and
+    # scenes onto n, which the chokepoint intercepts first.
+    assert results.pop("scenes") == "EggSelectPanel", \
         "the grave's N must open the egg carousel it promises"
+    assert results.pop("eggguide") == "DeathPanel", \
+        "e (egg guide) is a care-side key: memorial like the rest"
     escaped = {a: m for a, m in results.items() if m != "DeathPanel"}
     assert not escaped, f"these actions escaped the grave: {escaped}"
     assert options_open == "OptionsPanel", "options must stay live at the memorial"

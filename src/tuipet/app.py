@@ -93,7 +93,7 @@ def keys_markup():
         # room is what the H key rides in on
         f"[{k}]f[/] feed  [{k}]h[/] heal  [{k}]c[/] clean  [{k}]o[/] lights  [{k}]v[/] assist  [{k}]p[/] discipline  [{k}]m[/] battle\n"
         f"[{k}]a[/] adventure  [{k}]r[/] raid  [{k}]u[/] cup  [{k}]l[/] lobby [dim](pvp)[/]  [{k}]t[/] train  [{k}]x[/] DNA  [{k}]d[/] digicore\n"
-        f"[{k}]n[/] eggs  [{k}]s[/] shop  [{k}]b[/] bag  [{k}]e[/] scenes  [{k}]g[/] options  [{k}]i[/] bug  [{k}]?[/] help  [{k}]q[/] quit"
+        f"[{k}]e[/] eggs  [{k}]s[/] shop  [{k}]b[/] bag  [{k}]n[/] scenes  [{k}]g[/] options  [{k}]i[/] bug  [{k}]?[/] help  [{k}]q[/] quit"
     )
 
 
@@ -150,12 +150,13 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("KEYS THAT SPELL THEMSELVES (a player asked): S is the "
-                 "Shop and B is the Bag now — the two doors you open most "
-                 "wear their own letters. Lights moved to O (it's an "
-                 "on/off switch) and the bug reporter to I (an issue). "
-                 "Everything else is where you left it; the bar, help and "
-                 "Options→Keys all tell the new story.")
+    WHATS_NEW = ("KEYS THAT SPELL THEMSELVES, round two: E is the Eggs "
+                 "guide now and N the scene picker — joining yesterday's "
+                 "S shop, B bag, O lights and I bug. Every door you open "
+                 "often wears its own letter; the bar, help and "
+                 "Options→Keys all tell the same story. (At the grave, "
+                 "N still starts the next egg — that promise is older "
+                 "than the remap.)")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the
@@ -178,9 +179,9 @@ class TuiPetApp(ActionsMixin, App):
         ("r", "raid", "Raid"), ("u", "tournament", "Cup"),
         ("l", "lobby", "Lobby"),
         ("t", "train", "Train"), ("x", "dna", "DNA"),
-        ("d", "digicore", "DigiCore"), ("n", "eggguide", "Egg Guide"),
+        ("d", "digicore", "DigiCore"), ("e", "eggguide", "Egg Guide"),
         ("s", "shop", "Shop"), ("b", "inventory", "Bag"),
-        ("e", "scenes", "Scenes"), ("g", "options", "Options"),
+        ("n", "scenes", "Scenes"), ("g", "options", "Options"),
         ("i", "bug", "Bug"), ("question_mark", "help", "Help"), ("q", "quit", "Quit"),
         # space rides along as a silent confirm alias (QOL 2026-07-23):
         # every in-panel confirm takes ENTER or SPACE, the home view took
@@ -1280,7 +1281,7 @@ class TuiPetApp(ActionsMixin, App):
             # overwrite.  The egg has no needs, so the idle slot is free to
             # hold the pointer for the whole wait.
             if not self._showing_eggwait:
-                self._hud("the egg hatches on its own — [b]?[/] help · [b]N[/] egg guide")
+                self._hud("the egg hatches on its own — [b]?[/] help · [b]E[/] egg guide")
                 self._showing_eggwait = True
             self._showing_update = False
         elif self._showing_eggwait:
@@ -1456,7 +1457,7 @@ class TuiPetApp(ActionsMixin, App):
             self._do("Kept your current partner.")
             return
         if egg_type == "guide":
-            # N on the carousel: consult the guide, then come back to the
+            # E on the carousel: consult the guide, then come back to the
             # pick with the SAME generation in hand.  (This sentinel was
             # only handled on the fresh-start path -- the retire/death path
             # crashed on it: Termux crash 2026-07-18, egg_type='guide'.)

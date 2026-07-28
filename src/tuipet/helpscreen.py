@@ -102,11 +102,11 @@ HELP = [
     # the lineage's own book (Joel 2026-07-26: "build the hall of memory")
     ("  on its LEGACY page, the HALL OF", 0),
     ("  MEMORY - every elder, remembered", 0),
-    ("n egg guide - every digitama + what", 1),
+    ("e egg guide - every digitama + what", 1),
     ("  earns it, with live progress", 0),
     ("", 0),
     ("MANAGE", 2),
-    ("s shop   b bag   e scenes", 1),
+    ("s shop   b bag   n scenes", 1),
     ("  the shop's last tab sells HONORS -", 0),
     ("  titles that ride your status card", 0),
     # the expansion (2026-07-26): the one line the capsules need

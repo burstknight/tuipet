@@ -50,7 +50,7 @@ class BackgroundPanel:
             else:
                 self.msg = self.pet.pick_background(key)
                 self.sfx = "confirm"
-        elif k in ("escape", "e"):
+        elif k in ("escape", "n"):
             return ("done", self.msg)
         return None
 
