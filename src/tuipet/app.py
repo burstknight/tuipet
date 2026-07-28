@@ -128,6 +128,11 @@ class Stats(Static):
 
 
 class TuiPetApp(ActionsMixin, App):
+    # ⚠ the hexes below are GREY's, baked at class-creation and unreachable
+    # by theme.apply -- deliberately: Textual wants a static stylesheet.
+    # _restyle() re-tints every colour this block sets (borders, LCD bg,
+    # label text) at startup AND on each theme change; if CSS ever grows a
+    # new coloured rule, _restyle must learn it too (theme audit 2026-07-28).
     CSS = """
     Screen { align: center middle; }
     #wrap { width: auto; height: auto; }
@@ -145,12 +150,13 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("RAIDS COST WHAT FIGHTS COST: a raid volley was the one "
-                 "fight in the game that spent nothing — now a thrown volley "
-                 "bills the body like every other bout (energy and a little "
-                 "weight), and nothing else: no records, no injury risk. "
-                 "Walking away before the bell still costs nothing. Three "
-                 "attempts a day is a real commitment now.")
+    WHATS_NEW = ("THEME AUDIT: three colour bugs swept. The status card's "
+                 "Zzz badge was raw terminal blue on every theme — it wears "
+                 "the energy tint now. The Power row's Data and Virus were "
+                 "the same colour on mono and amber (near-twins on grey) — "
+                 "the trio reads green/blue/red everywhere now. And grey's "
+                 "energy, care and life readouts were washed out on the "
+                 "light box — darkened to match their siblings.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the

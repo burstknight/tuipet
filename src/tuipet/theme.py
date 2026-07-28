@@ -21,7 +21,11 @@ THEMES = {
         "on": "#2b2e31", "bg": "#c6c9cc", "mid": "#7d8186",
         "accent": "#b04a3a", "pos": "#3a6ea5", "neg": "#a23b2f", "border": "#7a7e78",
         "sil_scene": "#2b2e31", "sil_lightsoff": "#e4e7ea",
-        "heart": "#c25a4a", "energy": "#4a90c2", "care": "#a06ac2", "life": "#3f9a86",
+        # energy/care/life darkened in-family (theme audit 2026-07-28):
+        # the old #4a90c2/#a06ac2/#3f9a86 sat at 2.0-2.4:1 on the light
+        # box -- the same washed-out class the 07-22 coin fix repaired --
+        # while every sibling readout reads at 2.6+; now 3.1-3.4:1.
+        "heart": "#c25a4a", "energy": "#34719f", "care": "#8350a8", "life": "#2c7a6a",
         "coin": "#7a5f14",   # was #c2a24a: 1.48:1 on the light box (theme audit 2026-07-22)
         "void": "#000000", "flash": ("#f2f6fa", "#1a2026", "#e8eef2"),
     },

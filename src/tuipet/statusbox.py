@@ -60,7 +60,11 @@ def care_deco(pet, word=None):
     if word is None:
         word = pet.status_word()
     deco = []
-    if pet.asleep and word != "asleep": deco.append("[blue]Zzz[/]")
+    # ENERGY, not raw terminal blue (theme audit 2026-07-28): the Zzz was
+    # the last hard-coded colour tag in the app, one shade on EVERY theme
+    # beside siblings that all ride the palette.  Sleep restores energy;
+    # the badge wears the energy readout's tint.
+    if pet.asleep and word != "asleep": deco.append(f"[{T.ENERGY}]Zzz[/]")
     if pet.sick and word != "sick": deco.append(f"[{T.NEG}]+sick[/]")
     # +hurt RESTORED (badge audit 2026-07-24, Joel "see if we are missing any
     # other badges"): injury came back with canon restoration but its badge
@@ -227,8 +231,12 @@ def home_lines(pet):
         # (DMX 1-10, capped by stage); the powers colour by attribute --
         # Vaccine green, Data blue, Virus red -- and are uncapped, so a big
         # number is real, not a glitch (chips + wins both feed them).
+        # LIFE/POS/NEG are the theme roles that deliver that trio (theme
+        # audit 2026-07-28): the row shipped with D on ACCENT, and accent
+        # IS the neg hex on mono and amber -- Data and Virus rendered as
+        # literal twins there, near-twins on grey (both red-family).
         f"Battle  {pet.wins}W/{pet.battles} [dim]Lv[/]{lvl} [{T.COIN}]★{pet.trophies}[/]",
-        f"Power   [{T.POS}]V{pet.vaccine}[/] [{T.ACCENT}]D{pet.data_power}[/] "
+        f"Power   [{T.LIFE}]V{pet.vaccine}[/] [{T.POS}]D{pet.data_power}[/] "
         f"[{T.NEG}]Vi{pet.virus}[/]",
         adventure_line(pet),
         # the @ line is WHERE THE MON STANDS (liveness law, Joel 2026-07-21

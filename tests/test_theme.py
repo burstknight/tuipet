@@ -244,3 +244,67 @@ def test_every_theme_carries_the_renamed_schema():
                     "heart", "energy", "life", "coin"):
             assert key in t, (name, key)
         assert "mood" not in t and "sil_day" not in t, name
+
+
+# ---- the theme audit (2026-07-28, Joel: "i seen a few inconsistencies") ----
+
+def _lum(h):
+    r, g, b = (int(h[i:i + 2], 16) / 255 for i in (1, 3, 5))
+    f = lambda c: c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4  # noqa: E731
+    return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b)
+
+
+def _ratio(a, b):
+    la, lb = _lum(a), _lum(b)
+    return (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
+
+
+def test_every_readout_clears_the_contrast_floor():
+    """The washed-out-readout class (coin fix 2026-07-22; energy/care/life
+    on grey joined it 2026-07-28 at 2.0-2.4:1 on the light box).  Every
+    STATUS readout tint holds >= 2.5:1 against its own theme's ground --
+    `mid` is exempt, dim is its job."""
+    from tuipet import theme
+    for name, t in theme.THEMES.items():
+        for role in ("on", "accent", "pos", "neg",
+                     "heart", "energy", "care", "life", "coin"):
+            r = _ratio(t[role], t["bg"])
+            assert r >= 2.5, f"{name}.{role} reads at {r:.2f}:1 on its box"
+
+
+def test_the_powers_trio_is_distinct_on_every_theme():
+    """The card's Power row deals V/D/Vi as LIFE/POS/NEG (theme audit
+    2026-07-28).  It shipped with D on ACCENT -- and accent IS the neg hex
+    on mono and amber, so Data and Virus rendered as literal twins.  The
+    three roles the row wears must stay pairwise distinct in every theme."""
+    from tuipet import statusbox, theme
+    from tuipet.pet import Pet
+    for name, t in theme.THEMES.items():
+        trio = (t["life"], t["pos"], t["neg"])
+        assert len(set(trio)) == 3, f"{name}: the V/D/Vi trio collapsed: {trio}"
+    p = Pet(num=100, stage="Champion", attribute="Vaccine")
+    p.world_seconds = 600.0
+    row = next(ln for ln in statusbox.home_lines(p) if ln.startswith("Power"))
+    assert theme.LIFE in row and theme.POS in row and theme.NEG in row
+    assert theme.ACCENT not in row or theme.ACCENT in (theme.LIFE, theme.POS, theme.NEG)
+
+
+def test_no_raw_colour_tags_in_the_source():
+    """[blue]Zzz was the LAST hard-coded colour tag in the app (statusbox,
+    theme audit 2026-07-28) -- terminal blue on every theme, beside badges
+    that all ride the palette.  No literal rich colour name may appear as
+    a markup tag anywhere in src/tuipet again."""
+    import glob
+    import os
+    import re
+    root = os.path.join(os.path.dirname(__file__), "..", "src", "tuipet")
+    colour = re.compile(
+        r"\[(?:b |bold )?(?:red|green|yellow|blue|magenta|cyan|white|black)\]")
+    hits = []
+    for p in glob.glob(os.path.join(root, "*.py")):
+        if p.endswith("theme.py"):
+            continue                      # KEY's cyan fallback is pinned design
+        for i, line in enumerate(open(p).read().splitlines(), 1):
+            if colour.search(line):
+                hits.append(f"{os.path.basename(p)}:{i}: {line.strip()[:80]}")
+    assert not hits, "raw colour tags: " + "; ".join(hits)

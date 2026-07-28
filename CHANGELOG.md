@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.304 — THEME AUDIT (2026-07-28)
+
+THEME AUDIT: three colour bugs swept. The status card's Zzz badge was raw terminal blue on every theme — it wears the energy tint now. The Power row's Data and Virus were the same colour on mono and amber (near-twins on grey) — the trio reads green/blue/red everywhere now. And grey's energy, care and life readouts were washed out on the light box — darkened to match their siblings.
+
 ## 0.5.303 — RAIDS COST WHAT FIGHTS COST (2026-07-28)
 
 RAIDS COST WHAT FIGHTS COST: a raid volley was the one fight in the game that spent nothing — now a thrown volley bills the body like every other bout (energy and a little weight), and nothing else: no records, no injury risk. Walking away before the bell still costs nothing. Three attempts a day is a real commitment now.
