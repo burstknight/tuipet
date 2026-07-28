@@ -435,7 +435,10 @@ def test_map_rows_tell_the_adventure_or_raid_story():
     # (adventure rebuild 2026-07-20 -- the map rows always meant region cleared)
     rules = data.load_egg_unlock()
     idx = next(i for i, r in rules.items() if r.get("map") == 1)
-    assert rules[idx]["desc"] == "Fell 2 raid bosses"          # the CSV desc stands
+    # ONE story (guide inconsistency 2026-07-28): the raid-era desc rewrite
+    # ("Fell 2 raid bosses") went stale when the adventure rebuild restored
+    # the map door -- desc now speaks the same dual sentence as the live goal
+    assert rules[idx]["desc"] == "clear adventure map 2 (or fell 2 raid bosses)"
     assert egg.unlock_progress(idx, _prog(raids=1)) == \
         "clear adventure map 2 (or fell 2 raid bosses)"
     assert egg.unlock_ratio(idx, _prog(raids=1)) == 0.5        # 1/2 raids, map uncleared

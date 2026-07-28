@@ -150,13 +150,14 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THEME AUDIT: three colour bugs swept. The status card's "
-                 "Zzz badge was raw terminal blue on every theme — it wears "
-                 "the energy tint now. The Power row's Data and Virus were "
-                 "the same colour on mono and amber (near-twins on grey) — "
-                 "the trio reads green/blue/red everywhere now. And grey's "
-                 "energy, care and life readouts were washed out on the "
-                 "light box — darkened to match their siblings.")
+    WHATS_NEW = ("MAP GATES TELL THE TRUTH: the egg guide's map rows said "
+                 "two different things about one gate — a stale raid-era "
+                 "line and the real dual door — and clipped both mid-word. "
+                 "One sentence now, wrapped whole in the guide and the "
+                 "card. The map-conquered parade also fires when a map "
+                 "actually completes (every zone), matching the shop shelf "
+                 "and the egg gates — it used to celebrate two zones "
+                 "early on map 1.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the

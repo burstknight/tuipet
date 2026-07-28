@@ -269,8 +269,8 @@ def unlock_progress(idx, prog):
         n = rule["map"]
         if n in (prog.get("maps", ()) or ()):
             return ""                         # region cleared -> unlocked
-        s = "" if n == 0 else "es"
-        return f"clear adventure map {n + 1} (or fell {n + 1} raid boss{s})"
+        from . import data_meta
+        return data_meta.map_goal(n)          # ONE story, shared with the desc
     if rule["gen"] is not None:
         return f"generation {min(prog['max_gen'], rule['gen'])}/{rule['gen']}"
     return rule.get("desc", "")

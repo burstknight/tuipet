@@ -149,7 +149,12 @@ class EggGuidePanel:
             first = False
         live = egg_mod.unlock_progress(idx, self.prog)
         if state == "locked" and live and live != desc:
-            rows.append(("Goal", live))
+            # wrapped like the Unlock story above -- the single-slice clip
+            # cut the dual map gate mid-word ("...(or fe", Joel 2026-07-28)
+            first = True
+            for ln in _wrap(live):
+                rows.append(("Goal" if first else "", ln))
+                first = False
         rows.append(("Keeps", "this generation only"
                      if rule is not None and not rule["can_perm"] else "forever"))
         return rows

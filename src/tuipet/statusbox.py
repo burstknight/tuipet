@@ -483,13 +483,16 @@ def eggguide(app):
              else "forever")
     hints = ("←→ next egg  ESC back" if m.detail
              else "ENTER story  ↑↓ browse")     # phase-true (round 34)
+    # the goal WRAPS to two card lines -- the one-slice clip froze the dual
+    # map gate mid-word ("clear adventure map 1 (or", Joel 2026-07-28)
+    goal = wrap(live, 2) if live and state == "locked" else [""]
     card(app, "Digitama", [
         f"[dim]{m.i + 1} of {m.n}[/]", "",
         f"Hatches  [b]{name[:16]}[/]",
         f"State    {state}",
-        f"Keeps    {keeps}", "",
-        (f"[b]{live[:26]}[/]" if live and state == "locked" else ""),
-        f"[dim]{hints}[/]"])
+        f"Keeps    {keeps}", ""]
+        + [f"[b]{g}[/]" if g else "" for g in goal]
+        + [f"[dim]{hints}[/]"])
 
 
 def digicore(app):

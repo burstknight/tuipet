@@ -569,7 +569,9 @@ class AdventurePanel(menu.SubHost):
                 unlocked = adventure.record_win(self.pet, self.adv.zone)   # progression
                 from . import persistence              # profile signals: unlocks
                 m = self.adv.zone.get("map")
-                if m is not None and adventure.is_map_cleared(self.pet, m):
+                map_done = (m is not None
+                            and adventure.is_map_cleared(self.pet, m))
+                if map_done:
                     persistence.map_complete_add(m - 1)  # shop shelf + eggs (0-based)
                 if self.adv.holiday:                   # conquered on a festival day
                     persistence.festival_add(self.adv.holiday)  # gates the festival egg
@@ -580,16 +582,27 @@ class AdventurePanel(menu.SubHost):
                 self._home_msg = (f"{self.adv.boss_name} felled — "
                                   f"{self.adv.name} conquered!{self._bits_tail()}{tail}")
                 # the zoneChange CELEBRATION plays before the homecoming
-                # (restored from the old build): the pulse first; a
-                # parade_msg boss (each map's final gate) chains the
-                # BossParade of the map's own bosses -- canon shows three
+                # (restored from the old build): the pulse first; the map-
+                # conquered BossParade -- canon shows three.  ⚠ Keyed to the
+                # map ACTUALLY completing, the same test that files the
+                # unlock note above (theme-of-truth fix 2026-07-28): the
+                # road is difficulty-ordered, and map 1's authored
+                # parade_msg boss sits at road 19 while a map-1 zone waits
+                # at 21 -- the old parade_msg key celebrated "map conquered"
+                # two zones before the shop shelf and the egg gate agreed.
                 paraders = []
-                if (enemy or {}).get("parade_msg"):
-                    m = self.adv.zone.get("map")
+                parade_msg = None
+                if map_done:
                     paraders = [b["num"] for z in ZONES if z.get("map") == m
                                 for b in z["bosses"]][:3]
+                    # the victory line rides the map's AUTHORED parade boss,
+                    # whichever zone actually finished the map
+                    parade_msg = next((b.get("parade_msg")
+                                       for z in ZONES if z.get("map") == m
+                                       for b in (z.get("bosses") or [])
+                                       if b.get("parade_msg")), None)
                 self._pulse = {"t": 0, "parade": paraders,
-                               "msg": (enemy or {}).get("parade_msg"),
+                               "msg": parade_msg,
                                # the flash must SAY what it celebrates
                                # (Joel 2026-07-25 "flashing for what?") --
                                # and FIT while saying it: the old line named

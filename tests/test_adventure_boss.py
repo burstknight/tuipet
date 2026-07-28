@@ -158,15 +158,27 @@ def test_the_zone_pulse_flashes_the_world_and_locks_input(monkeypatch):
 
 
 def test_the_map_final_boss_chains_the_boss_parade(monkeypatch):
-    """A parade_msg boss (each map's final gate) chains the BossParade after
-    the pulse: the map's own bosses march across right-to-left, ONE at a time
-    (the one-mon rule serialises canon's three-abreast), under the victory
-    line -- then the results card."""
+    """COMPLETING A MAP chains the BossParade after the pulse: the map's own
+    bosses march across right-to-left, ONE at a time (the one-mon rule
+    serialises canon's three-abreast), under the victory line -- then the
+    results card.  ⚠ Keyed to is_map_cleared since 2026-07-28 (Joel "i beat
+    map one"): the road is difficulty-ordered, and map 1's authored
+    parade_msg boss sits two road stops before its LAST zone -- the old
+    parade_msg key celebrated "map conquered" while the shop shelf and the
+    egg gate still said no.  The parade now fires on whichever zone
+    actually finishes the map, with the authored victory line."""
     from tuipet.adventurescreen import PULSE_T, PARADE_T
     from tuipet import menu
-    z = next(z for z in ZONES
+    pet = _champ()
+    m = next(z["map"] for z in ZONES
              if z["bosses"] and z["bosses"][0].get("parade_msg"))
+    idxs = [zi for zi, z in enumerate(ZONES) if z["map"] == m]
+    last = max(idxs, key=lambda zi: adventure._ORDER_POS[zi])   # the map's road tail
+    pet.adv_progress = adventure._ORDER_POS[last]  # frontier = the finisher: THIS win flips the map
+    z = ZONES[last]
     pan = _panel_at_boss(monkeypatch, zone=z)
+    pan.pet = pet
+    pan.adv.pet = pet
     pan.sub = None
     pan._battle_done(_Win())
     assert pan._pulse is not None and pan._pulse["parade"]

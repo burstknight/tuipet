@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.305 — MAP GATES TELL THE TRUTH (2026-07-28)
+
+MAP GATES TELL THE TRUTH: the egg guide's map rows said two different things about one gate — a stale raid-era line and the real dual door — and clipped both mid-word. One sentence now, wrapped whole in the guide and the card. The map-conquered parade also fires when a map actually completes (every zone), matching the shop shelf and the egg gates — it used to celebrate two zones early on map 1.
+
 ## 0.5.304 — THEME AUDIT (2026-07-28)
 
 THEME AUDIT: three colour bugs swept. The status card's Zzz badge was raw terminal blue on every theme — it wears the energy tint now. The Power row's Data and Virus were the same colour on mono and amber (near-twins on grey) — the trio reads green/blue/red everywhere now. And grey's energy, care and life readouts were washed out on the light box — darkened to match their siblings.

@@ -197,3 +197,48 @@ def test_the_card_reveals_and_speaks_the_phase():
         assert any("next egg" in r for r in seen["rows"])
     finally:
         statusbox.card = real
+
+
+def test_a_map_egg_tells_one_wrapped_story_everywhere():
+    """Joel 2026-07-28 (pasted screen): the detail pane said "Unlock  Fell 1
+    raid boss" -- the raid-era desc, stale since the adventure rebuild
+    restored the map door -- while its Goal row spoke the true dual gate,
+    CLIPPED mid-word ("...(or fe"); the card clipped the same line at 26.
+    One shared sentence now (data_meta.map_goal), wrapped on word
+    boundaries in both panels, never sliced."""
+    from tuipet import data, data_meta, statusbox
+    from tuipet.eggguidescreen import EggGuidePanel
+    from tuipet.pet import Pet
+
+    rules = data.load_egg_unlock()
+    idx = next(i for i, r in rules.items() if r.get("map") == 0)
+    # the desc IS the live goal -- one story, both doors named
+    assert rules[idx]["desc"] == data_meta.map_goal(0)
+    assert "clear adventure map 1" in rules[idx]["desc"]
+    assert "raid boss" in rules[idx]["desc"]
+
+    p = Pet(num=100, stage="Champion", attribute="Vaccine")
+    p.world_seconds = 600.0
+    pan = EggGuidePanel(p)
+    pan.i, pan.detail = idx, True
+    plain = pan.text().plain
+    assert "Fell 1 raid" not in plain            # the stale desc is gone
+    assert "Goal" not in plain                   # no duplicate second story
+    for ln in plain.splitlines():
+        assert not ln.rstrip().endswith("(or fe"), "the clip is back"
+        assert len(ln.rstrip()) <= 38
+    # the card: goal wrapped whole, tail intact
+    class _App:
+        pass
+    app = _App()
+    app.pet, app.mode = p, pan
+    got = []
+    real_card = statusbox.card
+    statusbox.card = lambda a, t, ls, subtitle=None: got.extend(ls)
+    try:
+        statusbox.eggguide(app)
+    finally:
+        statusbox.card = real_card
+    joined = " ".join(got)
+    assert "raid boss)" in joined, "the card lost the goal's tail"
+    assert all(len(ln) <= 60 for ln in got)      # markup-inclusive sanity

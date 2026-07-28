@@ -129,12 +129,22 @@ def load_egg_unlock():
             "festivals_n": _int(r[28]) if (len(r) > 28 and _int(r[28]) is not None and _int(r[28]) >= 0) else None,
         }
         if rules[idx]["map"] is not None:
-            # the raid re-gate (BASIC VPET 2026-07-16): adventure left with
-            # the world layer, so the CSV's map-clear stories become felled-
-            # raid milestones (a map-N row opens after N+1 broken bosses)
-            rules[idx]["desc"] = f"Fell {rules[idx]['map'] + 1} raid " \
-                + ("boss" if rules[idx]["map"] == 0 else "bosses")
+            # ONE story for a map row (guide inconsistency, Joel 2026-07-28:
+            # the detail pane's Unlock said "Fell 1 raid boss" -- the
+            # raid-era rewrite, stale since the adventure rebuild restored
+            # the map door -- while its Goal row spoke the true dual gate
+            # two lines below).  Both doors count (egg.py's gate); both
+            # rows now read the same shared sentence.
+            rules[idx]["desc"] = map_goal(rules[idx]["map"])
     return rules
+
+
+def map_goal(n):
+    """The map-row gate's one sentence -- the SINGLE source for every
+    surface that tells it (the guide's Unlock desc here, the live Goal
+    line in egg.unlock_progress)."""
+    s = "" if n == 0 else "es"
+    return f"clear adventure map {n + 1} (or fell {n + 1} raid boss{s})"
 
 @lru_cache(maxsize=1)
 def load_titles():
