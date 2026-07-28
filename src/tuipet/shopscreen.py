@@ -413,7 +413,9 @@ class ShopPanel:
             msg, self.sfx = shop.sell(self.pet, e)
             self._flash(msg)
             self._check_retarget(e)
-        elif k in ("escape", "o", "i"):
+        elif k in ("escape", "s", "b"):
+            # the opening keys close (bar tidy 2026-07-18); s/b since the
+            # mnemonic remap 2026-07-28 (was o shop / i bag)
             # carry a still-live verdict home (round 31: keying on self.sfx
             # was dead -- the app consumes sfx every frame, so buy-then-
             # leave never showed its verdict)

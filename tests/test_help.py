@@ -287,3 +287,28 @@ def test_help_teaches_the_energy_dial_and_the_alarm_legend():
     text = " ".join(t for t, _k in HELP)
     assert "Energy fuels" in text and "sleep refills" in text
     assert "one beep" in text and "three urgent" in text
+
+
+def test_the_keys_spell_themselves():
+    """The mnemonic remap (player report 2026-07-28, 'assign the correct
+    letters'): the two most-opened doors wear their own letters -- S shop,
+    B bag; lights is the on/off toggle on O, the bug reporter an Issue on
+    I.  All four surfaces (BINDINGS, bar, help, README) move together --
+    the lockstep tests above cover bar/help; this pins the letters."""
+    keys = {b[0]: b[1] for b in TuiPetApp.BINDINGS}
+    assert keys["s"] == "shop"
+    assert keys["b"] == "inventory"
+    assert keys["o"] == "sleep"          # the Lights toggle
+    assert keys["i"] == "bug"
+    readme = README.read_text(encoding="utf-8")
+    assert "| **s** | shop |" in readme
+    assert "| **v** | AI assistant | **b** | bag |" in readme
+    assert "| **o** | lights" in readme
+    assert "**i** | bug report |" in readme
+    # the shop/bag panel's opening-key-closes idiom follows the remap
+    # (hotkey audit 2026-07-28: the ONE finding -- it still closed on o/i)
+    import inspect
+    from tuipet import shopscreen
+    src = inspect.getsource(shopscreen.ShopPanel.key)
+    assert '"escape", "s", "b"' in src
+    assert '"escape", "o", "i"' not in src

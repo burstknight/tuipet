@@ -521,7 +521,8 @@ def test_jogress_is_lobby_only_and_battle_rides_m():
     BATTLE action is back as `m` -- tier-matched, real record, no purse
     (test_home_battle owns its pins).  What still holds from the 2026-07-07
     ruling: jogress is ONLINE-ONLY (fusion needs a real roster partner),
-    and `b` is the bug reporter, never battle."""
+    and `b` never means battle (it was the bug reporter until the mnemonic
+    remap 2026-07-28 gave it to the bag; the bug moved to i)."""
     from tuipet.app import TuiPetApp
     keys = {b[0] for b in TuiPetApp.BINDINGS}
     amap = {b[0]: b[1] for b in TuiPetApp.BINDINGS}
@@ -529,7 +530,8 @@ def test_jogress_is_lobby_only_and_battle_rides_m():
     assert amap.get("m") == "battle"
     assert not hasattr(TuiPetApp, "action_jogress")
     assert "j" not in keys
-    assert amap.get("b") == "bug"                                # never battle
+    assert amap.get("b") != "battle"                             # the ruling
+    assert amap.get("b") == "inventory" and amap.get("i") == "bug"  # remap
     assert "l" in keys and "r" in keys and "u" in keys      # lobby, raid, cup
 
 

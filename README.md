@@ -114,11 +114,11 @@ explore, then grow, then manage:
 | **f** | feed | **x** | DNA |
 | **h** | heal an injury | **d** | DigiCore |
 | **c** | clean | **n** | digitama guide |
-| **s** | lights | **o** | shop |
-| **v** | AI assistant | **i** | bag |
+| **o** | lights | **s** | shop |
+| **v** | AI assistant | **b** | bag |
 | **m** | battle | **e** | scenes |
 | **a** | adventure | **g** | options |
-| **r** | raid | **b** | bug report |
+| **r** | raid | **i** | bug report |
 | **u** | tournament cup | **?** | help |
 | **l** | online lobby | **q** | quit |
 | **t** | train | **ENTER** | accept a found gift |
@@ -211,7 +211,7 @@ your pet grows up with (until you repaint it).
 
 ## Shop, bag & economy
 
-**o** opens the classic four-tab storefront — **[Food] Items Eggs Honors**
+**s** opens the classic four-tab storefront — **[Food] Items Eggs Honors**
 — stocked with the TUIPET catalog: real foods that get **eaten on the LCD**
 through their own device art (fish, steak, a feast, one mushroom you should
 NOT feed), care goods and growth tools, and **toys that actually play** —
@@ -219,7 +219,7 @@ the ball bounces, the skateboard rides, the TV glows — each nudging a real
 meter (exercise sheds weight, couch time buys energy). Every item wears its
 own device sprite, and the live dossier shows the effect, a word of
 character, what you already hold, and (for a crest egg) the armor form it
-would trigger right now. **i** is the bag: use with ENTER, sell back for
+would trigger right now. **b** is the bag: use with ENTER, sell back for
 half with R. Birthdays hand out treats you can actually eat. The Honors
 board sells cosmetic tamer titles for the truly rich.
 

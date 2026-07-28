@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.306 — KEYS THAT SPELL THEMSELVES (a player asked) (2026-07-28)
+
+KEYS THAT SPELL THEMSELVES (a player asked): S is the Shop and B is the Bag now — the two doors you open most wear their own letters. Lights moved to O (it's an on/off switch) and the bug reporter to I (an issue). Everything else is where you left it; the bar, help and Options→Keys all tell the new story.
+
 ## 0.5.305 — MAP GATES TELL THE TRUTH (2026-07-28)
 
 MAP GATES TELL THE TRUTH: the egg guide's map rows said two different things about one gate — a stale raid-era line and the real dual door — and clipped both mid-word. One sentence now, wrapped whole in the guide and the card. The map-conquered parade also fires when a map actually completes (every zone), matching the shop shelf and the egg gates — it used to celebrate two zones early on map 1.

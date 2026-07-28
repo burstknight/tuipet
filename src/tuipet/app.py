@@ -91,9 +91,9 @@ def keys_markup():
         # "(meat·pill)" left 2026-07-26 (Joel: "save rome by removing (meat
         # pill)") -- the old line sat at the 71-cell cap exactly, and its
         # room is what the H key rides in on
-        f"[{k}]f[/] feed  [{k}]h[/] heal  [{k}]c[/] clean  [{k}]s[/] lights  [{k}]v[/] assist  [{k}]p[/] discipline  [{k}]m[/] battle\n"
+        f"[{k}]f[/] feed  [{k}]h[/] heal  [{k}]c[/] clean  [{k}]o[/] lights  [{k}]v[/] assist  [{k}]p[/] discipline  [{k}]m[/] battle\n"
         f"[{k}]a[/] adventure  [{k}]r[/] raid  [{k}]u[/] cup  [{k}]l[/] lobby [dim](pvp)[/]  [{k}]t[/] train  [{k}]x[/] DNA  [{k}]d[/] digicore\n"
-        f"[{k}]n[/] eggs  [{k}]o[/] shop  [{k}]i[/] bag  [{k}]e[/] scenes  [{k}]g[/] options  [{k}]b[/] bug  [{k}]?[/] help  [{k}]q[/] quit"
+        f"[{k}]n[/] eggs  [{k}]s[/] shop  [{k}]b[/] bag  [{k}]e[/] scenes  [{k}]g[/] options  [{k}]i[/] bug  [{k}]?[/] help  [{k}]q[/] quit"
     )
 
 
@@ -150,14 +150,12 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("MAP GATES TELL THE TRUTH: the egg guide's map rows said "
-                 "two different things about one gate — a stale raid-era "
-                 "line and the real dual door — and clipped both mid-word. "
-                 "One sentence now, wrapped whole in the guide and the "
-                 "card. The map-conquered parade also fires when a map "
-                 "actually completes (every zone), matching the shop shelf "
-                 "and the egg gates — it used to celebrate two zones "
-                 "early on map 1.")
+    WHATS_NEW = ("KEYS THAT SPELL THEMSELVES (a player asked): S is the "
+                 "Shop and B is the Bag now — the two doors you open most "
+                 "wear their own letters. Lights moved to O (it's an "
+                 "on/off switch) and the bug reporter to I (an issue). "
+                 "Everything else is where you left it; the bar, help and "
+                 "Options→Keys all tell the new story.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the
@@ -169,8 +167,11 @@ class TuiPetApp(ActionsMixin, App):
         # Order = the ACTIONS bar / Help-screen reading order (CARE,
         # EXPLORE, GROW, MANAGE) so the Options→Keys page tells the same
         # story (bar tidy 2026-07-18).
+        # Mnemonic remap (player report 2026-07-28: "assign the correct
+        # letters"): s=shop, b=bag (the frequent doors get their letters);
+        # lights rides o (an on/off toggle), bug rides i (an issue).
         ("f", "feed", "Feed"), ("h", "heal", "Heal"), ("c", "clean", "Clean"),
-        ("s", "sleep", "Lights"), ("v", "assist", "Assistant"),
+        ("o", "sleep", "Lights"), ("v", "assist", "Assistant"),
         ("p", "discipline", "Discipline"),
         ("m", "battle", "Battle"),
         ("a", "adventure", "Adventure"),
@@ -178,9 +179,9 @@ class TuiPetApp(ActionsMixin, App):
         ("l", "lobby", "Lobby"),
         ("t", "train", "Train"), ("x", "dna", "DNA"),
         ("d", "digicore", "DigiCore"), ("n", "eggguide", "Egg Guide"),
-        ("o", "shop", "Shop"), ("i", "inventory", "Bag"),
+        ("s", "shop", "Shop"), ("b", "inventory", "Bag"),
         ("e", "scenes", "Scenes"), ("g", "options", "Options"),
-        ("b", "bug", "Bug"), ("question_mark", "help", "Help"), ("q", "quit", "Quit"),
+        ("i", "bug", "Bug"), ("question_mark", "help", "Help"), ("q", "quit", "Quit"),
         # space rides along as a silent confirm alias (QOL 2026-07-23):
         # every in-panel confirm takes ENTER or SPACE, the home view took
         # only ENTER.  action_gift no-ops when no gift is pending.
@@ -1406,7 +1407,7 @@ class TuiPetApp(ActionsMixin, App):
         """HUD announcement for the pet's most urgent unmet care need (or '')."""
         name = p.name or "Your pet"
         if p.asleep and p.lights:               # lightsCall: the one asleep call
-            msg = f"{name} is trying to sleep — lights off! ([b]S[/])"
+            msg = f"{name} is trying to sleep — lights off! ([b]O[/])"
         # every call names its key (gameplay polish #19, 2026-07-22): lights
         # always said (S) while hungry/sick/cleaning -- the three commonest
         # calls -- left a new player hunting the 19-key bar mid-alarm
@@ -1427,7 +1428,7 @@ class TuiPetApp(ActionsMixin, App):
         # sleeping after exhaustion") -- this is the one call whose cure
         # IS the state the pet is already in; the doze is the rest
         elif p.energy <= 0 and not p.asleep:
-            msg = f"{name} is exhausted! ([b]S[/] — rest)"
+            msg = f"{name} is exhausted! ([b]O[/] — rest)"
         elif p.discipline_call:
             msg = f"{name} is acting up! ([b]P[/] — scold it)"
         elif p.is_frail():
