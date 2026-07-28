@@ -145,10 +145,11 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("YOU SEE WHAT YOU WON: cracking a capsule or a chocolate "
-                 "egg now shows the prize itself — the pet cheers with it "
-                 "sitting right there beside it, not just a line of text. "
-                 "Every surprise in the game opens with its sprite in hand.")
+    WHATS_NEW = ("TWO FIXES: the road's march hint no longer flashes a bare "
+                 "'SPACE ESC' — every beat names its key (SPACE walk, T warp, "
+                 "ESC home). And the capsule prize no longer clips at the "
+                 "window's edge: the prize sits whole against the wall and "
+                 "your pet steps aside to show it off.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the

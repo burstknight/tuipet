@@ -177,3 +177,33 @@ def test_lobby_strip_is_fully_contextual():
     assert "saved" in _ok(pan.strip(), "lobby:dm")
     pan.phase = "login"
     assert "TAB" in _ok(pan.strip(), "lobby:login")
+
+
+def test_the_march_hint_is_never_a_bare_keyset():
+    """Bug reports v0.5.264 ("what is space t?") and 2026-07-28 ("still
+    seeing space esc"): an UNLABELLED key pair on the road strip is a
+    mystery, whichever keys it names.  The old anchor-and-rotate showed
+    the bare set half of all beats; every beat names its key now."""
+    import os, re, tempfile
+    os.environ.setdefault("TUIPET_SAVE_DIR", tempfile.mkdtemp())
+    from tuipet import adventurescreen as advs
+    from tuipet.pet import Pet
+    p = Pet(num=100, stage="Rookie", attribute="Vaccine")
+    p.name, p.line_id = "T", ""
+    p.bits, p.sleep_limit = 500, 9e9
+    p._set_energy(30)
+    pan = advs.AdventurePanel(p)
+    plain = lambda s: re.sub(r"\[/?[^\]]*\]", "", s or "")
+    marched = 0
+    for _ in range(1200):
+        pan.anim()
+        if not pan.travelling and pan._scene is None and pan._hazard is None:
+            pan.key("space")
+        s = plain(pan.strip())
+        if "⚑" not in s:
+            continue                       # only the marching ribbon line
+        marched += 1
+        hint = s.rsplit("·", 1)[-1].strip()
+        assert re.fullmatch(r"(SPACE walk|T warp|ESC home)", hint), \
+            f"unlabelled march hint: {hint!r}"
+    assert marched > 10, "the walk never reached the marching strip"

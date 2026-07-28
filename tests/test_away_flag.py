@@ -79,11 +79,11 @@ def test_the_assistant_pauses_on_the_road(monkeypatch):
 
 
 def test_the_road_key_hint_cycles_anchor_then_labels(monkeypatch):
-    """Hint cycle 2026-07-24 (Joel "anchor + rotate labels, ~2s"): the packed
-    40-col road line can't fit "SPACE walk . T warp . ESC home" at once, so the
-    hint holds the bare key SET (anchor), then rotates one labelled key in
-    between, on a ~2s (HINT_BEAT) beat.  T (warp) only joins when a transport is
-    held.  Every step stays within the strip box."""
+    """Hint cycle, revised 2026-07-28 ("still seeing space esc"): the bare
+    anchor beat is GONE -- an unlabelled keyset is a mystery whichever keys
+    it names.  Every ~2s (HINT_BEAT) beat names exactly one key; the set
+    cycles so every out reaches the player.  T (warp) only joins when a
+    transport is held.  Every step stays within the strip box."""
     import re
     from tuipet.adventurescreen import HINT_BEAT
     pan = _land(monkeypatch)
@@ -97,7 +97,7 @@ def test_the_road_key_hint_cycles_anchor_then_labels(monkeypatch):
         assert line.count("[") == line.count("]")      # markup balanced
         assert len(re.sub(r"\[/?[^\[\]]*\]", "", line)) <= 40
         seen.add(re.sub(r"\[/?[^\[\]]*\]", "", line).split("· ", 1)[-1].strip())
-    assert "SPACE T ESC" in seen                        # the anchor (full set)
+    assert "SPACE T ESC" not in seen                    # the bare anchor is dead
     assert "SPACE walk" in seen and "T warp" in seen and "ESC home" in seen
     # no transport held -> T drops from BOTH the anchor and the rotation
     p.inventory = {}
@@ -105,4 +105,4 @@ def test_the_road_key_hint_cycles_anchor_then_labels(monkeypatch):
     for step in range(4):
         pan.frame_i = step * HINT_BEAT
         hints.add(re.sub(r"\[/?[^\[\]]*\]", "", pan.strip()).split("· ", 1)[-1].strip())
-    assert "SPACE ESC" in hints and "T warp" not in hints
+    assert hints == {"SPACE walk", "ESC home"}   # T gone WITH its label

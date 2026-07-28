@@ -175,10 +175,13 @@ def test_the_road_strip_fits_the_box_in_cells_every_beat(no_encounters):
     pan.travelling = True
     pan.adv.streak = 12                           # a fat chain: ' ×12'
     pan.adv.held_transports = lambda: ["autopilot"]   # T joins the anchor
+    labels = set()
     for f in range(0, HINT_BEAT * 12):
         pan.frame_i = f
         plain = Text.from_markup(pan.strip()).plain
         assert cell_len(plain) <= STRIP_W, f"frame {f}: {plain!r}"
-    # ...and the anchor beat still carries its whole key set
-    pan.frame_i = 0
-    assert "SPACE T ESC" in Text.from_markup(pan.strip()).plain
+        labels.add(plain.rsplit("·", 1)[-1].strip())
+    # (the bare "SPACE T ESC" anchor beat retired 2026-07-28 -- "still
+    # seeing space esc": an unlabelled keyset IS the space-t mystery.
+    # Every beat names one key; the full set still cycles through.)
+    assert labels == {"SPACE walk", "T warp", "ESC home"}, labels

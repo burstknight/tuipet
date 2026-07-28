@@ -764,8 +764,16 @@ class FxMixin:
                     from .render import downsample
                     ic = downsample(ic, -(-dim // 8))
                 ih = len(ic)
-                c.overlay += _blit(ic, PET_BASE_X - len(ic[0]) - 2,
-                                   c.px_h - 2 - ih)
+                # INSIDE the window (bug report 2026-07-28, "prize sprite
+                # is getting cut off on the left"): PET_BASE_X - w - 2
+                # lands at col 2, but the LCD window starts at grid.X0=4
+                # and _stamp clips -- the preview that "verified" this drew
+                # raw points and skipped the clip.  The prize sits ON the
+                # wall and the PET steps right to make the room (the eat
+                # fx's filth-clear idiom), so the sprite stays whole.
+                iw = len(ic[0])
+                c.xshift = max(c.xshift, grid.X0 + iw + 2 - PET_BASE_X)
+                c.overlay += _blit(ic, grid.X0, c.px_h - 2 - ih)
         if up:
             hap = data.load_effects().get("happy")
             if hap:

@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.300 — TWO FIXES (2026-07-27)
+
+TWO FIXES: the road's march hint no longer flashes a bare 'SPACE ESC' — every beat names its key (SPACE walk, T warp, ESC home). And the capsule prize no longer clips at the window's edge: the prize sits whole against the wall and your pet steps aside to show it off.
+
 ## 0.5.299 — YOU SEE WHAT YOU WON (2026-07-27)
 
 YOU SEE WHAT YOU WON: cracking a capsule or a chocolate egg now shows the prize itself — the pet cheers with it sitting right there beside it, not just a line of text. Every surprise in the game opens with its sprite in hand.

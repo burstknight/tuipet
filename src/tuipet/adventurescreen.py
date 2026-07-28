@@ -865,16 +865,18 @@ class AdventurePanel(menu.SubHost):
             # without ever needing "SPACE walk · T warp · ESC home" on the
             # one packed 40-col line.  T (warp) only joins when a transport
             # is held.
+            # EVERY beat is LABELLED (bug report 2026-07-28, "still seeing
+            # space esc": the old anchor-and-rotate showed the bare keyset
+            # "SPACE ESC" half the time -- an unlabelled key pair IS the
+            # "space t" mystery this strip was rebuilt to end.  One key,
+            # named, per beat; the set still cycles so every out reaches
+            # the player, and the shorter line gives the ribbon more road).
             held = self.adv.held_transports()
-            anchor = "SPACE" + (" T" if held else "") + " ESC"
             steps = ([("SPACE", "walk")]
                      + ([("T", "warp")] if held else [])
                      + [("ESC", "home")])
-            cyc = []
-            for k, lbl in steps:
-                cyc.append(f"[dim]· {anchor}[/]")               # the full set
-                cyc.append(f"[dim]· [/][b]{k}[/][dim] {lbl}[/]")  # one, labelled
-            hint = cyc[(self.frame_i // HINT_BEAT) % len(cyc)]
+            k, lbl = steps[(self.frame_i // HINT_BEAT) % len(steps)]
+            hint = f"[dim]· [/][b]{k}[/][dim] {lbl}[/]"
             chain = f" [b]×{self.adv.streak}[/]" if self.adv.streak >= 2 else ""
             # the packed line must fit the box in CELLS or the anchor beat is
             # mutilated (bug report #32, v0.5.264 "what is space t?": '⚡' is

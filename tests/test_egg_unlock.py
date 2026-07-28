@@ -137,7 +137,7 @@ def test_condition_met_unlocks_without_any_purchase():
 # ---- egg mood (Evolution.egg) -------------------------------------------------
 
 def test_new_egg_starts_warm():
-    from tuipet.pet import Pet, EGG_MOOD
+    from tuipet.pet import Pet
     p = Pet.new_egg(generation=1, egg_type=0)
 
 

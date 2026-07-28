@@ -381,9 +381,14 @@ def test_the_surprise_cheer_holds_the_prize_sprite():
     c.overlay = []; c.free = []; c.xshift = 0; c.yshift = 0; c.mirror = False
     arenafx.FxMixin._fxk_cheer(w, p, {"kind": "cheer", "step": 0,
                                       "icon": "i:2", "good": True}, 0, c)
-    prize = [(x, y) for x, y in c.overlay if x < PET_BASE_X]
+    from tuipet import grid
+    pet_left = PET_BASE_X + c.xshift
+    prize = [(x, y) for x, y in c.overlay if x < pet_left]
     assert prize, "no prize pixels beside the pet"
-    assert all(x < PET_BASE_X - 1 for x, _y in prize), "prize touches the mon"
+    assert all(x < pet_left - 1 for x, _y in prize), "prize touches the mon"
+    assert all(x >= grid.X0 for x, _y in prize), \
+        "prize outside the window -- the clip would eat it (report 07-28)"
+    assert pet_left + 16 <= grid.X1, "the step-right pushed the pet out"
     assert max(y for _x, y in prize) <= c.px_h - 2, "prize sank through the floor"
     # ...and a cheer WITHOUT an icon is untouched (every other cheer in the game)
     c2 = _FxCtx(); c2.px_h = SCREEN_ROWS * 2
