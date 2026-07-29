@@ -43,7 +43,8 @@ class RaidPanel(menu.SubHost):
         self.frame_i = 0
         self.sfx = None
         self.msg = "Calling the raid gate…"
-        self._pool_seen = None        # (start, hp, end, name) of the last-seen boss
+        self._pool_seen = None        # (start, hp, end, name, num) of the last-seen boss
+        self._fell = None             # (num, name, hold-until frame): the defeat moment
         self._dealt = 0
         self._credited = 0            # the gate's acked board damage this session
         name, pw = persistence.get_account()
@@ -141,8 +142,24 @@ class RaidPanel(menu.SubHost):
                     and prev[1] > 0 and now <= prev[2]):
                 self.msg = f"{prev[3]} falls — the pool is broken!"
                 self.sfx = "win"
+                # THE DEFEAT MOMENT (Joel 2026-07-28: "wheres the defeat
+                # an8mations???? why did it just blink over to the next
+                # boss") -- the server archives on the felling blow, so the
+                # view swaps bosses in one frame.  Hold the FELLED boss on
+                # the arena in the Dying collapse pose (frame 10, the real
+                # DVPet death animation) for ~4s before the incoming boss
+                # takes the stage.
+                self._fell = (prev[4], prev[3], self.frame_i + 40)
             self._pool_seen = (b.get("start"), b.get("hp", 0),
-                               b.get("end", 0), b.get("name", "The boss"))
+                               b.get("end", 0), b.get("name", "The boss"),
+                               int(b.get("num", -1)))
+        if self._fell is not None and self.frame_i >= self._fell[2]:
+            self._fell = None
+            if (self.view or {}).get("award"):
+                # the hold ends on the answer to "what did i win???" -- the
+                # purse claim was a strip hint the fanfare talked over
+                self.msg = "Your share is ready — press C to claim!"
+                self.sfx = "confirm"
 
     def _apply_reward(self, reward):
         if not reward.get("ok"):
@@ -342,7 +359,8 @@ class RaidPanel(menu.SubHost):
             # screen -- the in-LCD footer was the family's one stray
             # (raid round 2026-07-19)
             return out
-        num = int(b.get("num", -1))
+        fell = self._fell            # the defeat hold: the FALLEN boss owns
+        num = int(fell[0]) if fell else int(b.get("num", -1))   # the stage
         # THE LCD IS PURE SCENE (raid uncramp 2026-07-23, Joel: "its still
         # a cramped up mess, it looks like hes in the sky").  The old page
         # stacked POOL bar + stats + cadence UNDER an 8-row scene -- every
@@ -355,6 +373,7 @@ class RaidPanel(menu.SubHost):
         # (_paint_cells indexes bgimg by absolute row -- an unsliced 24px
         # backdrop painted this reduced scene with its sky band).
         rows = data.bob_frame(num, self.frame_i,
+                              "exhausted" if fell else
                               "attack" if (self.frame_i // 9) % 4 == 3 else "idle")
         sc_rows = ROWS - 2
         boss = grid.prep(rows, ph=sc_rows * 2) if rows else None
@@ -365,10 +384,15 @@ class RaidPanel(menu.SubHost):
         scene = render_scene(placements, COLS, sc_rows, menu.scene_ink(bgimg),
                              LCD_BG, bgimg=bgimg)
         stage = data.record_for(num).get("stage", "Mega")
-        out = menu.bar(f"RAID · {b.get('name', '?')[:14]}", stage[:8])
+        name = fell[1] if fell else b.get("name", "?")
+        out = menu.bar(f"RAID · {name[:14]}", stage[:8])
         out.append_text(scene)
         out.append("\n")               # terminate the scene's last row
-        if not self._standing():
+        if fell:
+            # the fall line holds for the whole moment -- no alternation,
+            # no INCOMING countdown talking over the kill
+            note = f"{fell[1]} falls — the pool is broken!"
+        elif not self._standing():
             left = max(0, int(b.get("start", 0) - v.get("now", 0)))
             note = f"INCOMING BOSS — {left // 3600}h {left % 3600 // 60}m"
         else:

@@ -315,6 +315,34 @@ def test_the_pool_break_plays_the_win_fanfare():
     assert pan.sfx is None
 
 
+def test_the_kill_holds_a_defeat_moment_then_hands_off_to_the_claim():
+    """The felled boss owns the arena for the hold (Joel 2026-07-28:
+    "wheres the defeat an8mations???? why did it just blink over to the
+    next boss") -- the server archives on the felling blow, so without the
+    hold the incoming boss replaced the kill in one frame.  The hold ends
+    on the claim nudge: the purse ("what did i win???") pays on C."""
+    pan = _panel()
+    pan.client.raid = _view(_mega(), hp=700, start=0.0, now=100.0)
+    pan.anim()                                              # record the standing boss
+    v2 = _view(_mega(), hp=1000, start=5000.0, now=200.0,
+               award={"id": "r1", "boss": "BossMon", "bits": 9000,
+                      "items": 1, "defeated": True, "rank": 1})
+    v2["boss"]["name"] = "NextMon"
+    pan.client.raid = v2
+    pan.anim()                                              # the kill edge
+    assert pan._fell is not None
+    plain = pan.text().plain
+    # the FALLEN boss holds the stage and the fall line holds the note --
+    # the incoming boss waits its turn
+    assert "BossMon" in plain and "NextMon" not in plain
+    assert "falls — the pool is broken!" in plain
+    for _ in range(41):                                     # ~4s at the anim beat
+        pan.anim()
+    assert pan._fell is None
+    assert "press C to claim" in pan.msg and pan.sfx == "confirm"
+    assert "NextMon" in pan.text().plain                    # the stage hands over
+
+
 def test_an_escape_rotation_stays_quiet():
     pan = _panel()
     pan.client.raid = _view(_mega(), hp=700, start=0.0, now=100.0)
@@ -474,6 +502,7 @@ def test_the_panel_reports_honestly_and_stays_live():
     pan.msg = ""
     pan._dealt = 0
     pan._credited = 0
+    pan._fell = None
     pan.client = client
     pan._asked = True
 

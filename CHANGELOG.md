@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.308 — THE RAID BOSS DIES ON SCREEN (2026-07-28)
+
+THE RAID BOSS DIES ON SCREEN: a broken pool now holds the felled boss on the arena in its collapse pose with the victory fanfare before the next boss takes the stage — no more blinking straight to the newcomer. And the moment ends on the answer to 'what did I win?': press C to claim your share of the purse (it waits on the board until you do).
+
 ## 0.5.307 — KEYS THAT SPELL THEMSELVES, round two (2026-07-28)
 
 KEYS THAT SPELL THEMSELVES, round two: E is the Eggs guide now and N the scene picker — joining yesterday's S shop, B bag, O lights and I bug. Every door you open often wears its own letter; the bar, help and Options→Keys all tell the same story. (At the grave, N still starts the next egg — that promise is older than the remap.)

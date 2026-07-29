@@ -150,13 +150,13 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("KEYS THAT SPELL THEMSELVES, round two: E is the Eggs "
-                 "guide now and N the scene picker — joining yesterday's "
-                 "S shop, B bag, O lights and I bug. Every door you open "
-                 "often wears its own letter; the bar, help and "
-                 "Options→Keys all tell the same story. (At the grave, "
-                 "N still starts the next egg — that promise is older "
-                 "than the remap.)")
+    WHATS_NEW = ("THE RAID BOSS DIES ON SCREEN: a broken pool now holds "
+                 "the felled boss on the arena in its collapse pose with "
+                 "the victory fanfare before the next boss takes the "
+                 "stage — no more blinking straight to the newcomer. And "
+                 "the moment ends on the answer to 'what did I win?': "
+                 "press C to claim your share of the purse (it waits on "
+                 "the board until you do).")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the
