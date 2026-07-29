@@ -38,7 +38,13 @@ THEMES = {
     },
     "amber": {
         "on": "#ffb000", "bg": "#1a1206", "mid": "#9a6b18",
-        "accent": "#ff6a3a", "pos": "#8fd0ff", "neg": "#ff6a3a", "border": "#3a2a0c",
+        # pos was #8fd0ff -- a sky blue on the amber phosphor (Joel
+        # 2026-07-28: "conquered was blue in an amber theme").  Amber is the
+        # one theme whose whole world is a single phosphor: positive =
+        # BRIGHTEST amber (the flash tuple's own celebration hex), warm neg
+        # stays the warning pop.  The other themes keep the blue-pos
+        # convention (the powers row's green/blue/red) on purpose.
+        "accent": "#ff6a3a", "pos": "#ffe8b0", "neg": "#ff6a3a", "border": "#3a2a0c",
         "sil_scene": "#2a1c06", "sil_lightsoff": "#ffd877",
         "heart": "#ff7a3a", "energy": "#ffb000", "care": "#e0923a", "life": "#ffc24a", "coin": "#ffd877",
         "void": "#000000", "flash": ("#ffe8b0", "#1a1206", "#ffd890"),

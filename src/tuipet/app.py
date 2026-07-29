@@ -150,13 +150,13 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("EVERY TRIUMPH GETS ITS MOMENT: a season podium finish "
-                 "now plays a full award ceremony in the lobby — your "
-                 "champion under the pulsing arena light with the payout "
-                 "pinned on screen. And earning a new digitama finally "
-                 "SAYS so: come home and the game announces it by name "
-                 "(E opens the guide). No more silent riches — if you "
-                 "won it, you'll see it.")
+    WHATS_NEW = ("AMBER RUNS ON ONE PHOSPHOR NOW: good news on the amber "
+                 "theme — 'Conquered!', gains, the new-best star — glows "
+                 "brightest amber instead of an off-world sky blue. A "
+                 "real amber CRT only ever spoke one color, and now the "
+                 "theme honors that; warnings keep their warm red pop. "
+                 "Every other theme keeps its blue-for-positive on "
+                 "purpose.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the

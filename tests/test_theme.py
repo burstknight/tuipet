@@ -308,3 +308,15 @@ def test_no_raw_colour_tags_in_the_source():
             if colour.search(line):
                 hits.append(f"{os.path.basename(p)}:{i}: {line.strip()[:80]}")
     assert not hits, "raw colour tags: " + "; ".join(hits)
+
+
+def test_amber_stays_a_single_phosphor_for_positives():
+    """pos was #8fd0ff -- a sky blue on the amber CRT (Joel 2026-07-28:
+    "conquored was blue in an amber theme").  Amber's positive must stay in
+    the phosphor family: warm-dominant, never blue-led -- bright IS the
+    amber word for good.  The other themes keep the blue-pos convention
+    (the powers row's green/blue/red) on purpose."""
+    from tuipet import theme
+    t = theme.THEMES["amber"]
+    r, g, b = (int(t["pos"][i:i + 2], 16) for i in (1, 3, 5))
+    assert r >= g >= b, t["pos"]

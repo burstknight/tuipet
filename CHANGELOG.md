@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.311 — AMBER RUNS ON ONE PHOSPHOR NOW (2026-07-28)
+
+AMBER RUNS ON ONE PHOSPHOR NOW: good news on the amber theme — 'Conquered!', gains, the new-best star — glows brightest amber instead of an off-world sky blue. A real amber CRT only ever spoke one color, and now the theme honors that; warnings keep their warm red pop. Every other theme keeps its blue-for-positive on purpose.
+
 ## 0.5.310 — EVERY TRIUMPH GETS ITS MOMENT (2026-07-28)
 
 EVERY TRIUMPH GETS ITS MOMENT: a season podium finish now plays a full award ceremony in the lobby — your champion under the pulsing arena light with the payout pinned on screen. And earning a new digitama finally SAYS so: come home and the game announces it by name (E opens the guide). No more silent riches — if you won it, you'll see it.
