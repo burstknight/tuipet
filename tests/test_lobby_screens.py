@@ -221,8 +221,10 @@ def test_prompt_lines_keep_their_hints_with_long_names():
         last = pan.text().plain.split("\n")[-1]
         assert len(last) <= LCD_COLS              # never overruns the box
         rolled += last
-    assert "[B]attle" in rolled and "[V] DM" in rolled \
-        and "[M] PM" in rolled and "[ESC]" in rolled   # hints roll past
+    # round 30's ruling (M advertised) survives the PM unification
+    # (2026-07-29 "call it all pm"): the merged [V/M] token names both keys
+    assert "[B]attle" in rolled and "[V/M] PM" in rolled \
+        and "[ESC]" in rolled                          # hints roll past
     pan.action_for = (3, long, False)             # the ghost variant
     rolled = ""
     for i in range(400):
@@ -230,8 +232,8 @@ def test_prompt_lines_keep_their_hints_with_long_names():
         last = pan.text().plain.split("\n")[-1]
         assert len(last) <= LCD_COLS
         rolled += last
-    assert "[P]ing" in rolled and "[V] DM" in rolled \
-        and "[M] PM" in rolled and "[ESC]" in rolled
+    assert "[P]ing" in rolled and "[V/M] PM" in rolled \
+        and "[ESC]" in rolled
     pan.action_for = None                         # the selection status line
     pan.sel = 1                                   # sorted: the long-name live row
     pan.status = lobbychat.HINTS_OPEN

@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.312 — IT'S ALL JUST PM NOW (2026-07-29)
+
+IT'S ALL JUST PM NOW: the lobby's private messages wore two names — 'DM' on one key, 'PM' on the other — for what was always one feature. The hints now read V/M PM: V opens the conversation, M fires a quick message, and both doors carry the same name. One less thing to wonder about while a stranger waits for your reply.
+
 ## 0.5.311 — AMBER RUNS ON ONE PHOSPHOR NOW (2026-07-28)
 
 AMBER RUNS ON ONE PHOSPHOR NOW: good news on the amber theme — 'Conquered!', gains, the new-best star — glows brightest amber instead of an off-world sky blue. A real amber CRT only ever spoke one color, and now the theme honors that; warnings keep their warm red pop. Every other theme keeps its blue-for-positive on purpose.

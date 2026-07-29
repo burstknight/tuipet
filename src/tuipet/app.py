@@ -150,13 +150,12 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("AMBER RUNS ON ONE PHOSPHOR NOW: good news on the amber "
-                 "theme — 'Conquered!', gains, the new-best star — glows "
-                 "brightest amber instead of an off-world sky blue. A "
-                 "real amber CRT only ever spoke one color, and now the "
-                 "theme honors that; warnings keep their warm red pop. "
-                 "Every other theme keeps its blue-for-positive on "
-                 "purpose.")
+    WHATS_NEW = ("IT'S ALL JUST PM NOW: the lobby's private messages wore "
+                 "two names — 'DM' on one key, 'PM' on the other — for "
+                 "what was always one feature. The hints now read V/M PM: "
+                 "V opens the conversation, M fires a quick message, and "
+                 "both doors carry the same name. One less thing to "
+                 "wonder about while a stranger waits for your reply.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the

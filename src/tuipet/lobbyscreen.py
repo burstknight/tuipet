@@ -849,11 +849,13 @@ class LobbyPanel(BoutMixin, ChatMixin):
                 # out, nothing else (round 30: the two surfaces disagreed)
                 return menu.hints(("X", "unblock"), ("ESC", "back"))
             if plive:
-                # exactly 40 plain cols -- M was a working key advertised
-                # NOWHERE (round 30)
-                return menu.hints(("B", "battle"), ("J", "jog"), ("V", "DM"),
-                                  ("M", "PM"), ("X", "block"))
-            return menu.hints(("P", "ping"), ("V", "DM"), ("M", "PM"),
+                # ONE feature, ONE name (Joel 2026-07-29: "call it all pm"):
+                # V reads the thread, M quick-sends -- both are PM doors, so
+                # they share the label.  The merged token keeps M advertised
+                # (round 30's ruling) and stays under the 40-col budget.
+                return menu.hints(("B", "battle"), ("J", "jog"),
+                                  ("V/M", "PM"), ("X", "block"))
+            return menu.hints(("P", "ping"), ("V/M", "PM"),
                               ("X", "block"))
         if self.pm_to is not None:
             return menu.hints(("ENTER", "send ✉"), ("ESC", "cancel"))

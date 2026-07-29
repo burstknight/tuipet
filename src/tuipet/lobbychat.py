@@ -294,9 +294,11 @@ class ChatMixin:
             if self.state and pname in self.state.blocked:
                 acts = "[X]unblock  [ESC]"
             elif plive:
-                acts = "[B]attle [J]og [V] DM [M] PM [X]block [ESC]"
+                # V thread / M quick-send: one PM feature, one name (the DM
+                # label retired 2026-07-29, "call it all pm")
+                acts = "[B]attle [J]og [V/M] PM [X]block [ESC]"
             else:
-                acts = "not in lobby — [P]ing [V] DM [M] PM [X]block [ESC]"
+                acts = "not in lobby — [P]ing [V/M] PM [X]block [ESC]"
             full = f"{who}:  {acts}"
             # whole line scrolls when it overflows (Joel 2026-07-09), else static
             t.append(marquee(full, w, mq) if len(full) > w else _fit(full, w), style=INK_B)
