@@ -38,6 +38,9 @@ SAVES_PATH = os.environ.get(
 BUGS_PATH = os.environ.get(
     "TUIPET_BUGS",
     os.path.join(os.path.dirname(os.path.abspath(__file__)), "bugs.jsonl"))
+HOLDERS_PATH = os.environ.get(
+    "TUIPET_HOLDERS",
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "holders.json"))
 MAX_BUG_TEXT = 2000
 MAX_BUGS_PER_CONN = 5           # a real player files one or two, not a firehose
 MAX_BUG_FILE = 5 * 1024 * 1024  # stop appending past 5MB -- the disk-fill backstop
@@ -103,6 +106,44 @@ def _make_account(name, pw):
 
 def _verify(pw, acc):
     return hmac.compare_digest(_hash(pw, bytes.fromhex(acc["salt"])), acc["hash"])
+
+
+# ---- the cartridge HOLDER ledger (name.lower() -> {device,label,ts}) --------
+# One pet, checked out to ONE device (2026-07-29, the GPD fork war): only the
+# holder device's pushes land; any synced device may pull.  The first device
+# to sync an unheld account claims it (migration); "take" moves it on the
+# player's explicit yes.  Legacy clients (no device id) can pull but never
+# push to a held account -- they predate the question.
+def _load_holders():
+    try:
+        return json.load(open(HOLDERS_PATH))
+    except (OSError, ValueError):
+        return {}
+
+
+HOLDERS = _load_holders()
+
+
+def _save_holders():
+    try:
+        tmp = HOLDERS_PATH + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(HOLDERS, f)
+        os.replace(tmp, HOLDERS_PATH)
+    except OSError:
+        LOG.warning("holders.json write failed")
+
+
+def _claim_holder(key, device, label):
+    HOLDERS[key] = {"device": device, "label": label or "another device",
+                    "ts": time.time()}
+    _save_holders()
+    LOG.info("holder: %s -> %s (%s)", key, device[:8], label)
+
+
+def _holder_view(key):
+    h = HOLDERS.get(key)
+    return {"device": h["device"], "label": h.get("label", "")} if h else None
 
 
 # ---- cloud saves (name.lower() -> full pet save dict incl. _saved_at) --------
@@ -330,7 +371,7 @@ CHAT_BACKLOG: deque = deque(maxlen=30)
 
 class Client:
     __slots__ = ("id", "ws", "name", "pet", "live", "lease", "logged", "boot",
-                 "bugs_sent", "room")
+                 "bugs_sent", "room", "device", "dlabel")
 
     def __init__(self, ws):
         self.id = next(_ids)
@@ -343,6 +384,8 @@ class Client:
         self.boot = 0.0
         self.bugs_sent = 0
         self.room = None       # None = the main lobby; else a room code (str)
+        self.device = ""       # install identity (cartridge holder routing)
+        self.dlabel = ""       # its human name for the take-question
 
 
 CLIENTS: dict[int, Client] = {}
@@ -1028,12 +1071,19 @@ async def handler(ws):
                 client.name = name
                 client.pet = _clamp_pet(m.get("pet"))
                 client.live = not sync_only
+                client.device = str(m.get("device") or "")[:64]
+                client.dlabel = str(m.get("dlabel") or "")[:24]
                 if sync_only:                     # the newest APP LAUNCH owns the saves
                     _take_lease(client, key, boot)
+                    if client.device and key not in HOLDERS:
+                        # migration: the first device that syncs an unheld
+                        # account becomes its holder (cartridge 2026-07-29)
+                        _claim_holder(key, client.device, client.dlabel)
                 logged_in = True
                 client.logged = True
                 await _send(client, {"t": "welcome", "id": client.id, "name": client.name,
-                                     "save": SAVES.get(key)})       # cloud save (or null) for cross-device load
+                                     "save": SAVES.get(key),        # cloud save (or null) for cross-device load
+                                     "holder": _holder_view(key)})  # who holds the cartridge
                 if not sync_only:
                     for f in CHAT_BACKLOG:        # rejoin the conversation, not a void
                         await _send(client, {**f, "replay": True})  # marked: clients skip lines already on the pane
@@ -1057,10 +1107,29 @@ async def handler(ws):
                 if client.live:
                     await _push_roster()
 
+            elif t == "take":
+                # the player's explicit YES to the take-question: this device
+                # becomes the cartridge's holder.  Legacy clients (no device
+                # id) cannot take -- they predate the question.
+                key = client.name.lower()
+                if client.device:
+                    _claim_holder(key, client.device, client.dlabel)
+                    await _send(client, {"t": "holder", "ok": True,
+                                         "save": SAVES.get(key)})
+                else:
+                    await _send(client, {"t": "holder", "ok": False})
+
             elif t == "save":
                 key = client.name.lower()
                 ok, why = False, None
-                if _lease_ok(client, key):
+                hold = HOLDERS.get(key)
+                if hold and hold.get("device") != client.device:
+                    # the cartridge lives on another device: this push is a
+                    # fork, whatever its timestamp says (GPD war 2026-07-29)
+                    why = "holder"
+                    LOG.info("non-holder save dropped: %s conn=%s dev=%s",
+                             client.name, client.id, client.device[:8] or "-")
+                elif _lease_ok(client, key):
                     ok = await _store_save(key, m.get("save"))
                     if not ok:
                         why = "invalid"           # failed _valid_save, not a lease matter
