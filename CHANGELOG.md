@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.309 — THE CLAIM GETS ITS MOMENT (2026-07-28)
+
+THE CLAIM GETS ITS MOMENT: pressing C on a felled raid boss now puts YOUR pet on the arena in its victory cheer while the full prize line — rank, bits, every item by name — stays on screen until you've read it. No more one-flash toasts: yesterday the boss learned to die on screen, today the champion learns to celebrate.
+
 ## 0.5.308 — THE RAID BOSS DIES ON SCREEN (2026-07-28)
 
 THE RAID BOSS DIES ON SCREEN: a broken pool now holds the felled boss on the arena in its collapse pose with the victory fanfare before the next boss takes the stage — no more blinking straight to the newcomer. And the moment ends on the answer to 'what did I win?': press C to claim your share of the purse (it waits on the board until you do).

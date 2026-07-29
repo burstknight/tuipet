@@ -343,6 +343,40 @@ def test_the_kill_holds_a_defeat_moment_then_hands_off_to_the_claim():
     assert "NextMon" in pan.text().plain                    # the stage hands over
 
 
+def test_the_claim_reveal_pins_the_prize_line_and_cheers_the_pet():
+    """The prize toast printed once and the context alternation talked over
+    it (Joel 2026-07-28: "i didnt know what i got last time either") -- a
+    felled claim now holds the PET on the arena in its victory cheer with
+    the full prize line pinned for ~12s.  An escaped claim pins its
+    consolation line but leaves the stage alone."""
+    pan = _panel()
+    pan.pet.name = "Blitz"
+    pan.client.raid = _view(_mega(), hp=700, start=0.0, now=100.0)
+    pan.anim()
+    pan.client.raid_reward = {"ok": True, "bits": 5000, "items": ["vitamin"],
+                              "defeated": True, "rank": 1, "boss": "Sleipmon X"}
+    pan.anim()
+    assert pan._won is not None and pan._won[1] is True
+    plain = pan.text().plain
+    assert "Blitz" in plain                       # the champion owns the stage
+    assert "Rank 1: 5000b" in plain               # the head of the line shows
+    assert "Vitamin" in pan.msg                   # the FULL line marquees
+    for _ in range(115):                          # the whole hold: the prize
+        pan.anim()                                # line stays pinned -- the
+        assert "weekly boss" not in pan.text().plain   # cadence never talks over
+        assert "Rank 1: 5000b" in pan.msg
+    for _ in range(6):
+        pan.anim()
+    assert pan._won is None                       # the reveal lets go
+    assert "Blitz" not in pan.text().plain
+    # the escaped claim: pinned line, no cheer takeover
+    pan.client.raid_reward = {"ok": True, "bits": 100, "defeated": False}
+    pan.anim()
+    assert pan._won is not None and pan._won[1] is False
+    plain = pan.text().plain
+    assert "consolation" in plain and "Blitz" not in plain
+
+
 def test_an_escape_rotation_stays_quiet():
     pan = _panel()
     pan.client.raid = _view(_mega(), hp=700, start=0.0, now=100.0)
@@ -503,6 +537,7 @@ def test_the_panel_reports_honestly_and_stays_live():
     pan._dealt = 0
     pan._credited = 0
     pan._fell = None
+    pan._won = None
     pan.client = client
     pan._asked = True
 

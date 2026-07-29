@@ -45,6 +45,7 @@ class RaidPanel(menu.SubHost):
         self.msg = "Calling the raid gate…"
         self._pool_seen = None        # (start, hp, end, name, num) of the last-seen boss
         self._fell = None             # (num, name, hold-until frame): the defeat moment
+        self._won = None              # (hold-until frame, defeated?): the claim reveal
         self._dealt = 0
         self._credited = 0            # the gate's acked board damage this session
         name, pw = persistence.get_account()
@@ -160,6 +161,8 @@ class RaidPanel(menu.SubHost):
                 # purse claim was a strip hint the fanfare talked over
                 self.msg = "Your share is ready — press C to claim!"
                 self.sfx = "confirm"
+        if self._won is not None and self.frame_i >= self._won[0]:
+            self._won = None
 
     def _apply_reward(self, reward):
         if not reward.get("ok"):
@@ -193,6 +196,13 @@ class RaidPanel(menu.SubHost):
         else:
             self.msg = f"The boss escaped… {bits}b consolation."
             self.sfx = "confirm"
+        # THE CLAIM REVEAL (Joel 2026-07-28: "i didnt know what i got last
+        # time either") -- the prize line printed once and the context
+        # alternation talked over it.  Hold it PINNED for ~12s; a felled
+        # claim puts the PET on the arena in its victory cheer (the defeat
+        # moment's mirror: body on the field, then the champion's bounce).
+        self._fell = None
+        self._won = (self.frame_i + 120, bool(reward.get("defeated")))
 
     def strip(self):
         if self.sub is not None:
@@ -360,7 +370,10 @@ class RaidPanel(menu.SubHost):
             # (raid round 2026-07-19)
             return out
         fell = self._fell            # the defeat hold: the FALLEN boss owns
-        num = int(fell[0]) if fell else int(b.get("num", -1))   # the stage
+        won = self._won              # the stage; the claim reveal hands it
+        cheer = won is not None and won[1]     # to the champion PET
+        num = self.pet.num if cheer else \
+            int(fell[0]) if fell else int(b.get("num", -1))
         # THE LCD IS PURE SCENE (raid uncramp 2026-07-23, Joel: "its still
         # a cramped up mess, it looks like hes in the sky").  The old page
         # stacked POOL bar + stats + cadence UNDER an 8-row scene -- every
@@ -373,8 +386,10 @@ class RaidPanel(menu.SubHost):
         # (_paint_cells indexes bgimg by absolute row -- an unsliced 24px
         # backdrop painted this reduced scene with its sky band).
         rows = data.bob_frame(num, self.frame_i,
+                              "happy" if cheer else
                               "exhausted" if fell else
-                              "attack" if (self.frame_i // 9) % 4 == 3 else "idle")
+                              "attack" if (self.frame_i // 9) % 4 == 3 else "idle",
+                              egg_type=getattr(self.pet, "egg_type", 0))
         sc_rows = ROWS - 2
         boss = grid.prep(rows, ph=sc_rows * 2) if rows else None
         placements = [(boss, (COLS - grid.width(boss)) // 2, False)] if boss else []
@@ -384,11 +399,17 @@ class RaidPanel(menu.SubHost):
         scene = render_scene(placements, COLS, sc_rows, menu.scene_ink(bgimg),
                              LCD_BG, bgimg=bgimg)
         stage = data.record_for(num).get("stage", "Mega")
-        name = fell[1] if fell else b.get("name", "?")
+        name = (self.pet.name or "CHAMPION") if cheer else \
+            fell[1] if fell else b.get("name", "?")
         out = menu.bar(f"RAID · {name[:14]}", stage[:8])
         out.append_text(scene)
         out.append("\n")               # terminate the scene's last row
-        if fell:
+        if won is not None:
+            # the prize line holds for the whole reveal -- the claim toast
+            # printed once and the alternation talked over it (Joel
+            # 2026-07-28: "i didnt know what i got last time either")
+            note = self.msg
+        elif fell:
             # the fall line holds for the whole moment -- no alternation,
             # no INCOMING countdown talking over the kill
             note = f"{fell[1]} falls — the pool is broken!"

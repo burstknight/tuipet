@@ -150,13 +150,13 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE RAID BOSS DIES ON SCREEN: a broken pool now holds "
-                 "the felled boss on the arena in its collapse pose with "
-                 "the victory fanfare before the next boss takes the "
-                 "stage — no more blinking straight to the newcomer. And "
-                 "the moment ends on the answer to 'what did I win?': "
-                 "press C to claim your share of the purse (it waits on "
-                 "the board until you do).")
+    WHATS_NEW = ("THE CLAIM GETS ITS MOMENT: pressing C on a felled raid "
+                 "boss now puts YOUR pet on the arena in its victory "
+                 "cheer while the full prize line — rank, bits, every "
+                 "item by name — stays on screen until you've read it. "
+                 "No more one-flash toasts: yesterday the boss learned "
+                 "to die on screen, today the champion learns to "
+                 "celebrate.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the
