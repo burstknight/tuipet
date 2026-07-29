@@ -30,9 +30,9 @@ community references. Regular updates ship as the game grows.
   storefront, digitama earned by play (and bought outright in each town's
   own egg shop), an in-game AI care assistant, and the device's own screen
   transitions and animation timelines.
-- **Online play** tuipet adds on top: accounts with cloud saves that follow
-  you across devices, and a live lobby with chat, PvP battles, and two-player
-  jogress fusion.
+- **Online play** tuipet adds on top: free accounts whose save lives in the
+  cloud — **one pet, on one device at a time**, the way a cartridge works —
+  and a live lobby with chat, PvP battles, and two-player jogress fusion.
 - A `rich`/`textual` UI: a fixed LCD arena with the animated pet, a live
   status card, and a one-line control strip — every screen lives in the box.
 
@@ -173,9 +173,13 @@ what's coming — plus tuipet's own data-book pages.
 
 Press **r** for raids: boss fights against the world's heavies, with a
 shared community pool that **sizes itself to the crowd** — a small crew can
-fell its boss, and every kill grows the next one. Each felled boss counts
-toward egg unlocks and the Miracles Digimental wave; even an escaped boss
-pays out by your share of the damage.
+fell its boss, and every kill grows the next one. Three volleys a day, each
+billing energy and a little weight like any other fight. A felled boss
+collapses on the arena before the next one takes the stage, and your share
+waits on the board until you press **C** to claim it — your pet steps out to
+celebrate while the prize line names every bit and item. Each felled boss
+counts toward egg unlocks and the Miracles Digimental wave; even an escaped
+boss pays out by your share of the damage.
 
 Press **u** for the cup page, which runs on the **real calendar**: seasonal
 cup pools, a featured cup picked by the date (the weekend headliner is one
@@ -195,13 +199,18 @@ Live **chat** with backlog, presence, private messages (threads keep their
 full scrollable history), **PvP battles** (host-authoritative, with the
 full round-replay animation), and two-player **jogress fusion**. TAB opens
 the **monthly ladder** — online wins race a fresh season each month, and
-past-season podium finishers claim a bits award, confirmed by the server.
+past-season podium finishers claim a bits award, confirmed by the server and
+paid out in a full award ceremony under the arena lights.
 **Password rooms** give you a private scope: everyone who types the same
-phrase lands in the same room, chat and roster included. Your save syncs
-to the cloud on the same account and follows you across devices —
-last-write-wins with session leases, so a phone left running can't clobber
-your desktop. Offline play is untouched; the network is fail-soft
-everywhere.
+phrase lands in the same room, chat and roster included.
+
+Your save lives in the cloud on your account, and it behaves like a
+**cartridge**: the pet is checked out to exactly one device at a time. Open
+tuipet somewhere else and it asks before touching anything — *"Your pet is on
+phone. Take it onto this device?"* — and only a yes moves it. The device
+holding the pet is never prompted and plays exactly as before; no other
+device can write over your save, however fresh its clock claims to be.
+Offline play is untouched; the network is fail-soft everywhere.
 
 ## Scenes
 
@@ -226,7 +235,8 @@ board sells cosmetic tamer titles for the truly rich.
 **Digitama are earned by playing** — reaching stages, felling raid bosses,
 winning cups, clearing adventure zones, celebrating festivals, growing your
 album — exactly like the real devices; the carousel shows only what you can
-hatch and teases the one you're closest to earning. **On the road, each
+hatch and teases the one you're closest to earning, and a newly earned
+digitama announces itself by name when you get home (**e** opens the guide). **On the road, each
 town's egg shop also sells a distinct band of eggs outright** — the real 8×8
 egg sprites, a paid shortcut that drops straight onto your carousel, and no
 two towns stock the same eggs.
@@ -254,7 +264,9 @@ instead of pretending it updated.
 ## Saving
 
 Automatic — local save every 10 seconds and on quit, with backup generation.
-With an account, the same save syncs to the cloud in the background.
+With an account, that save syncs to the cloud in the background from whichever
+device currently holds the pet (see [Online](#online)); any local save that a
+cloud pull replaces is snapshotted first, so a wrong answer is undoable.
 
 **A closed game is a stopped clock.** Nothing happens while you're away: your
 pet doesn't age, grow, incubate, get hungry, or make a mess. Quit for five

@@ -1,5 +1,17 @@
 # TUIPET ITEMS — the catalog contract (BUILT 2026-07-18)
 
+> **⚠ SUPERSEDED 2026-07-26 — counts below are historical.** THE GREAT ITEM
+> EXPANSION (v0.5.283-284) took the shelf to **114 `shop.CATALOG` entries**
+> (verified 2026-07-29), and its ruling ledger — what each new item does, what
+> stayed dormant, where everything is stocked — is
+> [ITEM_EXPANSION_2026_07_26.md](ITEM_EXPANSION_2026_07_26.md), with the
+> follow-up refactor in [ITEM_REFACTOR_2026_07_27.md](ITEM_REFACTOR_2026_07_27.md).
+> Read those for the current catalog. This file remains the *design record* of
+> the original contract: the effect grammar and the "no invented systems" law
+> below still hold. One later ruling reverses a line below: the **bandage item
+> was cut FINAL (2026-07-26)** — wrapping an injury lives only behind the **h**
+> key now.
+
 > STATUS: SHIPPED in v0.5.60; taglines (the CATALOG's 6th field, shown in
 > the live dossier) followed in v0.5.61.  shop.CATALOG is the single
 > source; this doc is the design record.
