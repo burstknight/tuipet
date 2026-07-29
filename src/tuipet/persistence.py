@@ -638,6 +638,87 @@ def set_account(name, pw):
     save_settings(d)
 
 
+# ---- the cloud CARTRIDGE (2026-07-29) ---------------------------------------
+# One pet, checked out to ONE device at a time.  The GPD incident: two
+# devices both held playable copies, "newest save wins" let the stale fork
+# out-stamp the real pet, and the cloud regressed twice in one night.  The
+# server now tracks a HOLDER per account; these are the client's identity
+# and its cached answer to "am I the holder?".
+
+RESCUE_KEEP = 5
+
+
+def device_id():
+    """This install's stable identity, minted once into settings.  The
+    cartridge's holder is a DEVICE, not a login -- the same account on two
+    machines must be tellable apart."""
+    d = load_settings()
+    did = d.get("device_id")
+    if not did:
+        import uuid
+        did = uuid.uuid4().hex[:16]
+        d["device_id"] = did
+        save_settings(d)
+    return did
+
+
+def device_label():
+    """A human name for this device, for the other device's take-question
+    ('Your pet is on phone.')."""
+    from . import hostinfo
+    import platform as _plat
+    if hostinfo.is_termux():
+        return "phone"
+    if hostinfo.is_ios():
+        return "iPhone"
+    return ((_plat.node() or "").split(".")[0] or "PC")[:16]
+
+
+def holder_cache():
+    """The last successful cloud contact's verdict: True = we hold the pet,
+    False = another device does, None = never learned (pre-cartridge saves,
+    or no contact yet).  Read OFFLINE to decide whether this device may
+    play: a cached non-holder stays a spectator until it can take."""
+    return load_settings().get("cloud_holder")
+
+
+def set_holder_cache(val):
+    d = load_settings()
+    if d.get("cloud_holder") is not bool(val):
+        d["cloud_holder"] = bool(val)
+        save_settings(d)
+
+
+def rescue_copy(path=None):
+    """Snapshot the CURRENT local save somewhere the autosave can never roll
+    over, and return its filename ('' if there was nothing to copy).
+
+    save.json.bak is ONE generation deep and every write rotates it, so a
+    cloud pull that replaces the pet is undoable for about ten seconds --
+    the next autosave turns the rescued pet into the pulled one (the gen-10
+    BlitzGreymon incident, 2026-07-27).  A pull (or a cartridge take) is
+    the one write that replaces bytes this device never played; it gets a
+    copy that STAYS.  (Shipped 0.5.290, cut by 0.5.294's plain-and-simple
+    revert, restored 2026-07-29 after the GPD fork stomped the cloud.)"""
+    import glob as _glob
+    src = path or SAVE_PATH
+    try:
+        with open(src) as fh:
+            data = json.load(fh)
+    except (ValueError, OSError):
+        return ""                        # no readable save: nothing to rescue
+    stamp = time.strftime("%Y%m%d-%H%M%S", time.gmtime())
+    name = f"save.rescue.{stamp}.json"
+    _atomic_write_json(os.path.join(SAVE_DIR, name), data)
+    old = sorted(_glob.glob(os.path.join(SAVE_DIR, "save.rescue.*.json")))
+    for p in old[:-RESCUE_KEEP]:         # keep the newest few, drop the rest
+        try:
+            os.remove(p)
+        except OSError:
+            pass
+    return name
+
+
 def erase_all():
     """Erase the WHOLE local state: pet save (+bak), settings (progress,
     account, digimemory, +bak), sound + theme prefs -- and every other file

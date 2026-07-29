@@ -57,7 +57,8 @@ def server(tmp_path):
            "TUIPET_PORT": str(port),
            "TUIPET_HOST": "127.0.0.1",
            "TUIPET_ACCOUNTS": str(tmp_path / "accounts.json"),
-           "TUIPET_SAVES": str(tmp_path / "saves.json")}
+           "TUIPET_SAVES": str(tmp_path / "saves.json"),
+           "TUIPET_HOLDERS": str(tmp_path / "holders.json")}
     proc = subprocess.Popen([sys.executable, os.path.join(root, "server", "server.py")],
                             env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     uri = f"ws://127.0.0.1:{port}/"
@@ -477,3 +478,108 @@ def test_leaving_the_raid_drops_its_lobby_worker():
     app._lobby_worker = w
     TuiPetApp._after_raid(app, "")
     assert w.cancelled and app._lobby_worker is None
+
+
+# ---- the cartridge (2026-07-29): one pet, checked out to ONE device ---------
+
+def _as_device(monkeypatch, did, label):
+    monkeypatch.setattr("tuipet.persistence.device_id", lambda: did)
+    monkeypatch.setattr("tuipet.persistence.device_label", lambda: label)
+
+
+def test_first_synced_device_becomes_holder(server, monkeypatch):
+    """Migration: an unheld account is claimed by the first device that
+    syncs it -- existing accounts get a holder without any ceremony."""
+    _as_device(monkeypatch, "phoneAAA", "phone")
+    st, _save, holder = cloudsync.gate(server, "joel", "secret")
+    assert st == "ok" and holder and holder["device"] == "phoneAAA"
+    assert cloudsync.push_save(server, "joel", "secret",
+                               {"name": "Agumon", "stage": "Rookie",
+                                "_saved_at": 1000.0}) is True
+
+
+def test_non_holder_push_is_dropped_whatever_its_stamp_says(server, monkeypatch):
+    """The GPD war: a FRESHER-stamped stale fork from a non-holding device
+    must never land -- the wall clock no longer votes."""
+    _as_device(monkeypatch, "phoneAAA", "phone")
+    assert cloudsync.push_save(server, "joel", "secret",
+                               {"name": "Real", "stage": "Mega",
+                                "_saved_at": 1000.0})
+    _as_device(monkeypatch, "gpdBBB", "gpd")
+    assert cloudsync.push_save(server, "joel", "secret",
+                               {"name": "Fork", "stage": "Rookie",
+                                "_saved_at": 9999.0}) is False
+    assert cloudsync.pull_save(server, "joel", "secret")["name"] == "Real"
+    st, _s, holder = cloudsync.gate(server, "joel", "secret")
+    assert holder["device"] == "phoneAAA"          # pulling never claims
+
+
+def test_take_moves_the_cartridge(server, monkeypatch):
+    """The player's yes: take hands the pet over, the new holder pushes,
+    and the OLD holder's zombie session is locked out."""
+    _as_device(monkeypatch, "phoneAAA", "phone")
+    cloudsync.push_save(server, "joel", "secret",
+                        {"name": "Real", "stage": "Mega", "_saved_at": 1000.0})
+    _as_device(monkeypatch, "gpdBBB", "gpd")
+    ok, save = cloudsync.take(server, "joel", "secret")
+    assert ok and save["name"] == "Real"           # the take hands over the pet
+    assert cloudsync.push_save(server, "joel", "secret",
+                               {"name": "Real", "stage": "Mega",
+                                "_saved_at": 2000.0}) is True
+    _as_device(monkeypatch, "phoneAAA", "phone")   # the old holder is out now
+    assert cloudsync.push_save(server, "joel", "secret",
+                               {"name": "Zombie", "stage": "Mega",
+                                "_saved_at": 3000.0}) is False
+    assert cloudsync.pull_save(server, "joel", "secret")["_saved_at"] == 2000.0
+
+
+def test_legacy_client_neither_claims_nor_pushes_to_a_held_account(server, monkeypatch):
+    """A pre-cartridge client (no device id) predates the take-question: it
+    may pull, but its pushes to a HELD account are dropped with why=holder."""
+    import json as _j
+    from websockets.sync.client import connect
+    _as_device(monkeypatch, "phoneAAA", "phone")
+    cloudsync.push_save(server, "joel", "secret",
+                        {"name": "Real", "stage": "Mega", "_saved_at": 1000.0})
+    with connect(server, open_timeout=3) as ws:
+        ws.send(_j.dumps({"t": "login", "name": "joel", "pw": "secret",
+                          "sync_only": True, "boot": 999.0}))
+        for _ in range(5):
+            m = _j.loads(ws.recv(timeout=3))
+            if m.get("t") == "welcome":
+                assert (m.get("holder") or {}).get("device") == "phoneAAA"
+                break
+        ws.send(_j.dumps({"t": "save",
+                          "save": {"name": "Old", "stage": "Mega",
+                                   "_saved_at": 5000.0}}))
+        for _ in range(5):
+            m = _j.loads(ws.recv(timeout=3))
+            if m.get("t") == "saved":
+                assert m["ok"] is False and m.get("why") == "holder"
+                break
+    assert cloudsync.pull_save(server, "joel", "secret")["name"] == "Real"
+
+
+def test_push_refuses_blind_when_the_cloud_is_unreachable():
+    """The quit-flush poison vector (GPD 2026-07-29): a device that cannot
+    READ the cloud may not WRITE it.  0.5.294's best-effort compare skipped
+    itself on the very network failure it was guarding against."""
+    assert cloudsync.push_save("ws://127.0.0.1:9", "joel", "secret",
+                               {"name": "X", "_saved_at": 1.0},
+                               timeout=1.0) is False
+
+
+def test_sync_down_rescues_before_it_replaces(tmp_path, monkeypatch):
+    """A pull is the one write that replaces bytes this device never played:
+    it must snapshot the old pet FIRST (rescue net, restored 2026-07-29)."""
+    import glob
+    from tuipet import data as gdata, persistence
+    rec = gdata.record_for(100)          # strict probe wants dex-true name/stage
+    p = Pet(num=100, stage=rec.get("stage", "Champion"),
+            name=rec.get("name", ""))
+    persistence.save(p)
+    newer = persistence.to_save_dict(p)
+    newer["_saved_at"] = persistence.local_saved_at() + 999
+    monkeypatch.setattr(cloudsync, "pull_save", lambda *a, **k: newer)
+    assert cloudsync.sync_down_at_startup("ws://x", "joel", "pw") == "pulled"
+    assert glob.glob(os.path.join(persistence.SAVE_DIR, "save.rescue.*.json"))

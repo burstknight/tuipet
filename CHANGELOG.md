@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.313 — YOUR PET IS A CARTRIDGE NOW (2026-07-29)
+
+YOUR PET IS A CARTRIDGE NOW: one pet, living on one device at a time. Open tuipet somewhere else and it asks the only question that matters — 'Your pet is on phone. Take it onto this device?' — instead of letting two copies silently fight over the cloud. The device you play on notices nothing; the overwrites that ate two pets can't happen again. Every replaced save is also snapshotted locally, just in case.
+
 ## 0.5.312 — IT'S ALL JUST PM NOW (2026-07-29)
 
 IT'S ALL JUST PM NOW: the lobby's private messages wore two names — 'DM' on one key, 'PM' on the other — for what was always one feature. The hints now read V/M PM: V opens the conversation, M fires a quick message, and both doors carry the same name. One less thing to wonder about while a stranger waits for your reply.

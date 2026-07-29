@@ -150,12 +150,14 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("IT'S ALL JUST PM NOW: the lobby's private messages wore "
-                 "two names — 'DM' on one key, 'PM' on the other — for "
-                 "what was always one feature. The hints now read V/M PM: "
-                 "V opens the conversation, M fires a quick message, and "
-                 "both doors carry the same name. One less thing to "
-                 "wonder about while a stranger waits for your reply.")
+    WHATS_NEW = ("YOUR PET IS A CARTRIDGE NOW: one pet, living on one "
+                 "device at a time. Open tuipet somewhere else and it "
+                 "asks the only question that matters — 'Your pet is on "
+                 "phone. Take it onto this device?' — instead of letting "
+                 "two copies silently fight over the cloud. The device "
+                 "you play on notices nothing; the overwrites that ate "
+                 "two pets can't happen again. Every replaced save is "
+                 "also snapshotted locally, just in case.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the
@@ -362,7 +364,11 @@ class TuiPetApp(ActionsMixin, App):
             self._sync_worker = None
 
     def _push_cloud(self):
-        """Queue the current pet's save for upload (no-op until the account/sync exists)."""
+        """Queue the current pet's save for upload (no-op until the account/sync
+        exists).  A cached NON-holder never pushes: the cartridge lives on
+        another device and the server would drop it anyway (2026-07-29)."""
+        if persistence.holder_cache() is False:
+            return
         if self._sync is not None and self.pet is not None and persistence.sync_enabled():
             self._sync.push_save(persistence.to_save_dict(self.pet))
 
@@ -542,8 +548,10 @@ class TuiPetApp(ActionsMixin, App):
                 pass
 
     def _flush_cloud_on_quit(self):
-        """Best-effort blocking push so the final state is captured cloud-side."""
-        if self._sync is None:
+        """Best-effort blocking push so the final state is captured cloud-side.
+        Same holder gate as _push_cloud -- the quit flush was the GPD
+        incident's poison vector (2026-07-29)."""
+        if self._sync is None or persistence.holder_cache() is False:
             return
         try:
             name, pw = persistence.get_account()
@@ -1548,17 +1556,64 @@ def main():
               f"over one save.\nClose the other one first, or set TUIPET_FORCE=1 "
               f"to override.")
         raise SystemExit(1)
-    # Cross-device: pull a newer cloud save down BEFORE the app loads the pet, so
-    # the normal load path picks it up (no mid-session swapping). Fail-soft.
+    # Cross-device: THE CARTRIDGE GATE (2026-07-29).  One pet, checked out to
+    # one device.  The holder plays exactly like before; a NON-holding device
+    # gets the one question no sync rule can answer -- which copy do you
+    # mean? -- here, pre-UI, in plain terminal text (the app never has to
+    # reload a pet mid-boot).  Fail-soft everywhere except the one dangerous
+    # case: a cached non-holder that can't reach the cloud stays a spectator
+    # rather than silently growing a fork.
     if persistence.sync_enabled():
         try:
             name, pw = persistence.get_account()
             if name:
-                # the pull BLOCKS the launch up to its timeout -- offline,
+                # the gate BLOCKS the launch up to its timeout -- offline,
                 # that read as a silent ~3s hang (QOL sweep 2026-07-23);
                 # same pre-UI print style as _preflight's warnings
                 print("checking cloud save…", flush=True)
-            cloudsync.sync_down_at_startup(_lobby_uri(), name, pw)
+                st, _save, holder = cloudsync.gate(_lobby_uri(), name, pw)
+                mine = persistence.device_id()
+                if st == "ok" and holder and holder.get("device") != mine:
+                    label = holder.get("label") or "another device"
+                    print(f"Your pet is on {label}.")
+                    try:
+                        ans = input("Take it onto this device? [y/N] ").strip().lower()
+                    except (EOFError, OSError):
+                        ans = ""                     # headless launch: never hang
+                    if ans in ("y", "yes"):
+                        ok, csave = cloudsync.take(_lobby_uri(), name, pw)
+                        if ok:
+                            persistence.set_holder_cache(True)
+                            if csave:
+                                probe_pet, _ = persistence.pet_from_save(
+                                    dict(csave), strict=True)
+                                if probe_pet is not None:
+                                    persistence.rescue_copy()   # this device's old
+                                    persistence.write_save_dict(csave)  # copy stays
+                        else:
+                            print("Couldn't take the pet just now — playing "
+                                  "this device's local copy, saves stay here.")
+                    else:
+                        print(f"Left the pet on {label}. Open tuipet there to "
+                              "play, or take it here next launch.")
+                        persistence.set_holder_cache(False)
+                        raise SystemExit(0)
+                elif st == "ok":
+                    # holder is us, or nobody yet (the server auto-claims for
+                    # the first synced device): normal pull-if-newer
+                    persistence.set_holder_cache(True)
+                    cloudsync.sync_down_at_startup(_lobby_uri(), name, pw)
+                elif st == "offline" and persistence.holder_cache() is False:
+                    # the one hard stop: we KNOW another device holds the pet
+                    # and can't ask to take it -- playing here would only
+                    # grow a fork the cloud must then be defended against
+                    print("Can't reach the cloud, and your pet lives on "
+                          "another device. Connect once to take it here.")
+                    raise SystemExit(0)
+                # offline with holder-or-unknown cache / badpw: fail-soft,
+                # play the local pet; the server gates any pushes anyway
+        except SystemExit:
+            raise
         except Exception:
             pass
     app = TuiPetApp()

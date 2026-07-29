@@ -174,8 +174,14 @@ class SyncClient(_WsClient):
 
     def _login_msg(self):
         from .cloudsync import BOOT           # one launch stamp per process
+        from . import persistence
+        # the device fields ride every sync login: the server routes saves to
+        # the account's HOLDER device (cartridge 2026-07-29) -- a session
+        # pusher without them is dropped once a holder exists
         return {"t": "login", "name": self.name, "pw": self.pw,
-                "sync_only": True, "boot": BOOT}
+                "sync_only": True, "boot": BOOT,
+                "device": persistence.device_id(),
+                "dlabel": persistence.device_label()}
 
     def _on_connect(self):
         self.connected = True
