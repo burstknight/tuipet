@@ -270,7 +270,7 @@ def test_ladder_award_grants_bits_exactly_once():
     pet.world_seconds = 10 * 60.0
     pan = LobbyPanel.__new__(LobbyPanel)
     pan.client, pan.pet = _C(), pet
-    pan.bshow = pan.jshow = None
+    pan.bshow = pan.jshow = pan.pshow = None
     pan.state = None
     pan.sfx = pan.status = None
     pan.anim()

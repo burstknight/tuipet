@@ -276,3 +276,21 @@ def test_migration_translates_every_historical_index():
 
 def test_sane_owned_still_strips_lineage_eggs():
     assert eggmigrate._sane_owned(_temp_eggs()) == []
+
+
+def test_digitama_announce_seeds_then_speaks_each_earning_once():
+    """announce_new() (event-coverage sweep 2026-07-28): a pre-announce
+    save seeds silently -- old earnings never flood as 'new'; a fresh
+    earning announces EXACTLY once; the ledger is display bookkeeping and
+    never writes eggs_owned (the carousel still banks ownership)."""
+    assert persistence.eggs_announced() is None      # virgin save
+    assert egg_mod.announce_new() == []              # first run: silent seed
+    seeded = persistence.eggs_announced()
+    assert seeded is not None                        # the ledger now exists
+    idx = next(i for i in range(egg_mod.count()) if i not in seeded)
+    owned_before = set(persistence.get_eggs_owned())
+    persistence.egg_own(idx)                         # the earning
+    names = egg_mod.announce_new()
+    assert names == [egg_mod.hatch_name(idx)]        # spoken once, by name
+    assert egg_mod.announce_new() == []              # never twice
+    assert set(persistence.get_eggs_owned()) == owned_before | {idx}

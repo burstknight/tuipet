@@ -167,6 +167,22 @@ def note_ladder_award(season):
         save_settings(d)
 
 
+def eggs_announced():
+    """Egg indices whose NEW-DIGITAMA flash already fired -- or None when the
+    ledger was never seeded (a pre-announce save: the caller seeds silently
+    instead of flooding years of old earnings as 'new')."""
+    return _prog().get("eggs_announced")
+
+
+def note_eggs_announced(idxs):
+    d = load_settings()
+    lst = d.setdefault("progress", {}).setdefault("eggs_announced", [])
+    for i in idxs:
+        if i not in lst:
+            lst.append(int(i))
+    save_settings(d)
+
+
 def album_has(num):
     """Is this species (name-canonical) already in the cross-pet album?  Lets
     the evolve/hatch moment announce a genuine FIRST -- album_add() itself is

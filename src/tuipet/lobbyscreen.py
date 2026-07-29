@@ -30,18 +30,22 @@ import random
 from rich.text import Text
 
 from . import data
+from . import grid
 from . import jogress
 from . import battle
 from . import jogressscreen
 from . import menu
 from . import persistence
 from .net import CHAT_CAP
-from .theme import INK, INK_B, DIM
+from .render import render_scene
+from .theme import INK, INK_B, DIM, LCD_BG  # noqa: F401  (theme.apply propagation)
 
 CHATW = 25
 ROSTW = 12
 BODY = 8
 CHAT_MAX = 400          # server MAX_CHAT: the local input buffer stops here too
+PODIUM_T = 120          # the season-podium ceremony hold (~12s), raid-reveal length
+COLS = 40               # the LCD box width (the podium scene; pages use menu's own)
 # (ATTACK_KEYS left with the pick-a-move battle -- 0.5 BATTLE 2026-07-17)
 
 
@@ -96,6 +100,7 @@ class LobbyPanel(BoutMixin, ChatMixin):
         self.j_partner_confirmed = False   # ...and theirs
         self.j_peer_two_phase = False      # the peer speaks the confirm protocol
         self.bshow = None             # the round's volley replay (BattlePanel shim)
+        self.pshow = None             # the season-podium ceremony (ladder payout)
         # battle session
         self.is_host = False
         self.battle = None
@@ -217,6 +222,10 @@ class LobbyPanel(BoutMixin, ChatMixin):
                 self.bshow = None               # volley done -> choose/over shows
         if self.jshow is not None and self.jphase == "result":
             self.jshow.anim()                   # converge -> flash -> fused bounce
+        if self.pshow is not None:
+            self.pshow["t"] += 1
+            if self.pshow["t"] > PODIUM_T:
+                self.pshow = None
         lad = getattr(self.client, "ladder", None) if self.client else None
         if lad and lad.get("award"):
             a = lad["award"]
@@ -246,6 +255,14 @@ class LobbyPanel(BoutMixin, ChatMixin):
                 self.sfx = "champion"
                 self.status = (f"season {rew.get('season')}: rank {rew.get('rank')} — "
                                f"+{rew.get('bits')}b claimed!")
+                # THE PODIUM CEREMONY (event-coverage sweep 2026-07-28): the
+                # game's largest single prize arrived as this one status
+                # line.  The ceremony holds the stage like the raid claim;
+                # the durable status line above stays for after the show.
+                self.pshow = {"t": 0,
+                              "line": (f"SEASON {rew.get('season')} PODIUM — "
+                                       f"rank {rew.get('rank')}: "
+                                       f"+{int(rew.get('bits') or 0)}b!")}
         s = self.state
         if not s:
             return
@@ -517,6 +534,9 @@ class LobbyPanel(BoutMixin, ChatMixin):
 
     # ---- battle ----------------------------------------------------------
     def key(self, k):
+        if self.pshow is not None:
+            self.pshow = None          # any key skips the ceremony (show idiom)
+            return None
         if self.phase == "login":
             return self._key_login(k)
         if self.phase == "jogress":
@@ -854,6 +874,8 @@ class LobbyPanel(BoutMixin, ChatMixin):
         return menu.hints(("→", "fold"), ("↑↓", "pick"),
                           ("ENTER", "act"), ("PgUp", "log"))
     def text(self):
+        if self.pshow is not None:
+            return self._text_podium()
         if self.phase == "login":
             return self._text_login()
         if self.phase == "jogress":
@@ -867,3 +889,28 @@ class LobbyPanel(BoutMixin, ChatMixin):
         return self._text_lobby()
     def _text_login(self):
         return self.entry.text()
+
+    def _text_podium(self):
+        """THE SEASON PODIUM: the champion cheers under the pulsing arena
+        light with the payout line pinned -- the cup ceremony's shape on the
+        lobby stage (one layout language per screen family; the box already
+        hosts the jogress and volley shows)."""
+        from .adventurescreen import _brighten
+        t = self.pshow["t"]
+        bgimg = self.pet.background(file="tourneyBack")
+        if bgimg and any(a <= t % 20 < b for a, b in ((3, 8), (12, 17))):
+            bgimg = _brighten(bgimg, 0.5)      # the podium light, on the beat
+        on = menu.scene_ink(bgimg)
+        sc_rows = 10                           # bar + scene + note = 12 rows
+        if bgimg and len(bgimg) > sc_rows * 2:
+            bgimg = bgimg[-sc_rows * 2:]       # keep the floor under its feet
+        rows = data.bob_frame(self.pet.num, t, "happy",
+                              egg_type=getattr(self.pet, "egg_type", 0))
+        scene = render_scene([grid.center(rows, ph=sc_rows * 2)],
+                             COLS, sc_rows, on, LCD_BG, bgimg=bgimg)
+        out = menu.bar("LADDER · PODIUM", (self.pet.name or "champion")[:10])
+        out.append_text(scene)
+        out.append("\n")
+        out.append_text(menu.note(self.pshow["line"], tick=t))
+        out.right_crop(1)
+        return out

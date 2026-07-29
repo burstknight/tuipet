@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.310 — EVERY TRIUMPH GETS ITS MOMENT (2026-07-28)
+
+EVERY TRIUMPH GETS ITS MOMENT: a season podium finish now plays a full award ceremony in the lobby — your champion under the pulsing arena light with the payout pinned on screen. And earning a new digitama finally SAYS so: come home and the game announces it by name (E opens the guide). No more silent riches — if you won it, you'll see it.
+
 ## 0.5.309 — THE CLAIM GETS ITS MOMENT (2026-07-28)
 
 THE CLAIM GETS ITS MOMENT: pressing C on a felled raid boss now puts YOUR pet on the arena in its victory cheer while the full prize line — rank, bits, every item by name — stays on screen until you've read it. No more one-flash toasts: yesterday the boss learned to die on screen, today the champion learns to celebrate.

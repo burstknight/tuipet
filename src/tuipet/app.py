@@ -150,13 +150,13 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("THE CLAIM GETS ITS MOMENT: pressing C on a felled raid "
-                 "boss now puts YOUR pet on the arena in its victory "
-                 "cheer while the full prize line — rank, bits, every "
-                 "item by name — stays on screen until you've read it. "
-                 "No more one-flash toasts: yesterday the boss learned "
-                 "to die on screen, today the champion learns to "
-                 "celebrate.")
+    WHATS_NEW = ("EVERY TRIUMPH GETS ITS MOMENT: a season podium finish "
+                 "now plays a full award ceremony in the lobby — your "
+                 "champion under the pulsing arena light with the payout "
+                 "pinned on screen. And earning a new digitama finally "
+                 "SAYS so: come home and the game announces it by name "
+                 "(E opens the guide). No more silent riches — if you "
+                 "won it, you'll see it.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the
@@ -259,6 +259,11 @@ class TuiPetApp(ActionsMixin, App):
         self._hud(self._welcome)
         theme.apply(theme.load_choice())
         self._restyle()
+        # the digitama-announce pass at boot: seeds a pre-announce save's
+        # ledger silently, and FLASHES anything earned since the last
+        # session's final check (a crash window, cloud-synced progress) --
+        # discarding here would mark those announced without ever saying so
+        self._announce_eggs()
         self.repaint()
         self._open_mode(titlescreen.TitlePanel(), self._after_title)   # the panel's strip() carries PRESS ENTER
         self.set_interval(0.1, self.on_frame)    # single DVPet interval clock: 1 tick == 0.1s (main view AND sub-screens)
@@ -673,6 +678,25 @@ class TuiPetApp(ActionsMixin, App):
             cb(result)
         else:
             self.repaint()
+        # THE UNLOCK ANNOUNCEMENT (event-coverage sweep 2026-07-28): eggs are
+        # earned INSIDE panels (adventure, cups, raids), so coming home is
+        # the moment to say so -- every unlock channel was silent and a
+        # player could earn a digitama without ever learning it exists.
+        # Guarded on mode None: a chained _open_mode (town inside adventure)
+        # is not a homecoming.
+        if self.mode is None:
+            self._announce_eggs()
+
+    def _announce_eggs(self):
+        """Flash any digitama earned since the last check (and beep): the
+        one announcement path, shared by the homecoming and the boot seed."""
+        from . import egg as egg_mod
+        names = egg_mod.announce_new()
+        if names:
+            shown = ", ".join(names[:2]) \
+                + (f" +{len(names) - 2} more" if len(names) > 2 else "")
+            self.flash(f"NEW DIGITAMA earned — [b]{shown}[/]!  E opens the guide")
+            self.beep("hatch")
 
 
     def _verdict(self, msg):

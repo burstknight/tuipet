@@ -869,6 +869,36 @@ def test_ladder_claim_notes_only_on_the_ack():
     assert persistence.ladder_award_claimed("2026-07")       # ...and NOW it notes
 
 
+def test_the_podium_ceremony_holds_then_any_key_skips():
+    """The season payout -- the game's largest single prize -- arrived as
+    one auto-claimed status line (event-coverage sweep 2026-07-28).  The
+    ack now stages the ceremony: champion cheer under the pulsing light
+    with the payout line pinned for PODIUM_T; any key skips (show idiom);
+    the durable status line survives for after the show."""
+    s = LobbyState()
+    pan = _panel(s)
+    pan.client.ladder = {"award": {"season": "2026-06"}}
+    pan.client.ladder_claim = lambda season: None
+    pan.client.ladder_reward = {"ok": True, "season": "2026-06",
+                                "rank": 1, "bits": 25000}
+    pan.anim()
+    assert pan.pshow is not None
+    plain = pan.text().plain
+    assert "PODIUM" in plain and "+25000b" in pan.pshow["line"]
+    for _ in range(30):
+        pan.anim()
+    assert pan.pshow is not None                   # mid-hold: still on stage
+    assert "PODIUM" in pan.text().plain
+    assert pan.key("z") is None and pan.pshow is None   # any key skips
+    assert "PODIUM" not in pan.text().plain
+    assert "claimed" in pan.status                 # the durable line remains
+    # and left alone, the hold expires on its own
+    pan.pshow = {"t": 0, "line": "x"}
+    for _ in range(121):
+        pan.anim()
+    assert pan.pshow is None
+
+
 def test_reading_the_open_dm_thread_clears_its_badge():
     """net.py badges every incoming PM blind -- watching the message arrive
     in the open thread must count as reading it."""

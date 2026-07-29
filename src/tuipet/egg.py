@@ -232,6 +232,26 @@ def owned_now():
     return owned | set(auto_owned(persistence.get_progress(), owned))
 
 
+def announce_new():
+    """Newly earned digitama names to flash, once each (event-coverage sweep
+    2026-07-28: every unlock channel -- map clear, cup trophies, raid kills,
+    festivals, mega kills -- was SILENT; the guide's progress is a pull, not
+    an announcement).  Compares owned_now() against the announced ledger and
+    notes what it returns.  A pre-announce save (ledger None) seeds silently:
+    old earnings must not flood as 'new'.  The announced ledger is display
+    bookkeeping only -- the carousel still does the OWNERSHIP banking."""
+    from . import persistence
+    owned = owned_now()
+    seen = persistence.eggs_announced()
+    if seen is None:
+        persistence.note_eggs_announced(sorted(owned))
+        return []
+    new = sorted(owned - set(seen))
+    if new:
+        persistence.note_eggs_announced(new)
+    return [hatch_name(i) for i in new]
+
+
 def hatchable_eggs(prog, owned):
     """Eggs ready to hatch right now (owned + temp) -- what the egg select shows."""
     st = egg_states(prog, owned)
