@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.314 — NO MORE EMPTY INHERITANCE (2026-07-29)
+
+NO MORE EMPTY INHERITANCE: a Digimemory etch scales a life's power by its care bonus, and a faint life could round the whole legacy down to +0/+0/+0 — a chip the memorial still offered you INSTEAD of a real care bonus, and still congratulated the heir for spending on nothing. A legacy with no power behind it is no longer etched at all: the bonus carries to the heir instead, and an old empty chip reads as silent rather than lying to you.
+
 ## 0.5.313 — YOUR PET IS A CARTRIDGE NOW (2026-07-29)
 
 YOUR PET IS A CARTRIDGE NOW: one pet, living on one device at a time. Open tuipet somewhere else and it asks the only question that matters — 'Your pet is on phone. Take it onto this device?' — instead of letting two copies silently fight over the cloud. The device you play on notices nothing; the overwrites that ate two pets can't happen again. Every replaced save is also snapshotted locally, just in case.

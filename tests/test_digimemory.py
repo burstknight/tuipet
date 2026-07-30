@@ -277,3 +277,53 @@ def test_longevity_truncates_toward_zero():
     base = p.final_care_grade()
     p.age_seconds = p._growth_period() - 1.4 * 86400  # 1.4 days short: ONE whole day
     assert p.final_care_grade() == max(0, base - 1)
+
+
+def test_a_life_too_faint_to_etch_leaves_no_chip():
+    """2026-07-29 (Joel: "what does digimemory item do???" -> the arithmetic).
+    DIGIMEMORY_ATTR_COEF is 0.01, so power * bonus < 100 in every Field
+    rounds the WHOLE legacy to +0/+0/+0.  That etch used to bank a real chip
+    and the memorial offered it AGAINST the care bonus -- a strictly worse
+    door the player could not read.  No power, no chip; and the bonus is NOT
+    spent, so it seeds the heir exactly like declining would."""
+    p = _pet(vaccine=30, data_power=20, virus=10, evol_bonus=3)
+    assert p.make_digimemory() is None       # 30*3*0.01 == 0.9 -> 0, and so are D/Vi
+    assert p.evol_bonus == 3                 # unspent: the heir gets the grade instead
+
+
+def test_a_faint_but_nonzero_life_still_etches():
+    """The guard is ALL-zero, not small: one surviving point is a legacy."""
+    p = _pet(vaccine=100, data_power=20, virus=10, evol_bonus=3)
+    mem = p.make_digimemory()                # int(100*3*0.01) == 3
+    assert mem and (mem["vaccine"], mem["data"], mem["virus"]) == (3, 0, 0)
+    assert p.evol_bonus == 0                 # a real etch spends the bonus
+
+
+def test_an_all_zero_chip_is_silent_not_a_triumph():
+    """A payload banked before the fix can hold a name and three zeros.  Using
+    it announced "<name>'s power lives on!" and consumed the chip for nothing.
+    It reads as a husk now -- silent, and the refusal law keeps the item."""
+    from tuipet.petbase import _Refused
+    p = _pet(vaccine=10, data_power=10, virus=10)
+    p.digimemory = {"name": "Elder", "num": 29, "vaccine": 0, "data": 0, "virus": 0}
+    p.inventory["digimemory"] = 1
+    out = p.use_item("digimemory")
+    assert isinstance(out, _Refused)
+    assert (p.vaccine, p.data_power, p.virus) == (10, 10, 10)
+    assert p.inventory.get("digimemory") == 1        # not eaten
+    assert p.peek_memory() == {}                     # the dossier promises nothing
+
+
+def test_a_dead_inherited_payload_never_buries_a_real_wild_trace():
+    """The inherited slot takes priority -- but an ALL-ZERO one must not lock
+    a found chip's live trace out of reach (fix edge, 2026-07-29)."""
+    p = _pet(vaccine=10, data_power=10, virus=10)
+    p.digimemory = {"name": "Elder", "num": 29, "vaccine": 0, "data": 0, "virus": 0}
+    p.wild_memories = [{"name": "A dud", "vaccine": 0, "data": 0, "virus": 0},
+                       {"name": "A stranger", "vaccine": 0, "data": 12, "virus": 0}]
+    p.inventory["digimemory"] = 1
+    out = p.use_item("digimemory")
+    assert "stranger" in str(out).lower()
+    assert p.data_power == 22
+    assert p.digimemory                              # the husk payload is untouched
+    assert [m["name"] for m in p.wild_memories] == ["A dud"]   # the SPENT one left

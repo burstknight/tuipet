@@ -15,6 +15,15 @@ from . import theme  # noqa: F401
 from .petbase import *  # noqa: F401,F403  (constants resolve HERE, per mixin)
 
 
+def _live_memory(mem):
+    """A Digimemory payload with actual power behind it.  A payload can carry
+    a name and three zeros -- the estate husk, or a pre-2026-07-29 etch whose
+    faint life rounded away under DIGIMEMORY_ATTR_COEF -- and such a chip must
+    read as silent everywhere (peek AND use), never as a legacy."""
+    return bool(mem) and any(int(mem.get(f, 0) or 0)
+                             for f in ("vaccine", "data", "virus"))
+
+
 class CareMixin:
     """State contract: the Pet dataclass fields; composed into Pet."""
 
@@ -933,8 +942,10 @@ class CareMixin:
     def stash_wild_memory(self):
         """A FOUND digimemory carries a random payload (2026-07-24, Joel:
         "make wild chips carry a random payload").  Where an INHERITED chip
-        holds a maxed ancestor's etched Va/D/Vi (tens to hundreds), a wild
-        one holds a stranger's faint trace -- a small single-attribute
+        holds a whole life scaled by its care bonus (measured 2026-07-29: a
+        strong Mega life etches ~20-36 points spread across the three Fields,
+        a modest one under 10), a wild one holds a stranger's faint trace --
+        a small single-attribute
         imprint well under the +15 base chip.  Queued in `wild_memories`
         so it never collides with the single inherited-payload slot; the
         queue keeps one-chip-one-payload true no matter how many are held."""
@@ -947,24 +958,30 @@ class CareMixin:
 
     def peek_memory(self):
         """The payload the NEXT chip use will apply -- inherited first, then
-        the oldest wild trace.  The inherit fx needs the numbers BEFORE
-        use_item consumes them (shopscreen._use)."""
-        if self.digimemory:
+        the oldest LIVE wild trace.  The inherit fx needs the numbers BEFORE
+        use_item consumes them (shopscreen._use), so this must pick exactly
+        what _inherit_memory will spend: an all-zero payload is silent, and
+        the dossier must not promise it (2026-07-29)."""
+        if _live_memory(self.digimemory):
             return self.digimemory
-        return self.wild_memories[0] if self.wild_memories else {}
+        return next((m for m in self.wild_memories if _live_memory(m)), {})
 
     def _inherit_memory(self):
         """The Digimemory chip (DVPet item 32, anim Inherit): a payload's
         Va/D/Vi joins this pet's powers (petbase DIGIMEMORY_* law).  An
         INHERITED chip's etched ancestor data takes priority; failing that,
         a FOUND chip spends the oldest wild trace (2026-07-24).  A chip with
-        no payload of either kind -- a bare estate husk -- stays mute.
+        no payload of either kind -- a bare estate husk -- stays mute, and so
+        does one whose numbers are ALL ZERO: a name with no power behind it
+        (chips banked before 2026-07-29 can hold one, when the coefficient
+        rounded a faint life away).  A dead inherited payload never buries a
+        real wild trace -- the first payload with something in it wins.
         (The chip's lifespan hours left with the lifespan clock -- DSprite
         mortality 2026-07-22; an OLD chip's "seconds" payload is ignored.)"""
-        inherited = bool(self.digimemory)
-        mem = self.digimemory or (self.wild_memories[0]
-                                  if self.wild_memories else None)
-        if not mem:
+        inherited = _live_memory(self.digimemory)
+        mem = self.digimemory if inherited else next(
+            (m for m in self.wild_memories if _live_memory(m)), None)
+        if not _live_memory(mem):
             return _Refused("The chip is silent.")  # noqa: F405
         self.vaccine += int(mem.get("vaccine", 0) or 0)
         self.data_power += int(mem.get("data", 0) or 0)
@@ -972,7 +989,7 @@ class CareMixin:
         if inherited:
             self.digimemory = {}
         else:
-            self.wild_memories.pop(0)
+            self.wild_memories.remove(mem)   # the SPENT trace, not blindly [0]
         return f"{mem.get('name', 'The ancestor')}'s power lives on!"
 
     def _super_carrot(self):

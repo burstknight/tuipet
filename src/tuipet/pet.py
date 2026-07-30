@@ -1066,6 +1066,14 @@ class Pet(CareMixin, DnaMixin, BattleMixin, BodyMixin):
                "vaccine": int(self.vaccine * b * DIGIMEMORY_ATTR_COEF),
                "data": int(self.data_power * b * DIGIMEMORY_ATTR_COEF),
                "virus": int(self.virus * b * DIGIMEMORY_ATTR_COEF)}
+        if not (mem["vaccine"] or mem["data"] or mem["virus"]):
+            # power * bonus < 100 in every Field: the coefficient rounds the
+            # whole legacy away.  Etching it handed the heir a chip worth
+            # +0/+0/+0 -- and the memorial offered that as a CHOICE against a
+            # real care bonus, a strictly worse door with no way to tell
+            # (2026-07-29).  Nothing to etch, so the bonus is NOT spent: it
+            # seeds the heir, exactly like declining.
+            return None
         self.evol_bonus = 0
         return mem
 
