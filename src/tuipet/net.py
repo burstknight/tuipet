@@ -149,6 +149,8 @@ class SyncClient(_WsClient):
         self.cloud_dropped = False
         self.save_invalid = False             # server rejected the save FORMAT
         self.save_too_big = False             # our own pre-send size refusal
+        self.not_holder = None                # {'device','label'}: the CARTRIDGE
+        #                                       lives elsewhere, pushes are forks
         self.last_error = ""                  # last server error frame (e.g. full)
         self.uri = uri
         self.name = name
@@ -219,6 +221,14 @@ class SyncClient(_WsClient):
             why = m.get("why")
             self.cloud_dropped = (not ok) and why in (None, "lease")
             self.save_invalid = (not ok) and why == "invalid"
+            if (not ok) and why == "holder":
+                # THE CARTRIDGE: the pet is checked out to another device, so
+                # every push from here is a fork the server won't take.  .313
+                # matched only "lease"/"invalid" here, so this verdict landed
+                # in a variable nobody read: the session kept pushing into the
+                # void, silently, and the player watched a cloud save "not go
+                # over" with no word from the game (Joel, 2026-07-30).
+                self.not_holder = m.get("holder") or {"label": "another device"}
         elif t == "pm":
             # the sync ghost is the HOME-SCREEN alert channel: the app drains
             # this into the message box (presence 2026-07-05)

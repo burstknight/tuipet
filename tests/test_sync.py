@@ -583,3 +583,71 @@ def test_sync_down_rescues_before_it_replaces(tmp_path, monkeypatch):
     monkeypatch.setattr(cloudsync, "pull_save", lambda *a, **k: newer)
     assert cloudsync.sync_down_at_startup("ws://x", "joel", "pw") == "pulled"
     assert glob.glob(os.path.join(persistence.SAVE_DIR, "save.rescue.*.json"))
+
+
+def test_a_dropped_push_names_the_holder_on_the_wire(server, monkeypatch):
+    """.313 dropped a non-holder's push and told it only "why": holder -- no
+    WHERE.  The client can't name the device to the player without it, and
+    "your save didn't go over, no idea why" is how Joel spent an evening
+    (2026-07-30).  The ack carries the holder view now."""
+    import json as _j
+    from websockets.sync.client import connect
+    _as_device(monkeypatch, "phoneAAA", "phone")
+    cloudsync.push_save(server, "joel", "secret",
+                        {"name": "Real", "stage": "Mega", "_saved_at": 1000.0})
+    _as_device(monkeypatch, "pcCCC", "omarchy")
+    with connect(server, open_timeout=3) as ws:
+        ws.send(_j.dumps({"t": "login", "name": "joel", "pw": "secret",
+                          "sync_only": True, "boot": 999.0,
+                          "device": "pcCCC", "dlabel": "omarchy"}))
+        ws.send(_j.dumps({"t": "save", "save": {"name": "Fork", "stage": "Mega",
+                                                "_saved_at": 9999.0}}))
+        for _ in range(6):
+            m = _j.loads(ws.recv(timeout=3))
+            if m.get("t") == "saved":
+                assert m["ok"] is False and m["why"] == "holder"
+                assert m["holder"]["label"] == "phone", "the ack must say WHERE"
+                break
+        else:
+            raise AssertionError("no saved ack")
+
+
+def test_the_session_hears_the_holder_verdict():
+    """The bug behind the silence: _handle matched only lease/invalid, so
+    why=holder set no flag at all and the pusher kept firing every 10s."""
+    from tuipet.net import SyncClient
+    c = SyncClient("ws://x", "joel")
+    assert c.not_holder is None
+    c._handle('{"t": "saved", "ok": false, "why": "holder",'
+              ' "holder": {"device": "phoneAAA", "label": "phone"}}')
+    assert c.not_holder and c.not_holder["label"] == "phone"
+    assert c.cloud_dropped is False, "the lease warning must not blame a session"
+    assert c.save_invalid is False
+
+
+def test_a_holder_verdict_stops_the_pushes_and_says_where(monkeypatch, tmp_path):
+    """What the player gets: one loud line naming the device that has the pet,
+    and a holder cache flipped to False -- which is what makes _push_cloud and
+    the quit flush stop sending forks."""
+    from tuipet import app as app_mod, persistence as pers
+    app = app_mod.TuiPetApp.__new__(app_mod.TuiPetApp)
+    app._sync = type("S", (), {"not_holder": {"device": "phoneAAA",
+                                              "label": "phone"}})()
+    flashed, beeps = [], []
+    app.flash = lambda m, *a, **k: flashed.append(m)
+    app.beep = lambda *a, **k: beeps.append(a)
+    pers.set_holder_cache(True)
+    app_mod.TuiPetApp._warn_if_not_holder(app)
+    assert pers.holder_cache() is False, "pushes must stop being attempted"
+    assert flashed and "phone" in flashed[0] and "locally only" in flashed[0]
+    assert beeps, "a silent warning is the bug we just fixed"
+    flashed.clear()
+    app_mod.TuiPetApp._warn_if_not_holder(app)
+    assert not flashed, "one warning per session, not one per autosave"
+
+
+def test_the_boot_gate_is_more_patient_than_a_cold_connection():
+    """The take-question is only asked if the boot gate reaches the server.  At
+    3s it lost that race on a just-logged-in PC while the session client, with
+    its retry loop, connected seconds later and pushed into the void."""
+    assert cloudsync.BOOT_TIMEOUT >= 10.0 > cloudsync._TIMEOUT

@@ -26,6 +26,14 @@ import time
 from . import persistence
 
 _TIMEOUT = 3.0
+# The BOOT gate is the one call that must not give up early: it decides whether
+# the player is even asked "take the pet onto this device?", and a skipped
+# question means playing the wrong copy for an evening.  3s lost that race on a
+# just-logged-in machine -- cold DNS + TLS to the lobby -- and the session's own
+# sync client, connecting seconds later with its retry loop, sailed through and
+# pushed into the void (Joel's PC, 2026-07-30).  Patience here costs a slow
+# launch at worst; impatience costs the question.
+BOOT_TIMEOUT = 12.0
 
 # The app-launch stamp: every sync login carries it, and the server grants the
 # save lease only to the NEWEST launch — so a backgrounded device's reconnect

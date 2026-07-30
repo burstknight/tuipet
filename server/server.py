@@ -1143,6 +1143,12 @@ async def handler(ws):
                 ack = {"t": "saved", "ok": ok}
                 if why:
                     ack["why"] = why
+                if why == "holder":
+                    # name the device holding the cartridge: the client can only
+                    # tell the player WHERE the pet is if we say (2026-07-30 --
+                    # .313 dropped these pushes silently and the game, knowing
+                    # nothing, kept pushing into the void every 10s)
+                    ack["holder"] = _holder_view(key)
                 await _send(client, ack)
 
             elif t == "ladder_report":

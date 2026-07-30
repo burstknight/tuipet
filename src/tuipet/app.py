@@ -150,14 +150,15 @@ class TuiPetApp(ActionsMixin, App):
     """
     # the release-news line (title-screen msg box, first launch per build) --
     # UPDATE THIS WITH EVERY RELEASE that ships something player-visible
-    WHATS_NEW = ("NO MORE EMPTY INHERITANCE: a Digimemory etch scales a "
-                 "life's power by its care bonus, and a faint life could "
-                 "round the whole legacy down to +0/+0/+0 — a chip the "
-                 "memorial still offered you INSTEAD of a real care bonus, "
-                 "and still congratulated the heir for spending on nothing. "
-                 "A legacy with no power behind it is no longer etched at "
-                 "all: the bonus carries to the heir instead, and an old "
-                 "empty chip reads as silent rather than lying to you.")
+    WHATS_NEW = ("THE GAME TELLS YOU WHERE YOUR PET IS: open tuipet on a "
+                 "device that isn't holding your pet and the cloud refuses "
+                 "its saves — correctly — but until now it refused them "
+                 "SILENTLY, so the pet you expected never arrived and "
+                 "nothing on screen said why. That device now says it "
+                 "plainly, names the device your pet is on, and stops "
+                 "pushing. The launch check that offers to move the pet is "
+                 "also far more patient: a slow first connection used to "
+                 "skip the question entirely.")
 
     BINDINGS = [
         # jogress is LOBBY-ONLY (fusion needs a real partner from the
@@ -478,9 +479,33 @@ class TuiPetApp(ActionsMixin, App):
         persistence.save(self.pet)
         self._start_sync()              # idempotent: picks up a re-enabled cloud toggle
         self._warn_if_unsaveable()
+        self._warn_if_not_holder()      # BEFORE the drop warn: a more precise cause
         self._warn_if_cloud_dropped()
         self._note_progress()
         self._push_cloud()              # mirror the autosave up to the cloud
+
+    def _warn_if_not_holder(self):
+        """THE CARTRIDGE, told at last (2026-07-30).  The server answers a
+        non-holder's push with why="holder"; .313 shipped that verdict and no
+        ear for it, so a device playing the wrong copy pushed into the void
+        every 10 seconds and said NOTHING -- Joel opened his PC, the pet
+        didn't come over, and the game had no word for why.
+
+        Three things happen the moment we hear it: the holder cache flips
+        (which stops _push_cloud and _flush_cloud_on_quit from pushing forks),
+        the player is told WHERE the pet is, and they're told the one action
+        that moves it -- the boot gate's take-question, one relaunch away."""
+        sync = getattr(self, "_sync", None)
+        held = getattr(sync, "not_holder", None) if sync else None
+        if not held or getattr(self, "_holder_warned", False):
+            return
+        self._holder_warned = True
+        persistence.set_holder_cache(False)      # pushes stop being attempted
+        label = held.get("label") or "another device"
+        self.beep("alarm")
+        self.flash(f"[{theme.NEG}]⚠ Your pet lives on {label} — this device "
+                   f"saves locally only. Quit and reopen tuipet here to take "
+                   f"it onto this device.[/]")
 
     def _warn_if_cloud_dropped(self):
         """The cloud is refusing (or we're refusing to send) this device's
@@ -1571,7 +1596,15 @@ def main():
                 # that read as a silent ~3s hang (QOL sweep 2026-07-23);
                 # same pre-UI print style as _preflight's warnings
                 print("checking cloud save…", flush=True)
-                st, _save, holder = cloudsync.gate(_lobby_uri(), name, pw)
+                st, _save, holder = cloudsync.gate(
+                    _lobby_uri(), name, pw, timeout=cloudsync.BOOT_TIMEOUT)
+                if st == "offline":
+                    # one honest retry: a cold machine's FIRST connection is
+                    # the flakiest one the app ever makes, and losing it here
+                    # silently costs the take-question (2026-07-30)
+                    print("cloud didn't answer — trying once more…", flush=True)
+                    st, _save, holder = cloudsync.gate(
+                        _lobby_uri(), name, pw, timeout=cloudsync.BOOT_TIMEOUT)
                 mine = persistence.device_id()
                 if st == "ok" and holder and holder.get("device") != mine:
                     label = holder.get("label") or "another device"
