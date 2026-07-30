@@ -3,6 +3,10 @@
 Player-facing notes per release — the same line each version shows on its
 title screen. Full commit history: [GitHub](https://github.com/joeltco/tuipet/commits/main).
 
+## 0.5.315 — THE GAME TELLS YOU WHERE YOUR PET IS (2026-07-29)
+
+THE GAME TELLS YOU WHERE YOUR PET IS: open tuipet on a device that isn't holding your pet and the cloud refuses its saves — correctly — but until now it refused them SILENTLY, so the pet you expected never arrived and nothing on screen said why. That device now says it plainly, names the device your pet is on, and stops pushing. The launch check that offers to move the pet is also far more patient: a slow first connection used to skip the question entirely.
+
 ## 0.5.314 — NO MORE EMPTY INHERITANCE (2026-07-29)
 
 NO MORE EMPTY INHERITANCE: a Digimemory etch scales a life's power by its care bonus, and a faint life could round the whole legacy down to +0/+0/+0 — a chip the memorial still offered you INSTEAD of a real care bonus, and still congratulated the heir for spending on nothing. A legacy with no power behind it is no longer etched at all: the bonus carries to the heir instead, and an old empty chip reads as silent rather than lying to you.

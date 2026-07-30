@@ -85,6 +85,38 @@ the device they already play; other devices meet it on their next launch.
 Legacy clients (older versions, no device id) can still pull, but can neither
 claim nor push to a held account.
 
+## Follow-up: the silent drop (v0.5.315, 2026-07-30)
+
+The guard worked; the *telling* didn't. Joel opened tuipet on his PC, the pet
+didn't come over, and nothing on screen explained why. Diagnosis from the
+server log: the PC pushed every 10s for five minutes and every push was
+dropped `why=holder` — the real pet (13,145 bits) was never at risk.
+
+Two defects behind the silence:
+
+1. **`net.py` `_handle` matched only `("lease", "invalid")`.** The new `holder`
+   verdict fell through, set no flag, and the app's warn pass had nothing to
+   read. A protection nobody surfaces is indistinguishable from a broken
+   feature. Fixed: `SyncClient.not_holder` + `app._warn_if_not_holder()`, which
+   flips `set_holder_cache(False)` (the thing that actually stops the pushes),
+   beeps, and names the holder device once per session.
+2. **The boot gate used the 3s `_TIMEOUT`.** The one call that decides whether
+   the take-question is asked was the least patient in the app, and a
+   just-logged-in machine's cold DNS + TLS lost that race — while the session
+   client's retry loop connected fine seconds later. The log proves it: a
+   `sync_only` session login with no gate login before it. Fixed:
+   `BOOT_TIMEOUT = 12.0` plus one retry on `offline`.
+
+The server also now includes `holder` in a `why=holder` ack, so the client can
+say *where* the pet is rather than only that something failed.
+
+**Rule this produced:** a new reason code on the wire is unshipped until a
+client branch matches it *and* the player is told. Grep every consumer of the
+field, then trace the flag to something the player actually sees.
+
+Taking the pet remains a **relaunch** door on purpose — the boot gate exists so
+the app never has to reload a pet mid-session.
+
 ## Known limits (flagged, not bugs)
 
 - Declining the question **exits**; there is no pet-less spectator lobby yet.
